@@ -1,0 +1,17 @@
+{
+    "files.associations": {
+        "memory": "cpp",
+        "chrono": "cpp"
+    },
+    "python.autoComplete.extraPaths": [
+        "/opt/ros/foxy/lib/python3.8/site-packages"
+    ],
+    "python.analysis.extraPaths": [
+        "/opt/ros/foxy/lib/python3.8/site-packages"
+    ],
+    "workbench.colorCustomizations": {
+        "activityBar.background": "#482400",
+        "titleBar.activeBackground": "#653301",
+        "titleBar.activeForeground": "#FFFBF6"
+    }
+}

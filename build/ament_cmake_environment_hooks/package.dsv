@@ -1,0 +1,4 @@
+source;share/multibot_server/local_setup.bash
+source;share/multibot_server/local_setup.dsv
+source;share/multibot_server/local_setup.sh
+source;share/multibot_server/local_setup.zsh
