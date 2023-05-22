@@ -4,7 +4,9 @@
             "name": "Linux",
             "includePath": [
                 "/opt/ros/foxy/include/**",
-                "${workspaceFolder}/**"
+                "/usr/include/**",
+                "${workspaceFolder}/**",
+                "${workspaceFolder}/../../**"
             ],
             "defines": [],
             "compilerPath": "/usr/bin/gcc",

@@ -63,6 +63,18 @@ Visualization Manager:
         Value: /map_server/transition_event
       Use Timestamp: false
       Value: true
+    - Class: rviz_default_plugins/MarkerArray
+      Enabled: true
+      Name: MarkerArray
+      Namespaces:
+        "": true
+      Topic:
+        Depth: 5
+        Durability Policy: Volatile
+        History Policy: Keep Last
+        Reliability Policy: Reliable
+        Value: /robot_list
+      Value: true
   Enabled: true
   Global Options:
     Background Color: 48; 48; 48

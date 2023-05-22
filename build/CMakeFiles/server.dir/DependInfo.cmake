@@ -23,6 +23,7 @@ set(CMAKE_TARGET_DEFINITIONS_CXX
 set(CMAKE_CXX_TARGET_INCLUDE_PATH
   "../include"
   "/opt/ros/foxy/include"
+  "/home/changju/multibot_ws/install/multibot_ros2_interface/include"
   )
 
 # Targets to which this target links.

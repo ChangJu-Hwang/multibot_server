@@ -95,17 +95,16 @@ server: CMakeFiles/server.dir/src/server/main.cpp.o
 server: CMakeFiles/server.dir/src/server/server.cpp.o
 server: CMakeFiles/server.dir/build.make
 server: /opt/ros/foxy/lib/librclcpp.so
+server: /home/changju/multibot_ws/install/multibot_ros2_interface/lib/libmultibot_ros2_interface__rosidl_typesupport_introspection_c.so
+server: /home/changju/multibot_ws/install/multibot_ros2_interface/lib/libmultibot_ros2_interface__rosidl_typesupport_c.so
+server: /home/changju/multibot_ws/install/multibot_ros2_interface/lib/libmultibot_ros2_interface__rosidl_typesupport_introspection_cpp.so
+server: /home/changju/multibot_ws/install/multibot_ros2_interface/lib/libmultibot_ros2_interface__rosidl_typesupport_cpp.so
 server: /opt/ros/foxy/lib/liblibstatistics_collector.so
 server: /opt/ros/foxy/lib/liblibstatistics_collector_test_msgs__rosidl_typesupport_introspection_c.so
 server: /opt/ros/foxy/lib/liblibstatistics_collector_test_msgs__rosidl_generator_c.so
 server: /opt/ros/foxy/lib/liblibstatistics_collector_test_msgs__rosidl_typesupport_c.so
 server: /opt/ros/foxy/lib/liblibstatistics_collector_test_msgs__rosidl_typesupport_introspection_cpp.so
 server: /opt/ros/foxy/lib/liblibstatistics_collector_test_msgs__rosidl_typesupport_cpp.so
-server: /opt/ros/foxy/lib/libstd_msgs__rosidl_typesupport_introspection_c.so
-server: /opt/ros/foxy/lib/libstd_msgs__rosidl_generator_c.so
-server: /opt/ros/foxy/lib/libstd_msgs__rosidl_typesupport_c.so
-server: /opt/ros/foxy/lib/libstd_msgs__rosidl_typesupport_introspection_cpp.so
-server: /opt/ros/foxy/lib/libstd_msgs__rosidl_typesupport_cpp.so
 server: /opt/ros/foxy/lib/librcl.so
 server: /opt/ros/foxy/lib/librcl_interfaces__rosidl_typesupport_introspection_c.so
 server: /opt/ros/foxy/lib/librcl_interfaces__rosidl_generator_c.so
@@ -128,6 +127,13 @@ server: /opt/ros/foxy/lib/libstatistics_msgs__rosidl_generator_c.so
 server: /opt/ros/foxy/lib/libstatistics_msgs__rosidl_typesupport_c.so
 server: /opt/ros/foxy/lib/libstatistics_msgs__rosidl_typesupport_introspection_cpp.so
 server: /opt/ros/foxy/lib/libstatistics_msgs__rosidl_typesupport_cpp.so
+server: /opt/ros/foxy/lib/libtracetools.so
+server: /home/changju/multibot_ws/install/multibot_ros2_interface/lib/libmultibot_ros2_interface__rosidl_generator_c.so
+server: /opt/ros/foxy/lib/libstd_msgs__rosidl_typesupport_introspection_c.so
+server: /opt/ros/foxy/lib/libstd_msgs__rosidl_generator_c.so
+server: /opt/ros/foxy/lib/libstd_msgs__rosidl_typesupport_c.so
+server: /opt/ros/foxy/lib/libstd_msgs__rosidl_typesupport_introspection_cpp.so
+server: /opt/ros/foxy/lib/libstd_msgs__rosidl_typesupport_cpp.so
 server: /opt/ros/foxy/lib/libbuiltin_interfaces__rosidl_typesupport_introspection_c.so
 server: /opt/ros/foxy/lib/libbuiltin_interfaces__rosidl_generator_c.so
 server: /opt/ros/foxy/lib/libbuiltin_interfaces__rosidl_typesupport_c.so
@@ -140,7 +146,6 @@ server: /opt/ros/foxy/lib/librosidl_typesupport_c.so
 server: /opt/ros/foxy/lib/librcpputils.so
 server: /opt/ros/foxy/lib/librosidl_runtime_c.so
 server: /opt/ros/foxy/lib/librcutils.so
-server: /opt/ros/foxy/lib/libtracetools.so
 server: CMakeFiles/server.dir/link.txt
 	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --bold --progress-dir=/home/changju/multibot_ws/src/multibot_server/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_3) "Linking CXX executable server"
 	$(CMAKE_COMMAND) -E cmake_link_script CMakeFiles/server.dir/link.txt --verbose=$(VERBOSE)

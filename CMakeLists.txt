@@ -23,9 +23,12 @@ endif()
 find_package(ament_cmake REQUIRED)
 find_package(rclcpp REQUIRED)
 find_package(rclpy REQUIRED)
+find_package(multibot_ros2_interface REQUIRED)
 
 find_package(nav_msgs REQUIRED)
 find_package(std_msgs REQUIRED)
+find_package(tf2 REQUIRED)
+find_package(visualization_msgs REQUIRED)
 
 find_package(gazebo_ros REQUIRED)
 
@@ -39,6 +42,7 @@ include_directories(
 # server
 set(SERVER_DEPENDENCIES
   "rclcpp"
+  "multibot_ros2_interface"
 )
 set(SERVER_EXEC_NAME "server")
 file(GLOB SERVER_SOURCES "src/server/*.cpp")
@@ -48,6 +52,9 @@ ament_target_dependencies(${SERVER_EXEC_NAME} ${SERVER_DEPENDENCIES})
 # simulation
 set(SIMUL_DEPENDENCIES
   "rclcpp"
+  "tf2"
+  "visualization_msgs"
+  "multibot_ros2_interface"
 )
 set(SIMUL_EXEC_NAME "simulation")
 file(GLOB SIMUL_SOURCES "src/simulation/*.cpp")

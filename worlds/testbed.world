@@ -81,6 +81,13 @@
             <pose frame="">10.0 6.75 0 0 0 0</pose>
         </model>
 
+        <model name="ISR_M2">
+            <include>
+                <uri>model://ISR_M2</uri>
+            </include>
+            <pose frame="">3.1 7.1 0 0 0 0</pose>
+        </model>
+
         <light name='sun' type='directional'>
             <cast_shadows>1</cast_shadows>
             <pose>10.0 6.75 100 0 -0 0</pose>

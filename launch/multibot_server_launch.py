@@ -105,6 +105,21 @@ def generate_launch_description():
 		cwd=[multibot_server_dir], output='screen'
     )
 
+    # Server Node
+    multibot_server_cmd = Node(
+        package='multibot_server',
+        executable='server',
+        name='server',
+        output='screen'
+    )
+
+    multibot_simulation_cmd = Node(
+        package='multibot_server',
+        executable='simulation',
+        name='simulation',
+        output='screen'
+    )
+
     # Create the launch description and populate
     ld = LaunchDescription()
 
@@ -120,5 +135,8 @@ def generate_launch_description():
 
     ld.add_action(start_gazebo_server_cmd)
     ld.add_action(start_gazebo_client_cmd)
+
+    ld.add_action(multibot_server_cmd)
+    ld.add_action(multibot_simulation_cmd)
 
     return ld

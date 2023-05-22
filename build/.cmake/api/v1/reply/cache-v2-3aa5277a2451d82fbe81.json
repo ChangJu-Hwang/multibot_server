@@ -1943,7 +1943,7 @@
 				}
 			],
 			"type" : "INTERNAL",
-			"value" : "dart;dart"
+			"value" : "dart;dart;dart;dart;dart;dart;dart;dart;dart;dart;dart;dart;dart;dart;dart;dart;dart;dart;dart;dart;dart;dart"
 		},
 		{
 			"name" : "DART_MIN_BOOST_VERSION",
@@ -2119,7 +2119,7 @@
 				}
 			],
 			"type" : "INTERNAL",
-			"value" : "[/usr/include][dart;dart][cfound components: dart ][v(6.6)]"
+			"value" : "[/usr/include][dart;dart;dart;dart;dart;dart;dart;dart;dart;dart;dart;dart;dart;dart;dart;dart;dart;dart;dart;dart;dart;dart][cfound components: dart ][v(6.6)]"
 		},
 		{
 			"name" : "FIND_PACKAGE_MESSAGE_DETAILS_DL",
@@ -10066,6 +10066,18 @@
 			"value" : "ccd_DIR-NOTFOUND"
 		},
 		{
+			"name" : "console_bridge_DIR",
+			"properties" : 
+			[
+				{
+					"name" : "HELPSTRING",
+					"value" : "The directory containing a CMake configuration file for console_bridge."
+				}
+			],
+			"type" : "PATH",
+			"value" : "/opt/ros/foxy/lib/x86_64-linux-gnu/console_bridge/cmake"
+		},
+		{
 			"name" : "fastcdr_DIR",
 			"properties" : 
 			[
@@ -10292,6 +10304,18 @@
 			],
 			"type" : "PATH",
 			"value" : "/opt/ros/foxy/share/libyaml_vendor/cmake"
+		},
+		{
+			"name" : "multibot_ros2_interface_DIR",
+			"properties" : 
+			[
+				{
+					"name" : "HELPSTRING",
+					"value" : "The directory containing a CMake configuration file for multibot_ros2_interface."
+				}
+			],
+			"type" : "PATH",
+			"value" : "/home/changju/multibot_ws/install/multibot_ros2_interface/share/multibot_ros2_interface/cmake"
 		},
 		{
 			"name" : "multibot_server_BINARY_DIR",
@@ -11026,6 +11050,18 @@
 			"value" : "/opt/ros/foxy/share/std_msgs/cmake"
 		},
 		{
+			"name" : "tf2_DIR",
+			"properties" : 
+			[
+				{
+					"name" : "HELPSTRING",
+					"value" : "The directory containing a CMake configuration file for tf2."
+				}
+			],
+			"type" : "PATH",
+			"value" : "/opt/ros/foxy/share/tf2/cmake"
+		},
+		{
 			"name" : "tracetools_DIR",
 			"properties" : 
 			[
@@ -11036,6 +11072,18 @@
 			],
 			"type" : "PATH",
 			"value" : "/opt/ros/foxy/share/tracetools/cmake"
+		},
+		{
+			"name" : "visualization_msgs_DIR",
+			"properties" : 
+			[
+				{
+					"name" : "HELPSTRING",
+					"value" : "The directory containing a CMake configuration file for visualization_msgs."
+				}
+			],
+			"type" : "PATH",
+			"value" : "/opt/ros/foxy/share/visualization_msgs/cmake"
 		},
 		{
 			"name" : "xmllint_BIN",

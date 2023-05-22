@@ -1,7 +1,7 @@
 <?xml version="1.0"?>
 <package format="3">
   <name>multibot_server</name>
-  <version>0.1.0</version>
+  <version>0.2.0</version>
   <description>
     Multi-robot server
   </description>
@@ -14,7 +14,10 @@
   <depend>rclpy</depend>
   <depend>nav_msgs</depend>
   <depend>std_msgs</depend>
+  <depend>tf2</depend>
+  <depend>visualization_msgs</depend>
   <depend>map_server</depend>
+  <depend>multibot_ros2_interface</depend>
 
   <exec_depend>ros2launch</exec_depend>
   <exec_depend>rviz</exec_depend>
