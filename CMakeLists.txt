@@ -71,7 +71,9 @@ install(TARGETS
 )
 
 install(DIRECTORY
+  Instances/agents
   Instances/maps
+  Instances/task
   launch
   models
   rviz

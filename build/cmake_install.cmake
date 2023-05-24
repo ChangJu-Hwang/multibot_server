@@ -79,7 +79,9 @@ endif()
 
 if("x${CMAKE_INSTALL_COMPONENT}x" STREQUAL "xUnspecifiedx" OR NOT CMAKE_INSTALL_COMPONENT)
   file(INSTALL DESTINATION "${CMAKE_INSTALL_PREFIX}/share/multibot_server" TYPE DIRECTORY FILES
+    "/home/changju/multibot_ws/src/multibot_server/Instances/agents"
     "/home/changju/multibot_ws/src/multibot_server/Instances/maps"
+    "/home/changju/multibot_ws/src/multibot_server/Instances/task"
     "/home/changju/multibot_ws/src/multibot_server/launch"
     "/home/changju/multibot_ws/src/multibot_server/models"
     "/home/changju/multibot_ws/src/multibot_server/rviz"

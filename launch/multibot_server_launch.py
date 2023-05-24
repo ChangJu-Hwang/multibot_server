@@ -3,7 +3,7 @@ import os
 from ament_index_python.packages import get_package_share_directory
 
 from launch import LaunchDescription
-from launch.actions import DeclareLaunchArgument, ExecuteProcess
+from launch.actions import DeclareLaunchArgument, ExecuteProcess, IncludeLaunchDescription
 from launch.conditions import IfCondition
 from launch.launch_description_sources import PythonLaunchDescriptionSource
 from launch.substitutions import LaunchConfiguration, PythonExpression
@@ -11,6 +11,8 @@ from launch.substitutions import LaunchConfiguration, PythonExpression
 from launch_ros.actions import Node
 from nav2_common.launch import RewrittenYaml
 import launch_ros.actions
+
+import yaml
 
 def generate_launch_description():
     # Get the launch directory
@@ -105,6 +107,27 @@ def generate_launch_description():
 		cwd=[multibot_server_dir], output='screen'
     )
 
+    spawn_robots_cmds = []
+    with open(os.path.join(multibot_server_dir, 'task', 'multibot_task.yaml')) as multibot_task:
+        agents = yaml.load_all(multibot_task, Loader=yaml.FullLoader)
+    
+        for agent in agents:
+            spawn_robots_cmds.append(
+                IncludeLaunchDescription(
+                    PythonLaunchDescriptionSource(os.path.join(multibot_server_dir, 'launch',
+                                                            'spawn_robot_launch.py')),
+                    launch_arguments={
+                        'robot_namespace': agent['name'],
+                        'robot_name': agent['name'],
+                        'sdf_file': os.path.join(multibot_server_dir, 'models',
+                                                 agent['type'], 'model.sdf'),
+                        'x': str(agent['start']['x']),
+                        'y': str(agent['start']['y']),
+                        'Y': str(agent['start']['theta'])
+                    }.items()
+                )
+            )
+
     # Server Node
     multibot_server_cmd = Node(
         package='multibot_server',
@@ -135,6 +158,9 @@ def generate_launch_description():
 
     ld.add_action(start_gazebo_server_cmd)
     ld.add_action(start_gazebo_client_cmd)
+
+    for spawn_robot_cmd in spawn_robots_cmds:
+        ld.add_action(spawn_robot_cmd)
 
     ld.add_action(multibot_server_cmd)
     ld.add_action(multibot_simulation_cmd)
