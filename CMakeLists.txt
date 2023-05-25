@@ -29,6 +29,7 @@ find_package(nav_msgs REQUIRED)
 find_package(std_msgs REQUIRED)
 find_package(tf2 REQUIRED)
 find_package(visualization_msgs REQUIRED)
+find_package(geometry_msgs REQUIRED)
 
 find_package(gazebo_ros REQUIRED)
 
@@ -54,6 +55,7 @@ set(SIMUL_DEPENDENCIES
   "rclcpp"
   "tf2"
   "visualization_msgs"
+  "geometry_msgs"
   "multibot_ros2_interface"
 )
 set(SIMUL_EXEC_NAME "simulation")

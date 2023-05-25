@@ -4,17 +4,17 @@ start:
   x: 3.1
   y: 7.1
   theta: 0.0
----
-name: 'Agent2'
-type: 'ISR_M2'
-start:
-  x: 5.0
-  y: 6.8
-  theta: 1.45
----
-name: 'Agent3'
-type: 'ISR_M2'
-start:
-  x: 7.0
-  y: 6.8
-  theta: 1.45
+# ---
+# name: 'Agent2'
+# type: 'ISR_M2'
+# start:
+#   x: 5.0
+#   y: 6.8
+#   theta: 1.45
+# ---
+# name: 'Agent3'
+# type: 'ISR_M2'
+# start:
+#   x: 7.0
+#   y: 6.8
+#   theta: 1.45

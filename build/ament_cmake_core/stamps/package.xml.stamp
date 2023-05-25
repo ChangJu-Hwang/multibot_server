@@ -16,6 +16,7 @@
   <depend>std_msgs</depend>
   <depend>tf2</depend>
   <depend>visualization_msgs</depend>
+  <depend>geometry_msgs</depend>
   <depend>map_server</depend>
   <depend>multibot_ros2_interface</depend>
 

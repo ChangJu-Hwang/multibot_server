@@ -2,8 +2,8 @@ ISR_M2:
   ros__parameters:
     size: 0.50
     wheels:
-      separation: 0.160
-      radius: 0.033
+      separation: 0.5
+      radius: 0.32
 
     joint_states_frame: "base_footprint"
     odom_frame: "odom"
