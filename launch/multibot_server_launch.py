@@ -133,7 +133,9 @@ def generate_launch_description():
         package='multibot_server',
         executable='server',
         name='server',
-        output='screen'
+        output='screen',
+        parameters=[os.path.join(multibot_server_dir, 'agents', 'agentConfig.yaml'),
+                    {'task_fPath': os.path.join(multibot_server_dir, 'task', 'multibot_task.yaml')}]
     )
 
     multibot_simulation_cmd = Node(

@@ -99,6 +99,7 @@ server: /home/changju/multibot_ws/install/multibot_ros2_interface/lib/libmultibo
 server: /home/changju/multibot_ws/install/multibot_ros2_interface/lib/libmultibot_ros2_interface__rosidl_typesupport_c.so
 server: /home/changju/multibot_ws/install/multibot_ros2_interface/lib/libmultibot_ros2_interface__rosidl_typesupport_introspection_cpp.so
 server: /home/changju/multibot_ws/install/multibot_ros2_interface/lib/libmultibot_ros2_interface__rosidl_typesupport_cpp.so
+server: /usr/lib/x86_64-linux-gnu/libyaml-cpp.so.0.6.2
 server: /opt/ros/foxy/lib/liblibstatistics_collector.so
 server: /opt/ros/foxy/lib/liblibstatistics_collector_test_msgs__rosidl_typesupport_introspection_c.so
 server: /opt/ros/foxy/lib/liblibstatistics_collector_test_msgs__rosidl_generator_c.so

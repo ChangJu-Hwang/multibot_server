@@ -50,6 +50,10 @@ file(GLOB SERVER_SOURCES "src/server/*.cpp")
 add_executable(${SERVER_EXEC_NAME} ${SERVER_SOURCES})
 ament_target_dependencies(${SERVER_EXEC_NAME} ${SERVER_DEPENDENCIES})
 
+find_package(yaml-cpp REQUIRED)
+include_directories(${YAML_CPP_INCUDE_DIRS})
+target_link_libraries( ${SERVER_EXEC_NAME} ${YAML_CPP_LIBRARIES})
+
 # simulation
 set(SIMUL_DEPENDENCIES
   "rclcpp"

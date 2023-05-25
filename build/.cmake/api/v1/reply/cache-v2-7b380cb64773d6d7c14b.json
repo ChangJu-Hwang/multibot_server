@@ -1943,7 +1943,7 @@
 				}
 			],
 			"type" : "INTERNAL",
-			"value" : "dart;dart;dart;dart;dart;dart;dart;dart;dart;dart;dart;dart;dart;dart;dart;dart;dart;dart;dart;dart;dart;dart;dart;dart;dart;dart;dart;dart;dart;dart;dart;dart;dart;dart;dart;dart;dart;dart;dart"
+			"value" : "dart;dart;dart;dart;dart;dart;dart;dart;dart;dart;dart;dart;dart;dart;dart;dart;dart;dart;dart;dart;dart;dart;dart;dart;dart;dart;dart;dart;dart;dart;dart;dart;dart;dart;dart;dart;dart;dart;dart;dart;dart;dart;dart;dart;dart;dart;dart"
 		},
 		{
 			"name" : "DART_MIN_BOOST_VERSION",
@@ -2119,7 +2119,7 @@
 				}
 			],
 			"type" : "INTERNAL",
-			"value" : "[/usr/include][dart;dart;dart;dart;dart;dart;dart;dart;dart;dart;dart;dart;dart;dart;dart;dart;dart;dart;dart;dart;dart;dart;dart;dart;dart;dart;dart;dart;dart;dart;dart;dart;dart;dart;dart;dart;dart;dart;dart][cfound components: dart ][v(6.6)]"
+			"value" : "[/usr/include][dart;dart;dart;dart;dart;dart;dart;dart;dart;dart;dart;dart;dart;dart;dart;dart;dart;dart;dart;dart;dart;dart;dart;dart;dart;dart;dart;dart;dart;dart;dart;dart;dart;dart;dart;dart;dart;dart;dart;dart;dart;dart;dart;dart;dart;dart;dart][cfound components: dart ][v(6.6)]"
 		},
 		{
 			"name" : "FIND_PACKAGE_MESSAGE_DETAILS_DL",
@@ -11096,6 +11096,18 @@
 			],
 			"type" : "FILEPATH",
 			"value" : "/usr/bin/xmllint"
+		},
+		{
+			"name" : "yaml-cpp_DIR",
+			"properties" : 
+			[
+				{
+					"name" : "HELPSTRING",
+					"value" : "The directory containing a CMake configuration file for yaml-cpp."
+				}
+			],
+			"type" : "PATH",
+			"value" : "/usr/lib/x86_64-linux-gnu/cmake/yaml-cpp"
 		},
 		{
 			"name" : "yaml_DIR",

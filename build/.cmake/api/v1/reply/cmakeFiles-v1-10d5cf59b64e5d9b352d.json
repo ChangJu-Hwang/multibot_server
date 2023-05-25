@@ -5078,6 +5078,22 @@
 			"path" : "/usr/lib/x86_64-linux-gnu/cmake/ignition-fuel_tools4/ignition-fuel_tools4-targets-relwithdebinfo.cmake"
 		},
 		{
+			"isExternal" : true,
+			"path" : "/usr/lib/x86_64-linux-gnu/cmake/yaml-cpp/yaml-cpp-config-version.cmake"
+		},
+		{
+			"isExternal" : true,
+			"path" : "/usr/lib/x86_64-linux-gnu/cmake/yaml-cpp/yaml-cpp-config.cmake"
+		},
+		{
+			"isExternal" : true,
+			"path" : "/usr/lib/x86_64-linux-gnu/cmake/yaml-cpp/yaml-cpp-targets.cmake"
+		},
+		{
+			"isExternal" : true,
+			"path" : "/usr/lib/x86_64-linux-gnu/cmake/yaml-cpp/yaml-cpp-targets-release.cmake"
+		},
+		{
 			"path" : "env-hooks/multibot_server.dsv.in"
 		},
 		{

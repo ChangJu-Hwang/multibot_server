@@ -1,16 +1,24 @@
 name: 'Agent1'
 type: 'ISR_M2'
 start:
-  x: 3.1
+  x: 3.0
   y: 7.1
   theta: 0.0
-# ---
-# name: 'Agent2'
-# type: 'ISR_M2'
-# start:
-#   x: 5.0
-#   y: 6.8
-#   theta: 1.45
+goal:
+  x: 13.5
+  y: 7.1
+  theta: 0.0
+---
+name: 'Agent2'
+type: 'ISR_M2'
+start:
+  x: 3.0
+  y: 1.3
+  theta: 0.0
+goal:
+  x: 13.5
+  y: 1.3
+  theta: 0.0
 # ---
 # name: 'Agent3'
 # type: 'ISR_M2'
