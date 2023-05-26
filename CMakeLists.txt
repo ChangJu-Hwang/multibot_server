@@ -60,6 +60,7 @@ set(SIMUL_DEPENDENCIES
   "tf2"
   "visualization_msgs"
   "geometry_msgs"
+  "nav_msgs"
   "multibot_ros2_interface"
 )
 set(SIMUL_EXEC_NAME "simulation")

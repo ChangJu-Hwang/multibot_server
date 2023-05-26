@@ -9,9 +9,17 @@ int main(int argc, char * argv[])
 {
     rclcpp::init(argc, argv);
     auto simul = std::make_shared<Simulation::MultibotSim>();
-    simul->registration_request();
 
-    rclcpp::spin(simul);
+    simul->register_robots();
+
+    rclcpp::WallRate loop_rate(10ms);
+    while(rclcpp::ok())
+    {
+        rclcpp::spin_some(simul);
+        simul->set_odomSubscribers();
+
+        loop_rate.sleep();
+    }
 
     rclcpp::shutdown();
     return 0;
