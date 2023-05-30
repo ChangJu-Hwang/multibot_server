@@ -5,3 +5,9 @@
       wheels:
         separation: 0.5
         radius: 0.32
+      linear:
+        velocity: 1.5
+        acceleration: 1.0
+      angular:
+        velocity: 1.05
+        acceleration: 1.05
