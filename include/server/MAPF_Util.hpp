@@ -66,10 +66,10 @@ namespace MAPF_Util
             const Coordinates operator+(const Coordinates &_other) const;
             const Coordinates operator-(const Coordinates &_other) const;
             const Coordinates operator*(const double &_coefficient) const;
-            const double operator*(const Coordinates &_other) const;
+            double operator*(const Coordinates &_other) const;
             const Coordinates operator/(const double &_divider) const;
 
-            const double norm();
+            double norm();
 
             friend Coordinates operator-(const Coordinates &_coord)
             {
@@ -103,7 +103,7 @@ namespace MAPF_Util
 
             Pose &operator=(const Pose &_other)
             {
-                component_ = _other.component_;
+                component_  = _other.component_;
                 
                 return *this;
             }
@@ -126,6 +126,11 @@ namespace MAPF_Util
                     << ")";
                 
                 return _os;
+            }
+
+            Pose(const Pose &_other)
+            {
+                component_  = _other.component_;
             }
 
             Pose(geometry_msgs::msg::Pose2D _component = geometry_msgs::msg::Pose2D())

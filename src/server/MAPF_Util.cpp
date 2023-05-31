@@ -69,7 +69,7 @@ const Position::Coordinates Position::Coordinates::operator*(const double &_coef
     return result;
 }
 
-const double Position::Coordinates::operator*(const Position::Coordinates &_other) const
+double Position::Coordinates::operator*(const Position::Coordinates &_other) const
 {
     return (this->x_ * _other.x_ + this->y_ * _other.y_);
 }
@@ -95,7 +95,7 @@ const Position::Coordinates Position::Coordinates::operator/(const double &_divi
     return result;
 }
 
-const double Position::Coordinates::norm()
+double Position::Coordinates::norm()
 {
     return std::sqrt(x_ * x_ + y_ * y_);
 }
