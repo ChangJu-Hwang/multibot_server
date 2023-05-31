@@ -12,14 +12,16 @@ namespace MAPF_Util
 {
     namespace Position
     {
+        enum CARTESIAN{x, y, theta}; // enum CARTESIAN
+
         struct Index
         {
             int x_, y_;
 
             Index &operator=(const Index &_other)
             {
-                x_ = _other.x_;
-                y_ = _other.y_;
+                x_  = _other.x_;
+                y_  = _other.y_;
 
                 return *this;
             }
@@ -40,9 +42,60 @@ namespace MAPF_Util
                            << "[" << _index.y_ << "]";
             }
 
+            Index(const Index &_other)
+            {
+                x_  = _other.x_;
+                y_  = _other.y_;
+            }
+
             Index(int _x = -1, int _y = -1)
                 : x_(_x), y_(_y) {}
         }; // struct Index
+
+        struct Coordinates
+        {
+            double x_, y_;
+
+            Coordinates &operator=(const Coordinates &_other);
+            Coordinates &operator=(const std::vector<double> &_other);
+            Coordinates &operator=(const std::pair<double, double> &_other);
+
+            bool operator==(const Coordinates &_other) const;
+            bool operator!=(const Coordinates &_other) const;
+
+            const Coordinates operator+(const Coordinates &_other) const;
+            const Coordinates operator-(const Coordinates &_other) const;
+            const Coordinates operator*(const double &_coefficient) const;
+            const double operator*(const Coordinates &_other) const;
+            const Coordinates operator/(const double &_divider) const;
+
+            const double norm();
+
+            friend Coordinates operator-(const Coordinates &_coord)
+            {
+                return _coord * -1;
+            }
+
+            friend Coordinates operator*(const double &_coefficient, const Coordinates &_coord)
+            {
+                return _coord * _coefficient;
+            }
+
+            friend std::ostream &operator<<(std::ostream &_os, const Coordinates &_coordinates)
+            {
+                return _os << "("   << _coordinates.x_
+                           << ", "  << _coordinates.y_ << ")";
+            }
+
+            Coordinates(const Coordinates &_other)
+            {
+                x_  = _other.x_;
+                y_  = _other.y_;
+            }
+
+            Coordinates(double _x = std::numeric_limits<double>::quiet_NaN(), double _y = std::numeric_limits<double>::quiet_NaN())
+                : x_(_x), y_(_y) {};
+        }; // struct Coordinates
 
         struct Pose
         {
@@ -75,7 +128,7 @@ namespace MAPF_Util
                 return _os;
             }
 
-            Pose(geometry_msgs::msg::Pose2D _component)
+            Pose(geometry_msgs::msg::Pose2D _component = geometry_msgs::msg::Pose2D())
                 : component_(_component) {}
 
             Pose(double _x, double _y, double _theta)
@@ -86,6 +139,8 @@ namespace MAPF_Util
             }
         }; // struct Pose
 
+        double getDistance(const Coordinates &_first, const Coordinates &_second);
+        double crossProduct(const Coordinates &_first, const Coordinates &_second);
         double getDistance(const Pose &_first, const Pose &_second);
         double getAngleDiff(const Pose &_first, const Pose &_second);
     } // namespace Position
