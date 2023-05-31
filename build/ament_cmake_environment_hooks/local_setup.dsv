@@ -1,0 +1,3 @@
+source;share/multibot_server/environment/ament_prefix_path.sh
+source;share/multibot_server/environment/path.sh
+source;share/multibot_server/environment/multibot_server.dsv
