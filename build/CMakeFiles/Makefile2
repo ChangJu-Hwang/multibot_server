@@ -78,7 +78,7 @@ clean: CMakeFiles/uninstall.dir/clean
 CMakeFiles/simulation.dir/all:
 	$(MAKE) -f CMakeFiles/simulation.dir/build.make CMakeFiles/simulation.dir/depend
 	$(MAKE) -f CMakeFiles/simulation.dir/build.make CMakeFiles/simulation.dir/build
-	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --progress-dir=/home/changju/multibot_ws/src/multibot_server/build/CMakeFiles --progress-num=4,5,6 "Built target simulation"
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --progress-dir=/home/changju/multibot_ws/src/multibot_server/build/CMakeFiles --progress-num=5,6,7 "Built target simulation"
 .PHONY : CMakeFiles/simulation.dir/all
 
 # Build rule for subdir invocation for target.
@@ -105,12 +105,12 @@ CMakeFiles/simulation.dir/clean:
 CMakeFiles/server.dir/all:
 	$(MAKE) -f CMakeFiles/server.dir/build.make CMakeFiles/server.dir/depend
 	$(MAKE) -f CMakeFiles/server.dir/build.make CMakeFiles/server.dir/build
-	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --progress-dir=/home/changju/multibot_ws/src/multibot_server/build/CMakeFiles --progress-num=1,2,3 "Built target server"
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --progress-dir=/home/changju/multibot_ws/src/multibot_server/build/CMakeFiles --progress-num=1,2,3,4 "Built target server"
 .PHONY : CMakeFiles/server.dir/all
 
 # Build rule for subdir invocation for target.
 CMakeFiles/server.dir/rule: cmake_check_build_system
-	$(CMAKE_COMMAND) -E cmake_progress_start /home/changju/multibot_ws/src/multibot_server/build/CMakeFiles 3
+	$(CMAKE_COMMAND) -E cmake_progress_start /home/changju/multibot_ws/src/multibot_server/build/CMakeFiles 4
 	$(MAKE) -f CMakeFiles/Makefile2 CMakeFiles/server.dir/all
 	$(CMAKE_COMMAND) -E cmake_progress_start /home/changju/multibot_ws/src/multibot_server/build/CMakeFiles 0
 .PHONY : CMakeFiles/server.dir/rule

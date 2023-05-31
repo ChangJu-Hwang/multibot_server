@@ -1,4 +1,5 @@
 file(REMOVE_RECURSE
+  "CMakeFiles/server.dir/src/server/MAPF_Util.cpp.o"
   "CMakeFiles/server.dir/src/server/main.cpp.o"
   "CMakeFiles/server.dir/src/server/server.cpp.o"
   "server"
