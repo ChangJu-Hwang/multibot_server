@@ -4,6 +4,8 @@
 #include <list>
 
 #include <rclcpp/rclcpp.hpp>
+#include <nav_msgs/srv/get_map.hpp>
+#include <nav_msgs/msg/occupancy_grid.hpp>
 
 #include "multibot_ros2_interface/msg/robot_state.hpp"
 #include "multibot_ros2_interface/msg/robot_state_array.hpp"
@@ -46,6 +48,9 @@ namespace Server
         using RobotConfig       = multibot_ros2_interface::msg::RobotConfig;
         using RobotConfigs      = multibot_ros2_interface::srv::RobotConfigs;
 
+    public:
+        void load_OccupancyGrid();
+
     private:
         void update_callback();
         void update_robotStates(RobotStateArray &_robot_states);
@@ -63,6 +68,7 @@ namespace Server
         rclcpp::TimerBase::SharedPtr update_timer_;
 
         rclcpp::Service<RobotConfigs>::SharedPtr registration_server_;
+        rclcpp::Client<nav_msgs::srv::GetMap>::SharedPtr mapLoading_;
 
         std::vector<double> robot_state_;
         std::list<std::string> robotTypes_;

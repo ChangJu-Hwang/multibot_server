@@ -44,19 +44,19 @@
 			{
 				"command" : 0,
 				"file" : 0,
-				"line" : 50,
+				"line" : 51,
 				"parent" : 0
 			},
 			{
 				"command" : 1,
 				"file" : 0,
-				"line" : 74,
+				"line" : 75,
 				"parent" : 0
 			},
 			{
 				"command" : 3,
 				"file" : 0,
-				"line" : 51,
+				"line" : 52,
 				"parent" : 0
 			},
 			{
@@ -68,7 +68,7 @@
 			{
 				"command" : 2,
 				"file" : 0,
-				"line" : 55,
+				"line" : 56,
 				"parent" : 0
 			},
 			{
@@ -261,12 +261,12 @@
 				{
 					"backtrace" : 29,
 					"isSystem" : true,
-					"path" : "/opt/ros/foxy/include"
+					"path" : "/home/changju/multibot_ws/install/multibot_ros2_interface/include"
 				},
 				{
 					"backtrace" : 29,
 					"isSystem" : true,
-					"path" : "/home/changju/multibot_ws/install/multibot_ros2_interface/include"
+					"path" : "/opt/ros/foxy/include"
 				}
 			],
 			"language" : "CXX",
@@ -311,6 +311,26 @@
 			{
 				"backtrace" : 4,
 				"fragment" : "/opt/ros/foxy/lib/librclcpp.so",
+				"role" : "libraries"
+			},
+			{
+				"backtrace" : 4,
+				"fragment" : "/opt/ros/foxy/lib/libnav_msgs__rosidl_typesupport_introspection_c.so",
+				"role" : "libraries"
+			},
+			{
+				"backtrace" : 4,
+				"fragment" : "/opt/ros/foxy/lib/libnav_msgs__rosidl_typesupport_c.so",
+				"role" : "libraries"
+			},
+			{
+				"backtrace" : 4,
+				"fragment" : "/opt/ros/foxy/lib/libnav_msgs__rosidl_typesupport_introspection_cpp.so",
+				"role" : "libraries"
+			},
+			{
+				"backtrace" : 4,
+				"fragment" : "/opt/ros/foxy/lib/libnav_msgs__rosidl_typesupport_cpp.so",
 				"role" : "libraries"
 			},
 			{
@@ -456,6 +476,11 @@
 			},
 			{
 				"fragment" : "/opt/ros/foxy/lib/libtracetools.so",
+				"role" : "libraries"
+			},
+			{
+				"backtrace" : 4,
+				"fragment" : "/opt/ros/foxy/lib/libnav_msgs__rosidl_generator_c.so",
 				"role" : "libraries"
 			},
 			{

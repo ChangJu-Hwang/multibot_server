@@ -4,6 +4,51 @@
 
 using namespace Server;
 
+void MultibotServer::load_OccupancyGrid()
+{
+    while (!this->mapLoading_->wait_for_service(1s))
+    {
+        if (!rclcpp::ok())
+        {
+            RCLCPP_ERROR(this->get_logger(), "Interrupted while waiting for the service.");
+            return;
+        }
+        RCLCPP_ERROR(this->get_logger(), "Map Loading from Map Server is not available, waiting again...");
+    }
+
+    // Todo: Let this member function to wait lifecycle node and map server node.(Wait dynamic time)
+    rclcpp::sleep_for(500ms);
+
+    auto request = std::make_shared<nav_msgs::srv::GetMap::Request>();
+
+    auto response_received_callback = [this](rclcpp::Client<nav_msgs::srv::GetMap>::SharedFuture _future)
+    {
+        auto response = _future.get();
+
+        auto map = response->map;
+        
+        std::cout << "Resolution: " << map.info.resolution << std::endl;
+        std::cout << "Width     : " << map.info.width << std::endl;
+        std::cout << "Height    : " << map.info.height << std::endl;
+
+        std::vector<std::vector<bool>> mapData; mapData.clear();
+        for(uint32_t x = 0; x < map.info.width; x++)
+        {
+            std::vector<bool> mapColumnData;    mapColumnData.clear();
+            for(uint32_t y = 0; y < map.info.height; y++)
+            {
+                mapColumnData.push_back(map.data[x + y * map.info.width]);
+            }
+            mapData.push_back(mapColumnData);
+        }
+
+        return;
+    };
+
+    auto future_result = 
+        mapLoading_->async_send_request(request, response_received_callback);
+}
+
 void MultibotServer::update_callback()
 {
     auto robot_states = RobotStateArray();
@@ -164,6 +209,8 @@ MultibotServer::MultibotServer()
     read_task();
 
     auto qos = rclcpp::QoS(rclcpp::KeepLast(10));
+
+    mapLoading_ = this->create_client<nav_msgs::srv::GetMap>("/map_server/map");
 
     robot_states_pub_ = this->create_publisher<RobotStateArray>("robot_states", qos);
 

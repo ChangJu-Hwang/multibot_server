@@ -95,6 +95,10 @@ server: CMakeFiles/server.dir/src/server/main.cpp.o
 server: CMakeFiles/server.dir/src/server/server.cpp.o
 server: CMakeFiles/server.dir/build.make
 server: /opt/ros/foxy/lib/librclcpp.so
+server: /opt/ros/foxy/lib/libnav_msgs__rosidl_typesupport_introspection_c.so
+server: /opt/ros/foxy/lib/libnav_msgs__rosidl_typesupport_c.so
+server: /opt/ros/foxy/lib/libnav_msgs__rosidl_typesupport_introspection_cpp.so
+server: /opt/ros/foxy/lib/libnav_msgs__rosidl_typesupport_cpp.so
 server: /home/changju/multibot_ws/install/multibot_ros2_interface/lib/libmultibot_ros2_interface__rosidl_typesupport_introspection_c.so
 server: /home/changju/multibot_ws/install/multibot_ros2_interface/lib/libmultibot_ros2_interface__rosidl_typesupport_c.so
 server: /home/changju/multibot_ws/install/multibot_ros2_interface/lib/libmultibot_ros2_interface__rosidl_typesupport_introspection_cpp.so
@@ -129,6 +133,7 @@ server: /opt/ros/foxy/lib/libstatistics_msgs__rosidl_typesupport_c.so
 server: /opt/ros/foxy/lib/libstatistics_msgs__rosidl_typesupport_introspection_cpp.so
 server: /opt/ros/foxy/lib/libstatistics_msgs__rosidl_typesupport_cpp.so
 server: /opt/ros/foxy/lib/libtracetools.so
+server: /opt/ros/foxy/lib/libnav_msgs__rosidl_generator_c.so
 server: /home/changju/multibot_ws/install/multibot_ros2_interface/lib/libmultibot_ros2_interface__rosidl_generator_c.so
 server: /opt/ros/foxy/lib/libgeometry_msgs__rosidl_typesupport_introspection_c.so
 server: /opt/ros/foxy/lib/libgeometry_msgs__rosidl_generator_c.so

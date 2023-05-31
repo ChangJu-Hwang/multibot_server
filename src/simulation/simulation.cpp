@@ -49,6 +49,7 @@ void MultibotSim::request_registration()
 
             robotList_.insert(std::make_pair(config.name, robot));
         }
+        registrationFlag_ = true;
         return;
     };
 
@@ -166,7 +167,10 @@ void MultibotSim::update_gazebo(const Robot &_robot)
 void MultibotSim::robot_states_callback(const RobotStateArray::SharedPtr _robot_states)
 {
     for (const auto &robot_state : _robot_states->robot_states)
-        update_robotList(robot_state);
+    {
+        if(registrationFlag_)
+            update_robotList(robot_state);
+    }
 }
 
 void MultibotSim::update_robotList(const RobotState &_robot_state)
@@ -174,7 +178,7 @@ void MultibotSim::update_robotList(const RobotState &_robot_state)
     try
     {
         if (robotList_.find(_robot_state.name) == robotList_.end())
-            throw _robot_state.name;
+            std::cout << _robot_state.name << std::endl;
 
         if (robotList_[_robot_state.name].is_initial_pose_)
         {

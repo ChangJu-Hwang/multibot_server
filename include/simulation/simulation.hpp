@@ -75,12 +75,13 @@ namespace Simulation
         rclcpp::Subscription<RobotStateArray>::SharedPtr robot_states_sub_;
         std::unordered_map<std::string, rclcpp::Subscription<nav_msgs::msg::Odometry>::SharedPtr> robot_odom_sub_list_;
 
-    public:
         // ROS Service
         rclcpp::Client<RobotConfigs>::SharedPtr registration_;
 
         // Variables
         std::unordered_map<std::string, Robot> robotList_;
+        bool registrationFlag_ = false;
+        
     public:
         MultibotSim();
         ~MultibotSim();

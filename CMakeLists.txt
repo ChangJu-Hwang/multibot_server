@@ -43,6 +43,7 @@ include_directories(
 # server
 set(SERVER_DEPENDENCIES
   "rclcpp"
+  "nav_msgs"
   "multibot_ros2_interface"
 )
 set(SERVER_EXEC_NAME "server")
