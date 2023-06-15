@@ -2,7 +2,7 @@
 	"artifacts" : 
 	[
 		{
-			"path" : "server"
+			"path" : "simulation"
 		}
 	],
 	"backtrace" : 1,
@@ -44,7 +44,7 @@
 			{
 				"command" : 0,
 				"file" : 0,
-				"line" : 51,
+				"line" : 69,
 				"parent" : 0
 			},
 			{
@@ -56,7 +56,7 @@
 			{
 				"command" : 3,
 				"file" : 0,
-				"line" : 52,
+				"line" : 70,
 				"parent" : 0
 			},
 			{
@@ -64,12 +64,6 @@
 				"file" : 1,
 				"line" : 145,
 				"parent" : 3
-			},
-			{
-				"command" : 2,
-				"file" : 0,
-				"line" : 56,
-				"parent" : 0
 			},
 			{
 				"command" : 4,
@@ -85,107 +79,107 @@
 			},
 			{
 				"file" : 9,
-				"parent" : 7
+				"parent" : 6
 			},
 			{
 				"command" : 6,
 				"file" : 9,
 				"line" : 41,
-				"parent" : 8
+				"parent" : 7
 			},
 			{
 				"file" : 8,
-				"parent" : 9
+				"parent" : 8
 			},
 			{
 				"command" : 9,
 				"file" : 8,
 				"line" : 21,
-				"parent" : 10
+				"parent" : 9
 			},
 			{
 				"file" : 7,
-				"parent" : 11
+				"parent" : 10
 			},
 			{
 				"command" : 6,
 				"file" : 7,
 				"line" : 41,
-				"parent" : 12
+				"parent" : 11
 			},
 			{
 				"file" : 6,
-				"parent" : 13
+				"parent" : 12
 			},
 			{
 				"command" : 9,
 				"file" : 6,
 				"line" : 2,
-				"parent" : 14
+				"parent" : 13
 			},
 			{
 				"file" : 5,
-				"parent" : 15
+				"parent" : 14
 			},
 			{
 				"command" : 9,
 				"file" : 5,
 				"line" : 166,
-				"parent" : 16
+				"parent" : 15
 			},
 			{
 				"file" : 4,
-				"parent" : 17
+				"parent" : 16
 			},
 			{
 				"command" : 8,
 				"file" : 4,
 				"line" : 171,
-				"parent" : 18
+				"parent" : 17
 			},
 			{
 				"command" : 7,
 				"file" : 4,
 				"line" : 123,
-				"parent" : 19
+				"parent" : 18
 			},
 			{
 				"command" : 6,
 				"file" : 4,
 				"line" : 63,
-				"parent" : 20
+				"parent" : 19
 			},
 			{
 				"file" : 3,
-				"parent" : 21
+				"parent" : 20
 			},
 			{
 				"command" : 6,
 				"file" : 3,
 				"line" : 6,
-				"parent" : 22
+				"parent" : 21
 			},
 			{
 				"file" : 2,
-				"parent" : 23
+				"parent" : 22
 			},
 			{
 				"command" : 5,
 				"file" : 2,
 				"line" : 13,
-				"parent" : 24
+				"parent" : 23
 			},
 			{
 				"command" : 5,
 				"file" : 5,
 				"line" : 142,
-				"parent" : 16
+				"parent" : 15
 			},
 			{
 				"command" : 5,
 				"file" : 5,
 				"line" : 148,
-				"parent" : 16
+				"parent" : 15
 			},
 			{
 				"command" : 10,
@@ -210,15 +204,15 @@
 					"fragment" : "  -g  "
 				},
 				{
-					"backtrace" : 6,
+					"backtrace" : 5,
 					"fragment" : "-Wall"
 				},
 				{
-					"backtrace" : 6,
+					"backtrace" : 5,
 					"fragment" : "-Wextra"
 				},
 				{
-					"backtrace" : 6,
+					"backtrace" : 5,
 					"fragment" : "-Wpedantic"
 				},
 				{
@@ -228,7 +222,7 @@
 			"defines" : 
 			[
 				{
-					"backtrace" : 25,
+					"backtrace" : 24,
 					"define" : "BOOST_TEST_DYN_LINK"
 				},
 				{
@@ -236,11 +230,11 @@
 					"define" : "DEFAULT_RMW_IMPLEMENTATION=rmw_fastrtps_cpp"
 				},
 				{
-					"backtrace" : 26,
+					"backtrace" : 25,
 					"define" : "LIBBULLET_VERSION=2.88"
 				},
 				{
-					"backtrace" : 27,
+					"backtrace" : 26,
 					"define" : "LIBBULLET_VERSION_GT_282"
 				},
 				{
@@ -255,31 +249,29 @@
 			"includes" : 
 			[
 				{
-					"backtrace" : 28,
+					"backtrace" : 27,
 					"path" : "/home/changju/multibot_ws/src/multibot_server/include"
 				},
 				{
-					"backtrace" : 29,
-					"isSystem" : true,
-					"path" : "/home/changju/multibot_ws/install/multibot_ros2_interface/include"
-				},
-				{
-					"backtrace" : 29,
+					"backtrace" : 28,
 					"isSystem" : true,
 					"path" : "/opt/ros/foxy/include"
+				},
+				{
+					"backtrace" : 28,
+					"isSystem" : true,
+					"path" : "/home/changju/multibot_ws/install/multibot_ros2_interface/include"
 				}
 			],
 			"language" : "CXX",
 			"sourceIndexes" : 
 			[
 				0,
-				1,
-				2,
-				3
+				1
 			]
 		}
 	],
-	"id" : "server::@6890427a1f51a3e7e1df",
+	"id" : "simulation::@6890427a1f51a3e7e1df",
 	"install" : 
 	{
 		"destinations" : 
@@ -307,12 +299,37 @@
 				"role" : "flags"
 			},
 			{
-				"fragment" : "-Wl,-rpath,/opt/ros/foxy/lib:/home/changju/multibot_ws/install/multibot_ros2_interface/lib:",
+				"fragment" : "-Wl,-rpath,/opt/ros/foxy/lib:/home/changju/multibot_ws/install/multibot_ros2_interface/lib:/opt/ros/foxy/lib/x86_64-linux-gnu:",
 				"role" : "libraries"
 			},
 			{
 				"backtrace" : 4,
 				"fragment" : "/opt/ros/foxy/lib/librclcpp.so",
+				"role" : "libraries"
+			},
+			{
+				"backtrace" : 4,
+				"fragment" : "/opt/ros/foxy/lib/libtf2.so",
+				"role" : "libraries"
+			},
+			{
+				"backtrace" : 4,
+				"fragment" : "/opt/ros/foxy/lib/libvisualization_msgs__rosidl_typesupport_introspection_c.so",
+				"role" : "libraries"
+			},
+			{
+				"backtrace" : 4,
+				"fragment" : "/opt/ros/foxy/lib/libvisualization_msgs__rosidl_typesupport_c.so",
+				"role" : "libraries"
+			},
+			{
+				"backtrace" : 4,
+				"fragment" : "/opt/ros/foxy/lib/libvisualization_msgs__rosidl_typesupport_introspection_cpp.so",
+				"role" : "libraries"
+			},
+			{
+				"backtrace" : 4,
+				"fragment" : "/opt/ros/foxy/lib/libvisualization_msgs__rosidl_typesupport_cpp.so",
 				"role" : "libraries"
 			},
 			{
@@ -353,11 +370,6 @@
 			{
 				"backtrace" : 4,
 				"fragment" : "/home/changju/multibot_ws/install/multibot_ros2_interface/lib/libmultibot_ros2_interface__rosidl_typesupport_cpp.so",
-				"role" : "libraries"
-			},
-			{
-				"backtrace" : 5,
-				"fragment" : "/usr/lib/x86_64-linux-gnu/libyaml-cpp.so.0.6.2",
 				"role" : "libraries"
 			},
 			{
@@ -481,6 +493,15 @@
 				"role" : "libraries"
 			},
 			{
+				"fragment" : "/opt/ros/foxy/lib/x86_64-linux-gnu/libconsole_bridge.so.1.0",
+				"role" : "libraries"
+			},
+			{
+				"backtrace" : 4,
+				"fragment" : "/opt/ros/foxy/lib/libvisualization_msgs__rosidl_generator_c.so",
+				"role" : "libraries"
+			},
+			{
 				"backtrace" : 4,
 				"fragment" : "/opt/ros/foxy/lib/libnav_msgs__rosidl_generator_c.so",
 				"role" : "libraries"
@@ -491,22 +512,27 @@
 				"role" : "libraries"
 			},
 			{
+				"backtrace" : 4,
 				"fragment" : "/opt/ros/foxy/lib/libgeometry_msgs__rosidl_typesupport_introspection_c.so",
 				"role" : "libraries"
 			},
 			{
+				"backtrace" : 4,
 				"fragment" : "/opt/ros/foxy/lib/libgeometry_msgs__rosidl_generator_c.so",
 				"role" : "libraries"
 			},
 			{
+				"backtrace" : 4,
 				"fragment" : "/opt/ros/foxy/lib/libgeometry_msgs__rosidl_typesupport_c.so",
 				"role" : "libraries"
 			},
 			{
+				"backtrace" : 4,
 				"fragment" : "/opt/ros/foxy/lib/libgeometry_msgs__rosidl_typesupport_introspection_cpp.so",
 				"role" : "libraries"
 			},
 			{
+				"backtrace" : 4,
 				"fragment" : "/opt/ros/foxy/lib/libgeometry_msgs__rosidl_typesupport_cpp.so",
 				"role" : "libraries"
 			},
@@ -585,8 +611,8 @@
 		],
 		"language" : "CXX"
 	},
-	"name" : "server",
-	"nameOnDisk" : "server",
+	"name" : "simulation",
+	"nameOnDisk" : "simulation",
 	"paths" : 
 	{
 		"build" : ".",
@@ -599,9 +625,7 @@
 			"sourceIndexes" : 
 			[
 				0,
-				1,
-				2,
-				3
+				1
 			]
 		}
 	],
@@ -610,25 +634,13 @@
 		{
 			"backtrace" : 1,
 			"compileGroupIndex" : 0,
-			"path" : "src/server/Instance.cpp",
+			"path" : "src/simulation/main.cpp",
 			"sourceGroupIndex" : 0
 		},
 		{
 			"backtrace" : 1,
 			"compileGroupIndex" : 0,
-			"path" : "src/server/MAPF_Util.cpp",
-			"sourceGroupIndex" : 0
-		},
-		{
-			"backtrace" : 1,
-			"compileGroupIndex" : 0,
-			"path" : "src/server/main.cpp",
-			"sourceGroupIndex" : 0
-		},
-		{
-			"backtrace" : 1,
-			"compileGroupIndex" : 0,
-			"path" : "src/server/server.cpp",
+			"path" : "src/simulation/simulation.cpp",
 			"sourceGroupIndex" : 0
 		}
 	],
