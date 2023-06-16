@@ -12,6 +12,10 @@
 #include "multibot_ros2_interface/msg/robot_config.hpp"
 #include "multibot_ros2_interface/srv/robot_configs.hpp"
 
+#include "server/Instance_Manager.hpp"
+
+using namespace Instance;
+
 namespace Server
 {
     using namespace std::chrono_literals;
@@ -21,25 +25,11 @@ namespace Server
     private:
         struct Robot
         {
-            std::string name_;
-
-            double size_;
-            double wheel_radius_;
-            double wheel_seperation_;
-            
-            double max_linear_velocity_;
-            double max_linear_acceleration_;
-            double max_angular_velocity_;
-            double max_angular_accerlation_;
-
-            geometry_msgs::msg::Pose2D start_;
-            geometry_msgs::msg::Pose2D goal_;
+            AgentInstance::Agent robotInfo_;
             geometry_msgs::msg::Pose2D pose_;
 
             //Todo: Generalize: below localTimer is just for one linear movement.
             std::chrono::milliseconds localTimer_ = 0ms;
-
-            bool is_initial_pose_;
         };
 
     private:
@@ -49,14 +39,16 @@ namespace Server
         using RobotConfigs      = multibot_ros2_interface::srv::RobotConfigs;
 
     public:
-        void load_OccupancyGrid();
+        void loadInstances();
 
     private:
         void update_callback();
         void update_robotStates(RobotStateArray &_robot_states);
         void send_robotConfigs(const std::shared_ptr<RobotConfigs::Request>  _request,
                                std::shared_ptr<RobotConfigs::Response>       _response);
-        void read_task();
+
+        void loadMap();
+        void loadTasks();
 
         // Todo: Refactorying(Split, Generalize)
         void updateRobotPose(const std::string& _robotName);
@@ -70,14 +62,10 @@ namespace Server
         rclcpp::Service<RobotConfigs>::SharedPtr registration_server_;
         rclcpp::Client<nav_msgs::srv::GetMap>::SharedPtr mapLoading_;
 
-        std::vector<double> robot_state_;
-        std::list<std::string> robotTypes_;
+        rclcpp::Time nodeStartTime_;
 
         std::unordered_map<std::string, Robot> robotList_;
-
-        std::string task_fPath_;
-        
-        rclcpp::Time nodeStartTime_;
+        Instance_Manager instance_manager_;
 
     public:
         MultibotServer();

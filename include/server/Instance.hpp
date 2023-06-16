@@ -28,18 +28,18 @@ namespace Instance
             friend std::ostream &operator<<(std::ostream &_os, const Agent &_agent)
             {
                 _os << "Agent Info"             << std::endl;
-                _os << "- Name: "               << _agent.name_             << std::endl;
-                _os << "- Size: "               << _agent.size_             << std::endl;
-                _os << "- Wheel Radius: "       << _agent.wheel_radius_     << std::endl;
-                _os << "- Wheel Seperation: "   << _agent.wheel_seperation_ << std::endl;
-                _os << "- Start: "              << _agent.start_            << std::endl;
-                _os << "- Goal: "               << _agent.goal_             << std::endl;
-                _os << "- Current Pose: "       << _agent.pose_             << std::endl;
+                _os << "- Name: "               << _agent.name_                     << std::endl;
+                _os << "- Size: "               << _agent.size_             << "m"  << std::endl;
+                _os << "- Wheel Radius: "       << _agent.wheel_radius_     << "m"  << std::endl;
+                _os << "- Wheel Seperation: "   << _agent.wheel_seperation_ << "m"  << std::endl;
+                _os << "- Start: "              << _agent.start_                    << std::endl;
+                _os << "- Goal : "               << _agent.goal_                     << std::endl;
+                _os << "- Current Pose: "       << _agent.pose_                     << std::endl;
                 
-                _os << "- Maximum linear velocity     : "   << _agent.max_linVel_   << std::endl;
-                _os << "- Maximum linear acceleration : "   << _agent.max_linAcc_   << std::endl;
-                _os << "- Maximum angular acceleration: "   << _agent.max_angVel_   << std::endl;
-                _os << "- Maximum angular acceleration: "   << _agent.max_angAcc_   << std::endl;
+                _os << "- Maximum linear velocity     : "   << _agent.max_linVel_   << "m/s"        << std::endl;
+                _os << "- Maximum linear acceleration : "   << _agent.max_linAcc_   << "m/s^2"      << std::endl;
+                _os << "- Maximum angular acceleration: "   << _agent.max_angVel_   << "rad/s"      << std::endl;
+                _os << "- Maximum angular acceleration: "   << _agent.max_angAcc_   << "rad/s^2"    << std::endl;
 
                 return _os;
             }
@@ -87,6 +87,7 @@ namespace Instance
             }
         
         public:
+            Cell() {}
             Cell(const Cell& _other)
             {
                 coord_          = _other.coord_;
@@ -123,7 +124,7 @@ namespace Instance
                     _os << "  o Origin      : " << _mapProperty.origin_     << std::endl;
                     _os << "  o Width       : " << _mapProperty.width_      << std::endl;
                     _os << "  o Height      : " << _mapProperty.height_     << std::endl;
-                    _os << "  o Resolution  : " << _mapProperty.resolution_ << std::endl;
+                    _os << "  o Resolution  : " << _mapProperty.resolution_ << "m";
 
                     return _os;
                 }
@@ -155,7 +156,7 @@ namespace Instance
             bool isOutofMap(const Cell &_cell) const;
         
         private:
-            const double distanceLookup(const Cell &_cell) const;
+            double distanceLookup(const Cell &_cell) const;
             void enqueue(const Instance::MapInstance::Cell &_cell, const double &_inflation_radius);
         
         public:
@@ -171,9 +172,6 @@ namespace Instance
             BinaryOccupancyMap() {}
         }; // class BinaryOccupancyMap
 
-        const double getDistance(const Cell &_first, const Cell &_second)
-        {
-            return Position::getDistance(_first.coord_, _second.coord_);
-        }
+        double getDistance(const Cell &_first, const Cell &_second);
     } // namespace MapInstance
 } // namespace Instance

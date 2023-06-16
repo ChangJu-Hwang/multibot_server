@@ -83,8 +83,8 @@ namespace MAPF_Util
 
             friend std::ostream &operator<<(std::ostream &_os, const Coordinates &_coordinates)
             {
-                return _os << "("   << _coordinates.x_
-                           << ", "  << _coordinates.y_ << ")";
+                return _os << "("   << _coordinates.x_ << "m"
+                           << ", "  << _coordinates.y_ << "m" << ")";
             }
 
             Coordinates(const Coordinates &_other)
