@@ -7,7 +7,7 @@ int main(int argc, char * argv[])
 {
     rclcpp::init(argc, argv);
     auto server = std::make_shared<Server::MultibotServer>();
-    server->load_OccupancyGrid();
+    server->loadInstances();
 
     rclcpp::spin(server);
     rclcpp::shutdown();

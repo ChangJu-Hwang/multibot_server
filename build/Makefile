@@ -219,6 +219,60 @@ uninstall/fast:
 	$(MAKE) -f CMakeFiles/uninstall.dir/build.make CMakeFiles/uninstall.dir/build
 .PHONY : uninstall/fast
 
+src/server/Instance.o: src/server/Instance.cpp.o
+
+.PHONY : src/server/Instance.o
+
+# target to build an object file
+src/server/Instance.cpp.o:
+	$(MAKE) -f CMakeFiles/server.dir/build.make CMakeFiles/server.dir/src/server/Instance.cpp.o
+.PHONY : src/server/Instance.cpp.o
+
+src/server/Instance.i: src/server/Instance.cpp.i
+
+.PHONY : src/server/Instance.i
+
+# target to preprocess a source file
+src/server/Instance.cpp.i:
+	$(MAKE) -f CMakeFiles/server.dir/build.make CMakeFiles/server.dir/src/server/Instance.cpp.i
+.PHONY : src/server/Instance.cpp.i
+
+src/server/Instance.s: src/server/Instance.cpp.s
+
+.PHONY : src/server/Instance.s
+
+# target to generate assembly for a file
+src/server/Instance.cpp.s:
+	$(MAKE) -f CMakeFiles/server.dir/build.make CMakeFiles/server.dir/src/server/Instance.cpp.s
+.PHONY : src/server/Instance.cpp.s
+
+src/server/MAPF_Util.o: src/server/MAPF_Util.cpp.o
+
+.PHONY : src/server/MAPF_Util.o
+
+# target to build an object file
+src/server/MAPF_Util.cpp.o:
+	$(MAKE) -f CMakeFiles/server.dir/build.make CMakeFiles/server.dir/src/server/MAPF_Util.cpp.o
+.PHONY : src/server/MAPF_Util.cpp.o
+
+src/server/MAPF_Util.i: src/server/MAPF_Util.cpp.i
+
+.PHONY : src/server/MAPF_Util.i
+
+# target to preprocess a source file
+src/server/MAPF_Util.cpp.i:
+	$(MAKE) -f CMakeFiles/server.dir/build.make CMakeFiles/server.dir/src/server/MAPF_Util.cpp.i
+.PHONY : src/server/MAPF_Util.cpp.i
+
+src/server/MAPF_Util.s: src/server/MAPF_Util.cpp.s
+
+.PHONY : src/server/MAPF_Util.s
+
+# target to generate assembly for a file
+src/server/MAPF_Util.cpp.s:
+	$(MAKE) -f CMakeFiles/server.dir/build.make CMakeFiles/server.dir/src/server/MAPF_Util.cpp.s
+.PHONY : src/server/MAPF_Util.cpp.s
+
 src/server/main.o: src/server/main.cpp.o
 
 .PHONY : src/server/main.o
@@ -344,6 +398,12 @@ help:
 	@echo "... server"
 	@echo "... multibot_server_uninstall"
 	@echo "... uninstall"
+	@echo "... src/server/Instance.o"
+	@echo "... src/server/Instance.i"
+	@echo "... src/server/Instance.s"
+	@echo "... src/server/MAPF_Util.o"
+	@echo "... src/server/MAPF_Util.i"
+	@echo "... src/server/MAPF_Util.s"
 	@echo "... src/server/main.o"
 	@echo "... src/server/main.i"
 	@echo "... src/server/main.s"
