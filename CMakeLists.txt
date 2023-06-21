@@ -22,8 +22,10 @@ endif()
 ################################################################################
 find_package(ament_cmake REQUIRED)
 find_package(rclcpp REQUIRED)
+find_package(rclcpp_action REQUIRED)
 find_package(rclpy REQUIRED)
 find_package(multibot_ros2_interface REQUIRED)
+find_package(multibot_util REQUIRED)
 
 find_package(nav_msgs REQUIRED)
 find_package(std_msgs REQUIRED)
@@ -43,8 +45,10 @@ include_directories(
 # server
 set(SERVER_DEPENDENCIES
   "rclcpp"
+  "rclcpp_action"
   "nav_msgs"
   "multibot_ros2_interface"
+  "multibot_util"
 )
 set(SERVER_EXEC_NAME "server")
 file(GLOB SERVER_SOURCES "src/server/*.cpp")
@@ -63,6 +67,7 @@ set(SIMUL_DEPENDENCIES
   "geometry_msgs"
   "nav_msgs"
   "multibot_ros2_interface"
+  "multibot_util"
 )
 set(SIMUL_EXEC_NAME "simulation")
 file(GLOB SIMUL_SOURCES "src/simulation/*.cpp")

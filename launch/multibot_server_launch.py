@@ -3,10 +3,11 @@ import os
 from ament_index_python.packages import get_package_share_directory
 
 from launch import LaunchDescription
-from launch.actions import DeclareLaunchArgument, ExecuteProcess, IncludeLaunchDescription
+from launch.actions import DeclareLaunchArgument, ExecuteProcess, IncludeLaunchDescription, RegisterEventHandler
 from launch.conditions import IfCondition
 from launch.launch_description_sources import PythonLaunchDescriptionSource
 from launch.substitutions import LaunchConfiguration, PythonExpression
+from launch.event_handlers import OnExecutionComplete
 
 from launch_ros.actions import Node
 from nav2_common.launch import RewrittenYaml
@@ -17,6 +18,7 @@ import yaml
 def generate_launch_description():
     # Get the launch directory
     multibot_server_dir = get_package_share_directory('multibot_server')
+    multibot_robot_dir  = get_package_share_directory('multibot_robot')
 
     # Launch argument setting
     lifecycle_nodes = ['map_server']
@@ -114,12 +116,12 @@ def generate_launch_description():
         for agent in agents:
             spawn_robots_cmds.append(
                 IncludeLaunchDescription(
-                    PythonLaunchDescriptionSource(os.path.join(multibot_server_dir, 'launch',
-                                                            'spawn_robot_launch.py')),
+                    PythonLaunchDescriptionSource(os.path.join(multibot_robot_dir, 'launch',
+                                                            'multibot_robot_simul_launch.py')),
                     launch_arguments={
                         'robot_namespace': agent['name'],
                         'robot_name': agent['name'],
-                        'sdf_file': os.path.join(multibot_server_dir, 'models',
+                        'sdf_file': os.path.join(multibot_robot_dir, 'models',
                                                  agent['type'], 'model.sdf'),
                         'x': str(agent['start']['x']),
                         'y': str(agent['start']['y']),
@@ -138,12 +140,42 @@ def generate_launch_description():
                     {'task_fPath': os.path.join(multibot_server_dir, 'task', 'multibot_task.yaml')}]
     )
 
+    # start_server_cmd = Node(
+    #     package='multibot_server',
+    #     executable='server',
+    #     name='server',
+    #     output='screen',
+    #     parameters=[os.path.join(multibot_server_dir, 'agents', 'agentConfig.yaml'),
+    #                 {'task_fPath': os.path.join(multibot_server_dir, 'task', 'multibot_task.yaml')}]
+    # )
+
+    # multibot_server_cmd = RegisterEventHandler(
+    #     event_handler=OnExecutionComplete(
+    #         target_action=start_gazebo_client_cmd,
+    #         on_completion=[start_server_cmd]
+    #     )
+    # )
+
     multibot_simulation_cmd = Node(
         package='multibot_server',
         executable='simulation',
         name='simulation',
         output='screen'
     )
+
+    # start_simulation_cmd = Node(
+    #     package='multibot_server',
+    #     executable='simulation',
+    #     name='simulation',
+    #     output='screen'
+    # )
+
+    # multibot_simulation_cmd = RegisterEventHandler(
+    #     event_handler=OnExecutionComplete(
+    #         target_action=start_server_cmd,
+    #         on_completion=[start_simulation_cmd]
+    #     )
+    # )
 
     # Create the launch description and populate
     ld = LaunchDescription()

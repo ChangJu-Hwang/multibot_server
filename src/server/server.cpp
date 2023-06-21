@@ -11,6 +11,31 @@ void MultibotServer::loadInstances()
     loadTasks();
 }
 
+void MultibotServer::request_registrations()
+{
+    for (auto single_request : registration_request_)
+    {
+        while (!single_request.second->wait_for_service(1s))
+        {
+            if (!rclcpp::ok())
+            {
+                RCLCPP_ERROR(this->get_logger(), "Interrupted while waiting for the service.");
+                return;
+            }
+            RCLCPP_ERROR(this->get_logger(), "Robot registration not available, waiting again...");
+        }
+        request_registration(single_request.first, single_request.second);
+    }
+}
+
+// void MultibotServer::request_controls()
+// {
+//     for (auto single_request : controller_action_clinets_)
+//     {
+//         request_control(single_request.first, single_request.second);
+//     }
+// }
+
 void MultibotServer::update_callback()
 {
     auto robot_states = RobotStateArray();
@@ -53,6 +78,109 @@ void MultibotServer::send_robotConfigs(const std::shared_ptr<RobotConfigs::Reque
         _response->configs.push_back(robotConfig);
     }
 }
+
+void MultibotServer::request_registration(const std::string &_robotName,
+                                          std::shared_ptr<rclcpp::Client<Server::MultibotServer::RobotInfo>> _service)
+{
+    auto request = std::make_shared<RobotInfo::Request>();
+
+    request->config.name = _robotName;
+    request->config.size = robotList_[_robotName].robotInfo_.size_;
+    request->config.wheel_radius = robotList_[_robotName].robotInfo_.wheel_radius_;
+    request->config.wheel_seperation = robotList_[_robotName].robotInfo_.wheel_seperation_;
+
+    request->config.max_linvel = robotList_[_robotName].robotInfo_.max_linVel_;
+    request->config.max_linacc = robotList_[_robotName].robotInfo_.max_linAcc_;
+    request->config.max_angvel = robotList_[_robotName].robotInfo_.max_angVel_;
+    request->config.max_angacc = robotList_[_robotName].robotInfo_.max_angAcc_;
+
+    auto response_received_callback = [this](rclcpp::Client<RobotInfo>::SharedFuture _future)
+    {
+        auto response = _future.get();
+        return;
+    };
+
+    auto future_result =
+        _service->async_send_request(request, response_received_callback);
+}
+
+// // void MultibotServer::request_control(const std::string &_robotName,
+// //                                      rclcpp_action::Client<Path>::SharedPtr &_control_client)
+// // {
+// //     if(not(_control_client))
+// //         RCLCPP_WARN(this->get_logger(), "Action client not initialized");
+    
+// //     if(not(_control_client->wait_for_action_server(std::chrono::seconds(10))))
+// //     {
+// //         RCLCPP_WARN(this->get_logger(), "%s controller is not available.", _robotName);
+// //         return;
+// //     }
+
+// //     //Todo: Amend to send CPBS results
+// //     LocalPath localPath;
+// //     localPath.start = robotList_[_robotName].robotInfo_.start_.component_;
+// //     localPath.goal  = robotList_[_robotName].robotInfo_.goal_.component_;
+// //     localPath.departure_time  = rclcpp::Time(2, 0, RCL_SYSTEM_TIME);
+
+// //     auto goal_msg = Path::Goal();   goal_msg.path_segments.clear(); 
+// //     goal_msg.path_segments.push_back(localPath);
+
+// //     auto send_goal_options = rclcpp_action::Client<Path>::SendGoalOptions();
+// //     send_goal_options.goal_response_callback = 
+// //         std::bind(&MultibotServer::get_control_action_goal, this, std::placeholders::_1);
+// //     send_goal_options.feedback_callback = 
+// //         std::bind(&MultibotServer::get_control_action_feedback, this, std::placeholders::_1, std::placeholders::_2);
+// //     send_goal_options.result_callback = 
+// //         std::bind(&MultibotServer::get_control_action_result, this, std::placeholders::_1);
+
+// //     _control_client->async_send_goal(goal_msg, send_goal_options);
+// // }
+
+// // void MultibotServer::get_control_action_goal(std::shared_future<GoalHandlePath::SharedPtr> _future)
+// // {
+// //     auto goal_handle = _future.get();
+// //     if (!goal_handle)
+// //         RCLCPP_WARN(this->get_logger(), "Control goal rejected.");
+// //     else
+// //         RCLCPP_INFO(this->get_logger(), "Control goal accepted.");
+// // }
+
+// // void MultibotServer::get_control_action_feedback(
+// //     GoalHandlePath::SharedPtr,
+// //     const std::shared_ptr<const Path::Feedback> _feedback)
+// // {
+// //     std::cout << _feedback->odom.pose.pose.position.x << ", "
+// //               << _feedback->odom.pose.pose.position.y << std::endl;
+// // }
+
+// void MultibotServer::get_control_action_result(const GoalHandlePath::WrappedResult &_result)
+// {
+//     switch (_result.code)
+//     {
+//         case rclcpp_action::ResultCode::SUCCEEDED:
+//         {
+//             RCLCPP_INFO(this->get_logger(), "Control action succeeded.");
+//             Position::Pose resultPose(_result.result->pose);
+//             std::cout << resultPose << std::endl;
+//             return;
+//         }
+//         case rclcpp_action::ResultCode::ABORTED:
+//         {
+//             RCLCPP_WARN(this->get_logger(), "The control action was aborted.");
+//             return;
+//         }
+//         case rclcpp_action::ResultCode::CANCELED:
+//         {
+//             RCLCPP_WARN(this->get_logger(), "The control action was canceled.");
+//             return;
+//         }
+//         default:
+//         {
+//             RCLCPP_WARN(this->get_logger(), "Unkown result code");
+//             return;
+//         }
+//     }
+// }
 
 void MultibotServer::loadMap()
 {
@@ -100,7 +228,7 @@ void MultibotServer::loadMap()
             }
             map.mapData_.push_back(mapColumnData);
         }
-        
+
         instance_manager_.saveMap(map);
 
         return;
@@ -113,7 +241,8 @@ void MultibotServer::loadMap()
 void MultibotServer::loadTasks()
 {
     nodeStartTime_ = this->now();
-    std::list<std::string> robotTypes;  robotTypes.clear();
+    std::list<std::string> robotTypes;
+    robotTypes.clear();
     std::unordered_map<std::string, AgentInstance::Agent> agentList;
     std::string task_fPath;
 
@@ -125,9 +254,9 @@ void MultibotServer::loadTasks()
     for (const auto &task : tasks)
     {
         AgentInstance::Agent agent;
-        
-        agent.name_         = task["name"].as<std::string>();
-        std::string type    = task["type"].as<std::string>();
+
+        agent.name_ = task["name"].as<std::string>();
+        std::string type = task["type"].as<std::string>();
 
         if (std::find(robotTypes.begin(), robotTypes.end(), type) == robotTypes.end())
         {
@@ -162,13 +291,24 @@ void MultibotServer::loadTasks()
         goalPose.x = task["goal"]["x"].as<double>();
         goalPose.y = task["goal"]["y"].as<double>();
         goalPose.theta = task["goal"]["theta"].as<double>();
-        agent.goal_.component_  = goalPose;
+        agent.goal_.component_ = goalPose;
 
         agentList.insert(std::make_pair(agent.name_, agent));
 
+        auto singleRobot_registration = this->create_client<RobotInfo>("/" + agent.name_ + "/robotInfo");
+        registration_request_.push_back(std::make_pair(agent.name_, singleRobot_registration));
+
+        // rclcpp_action::Client<Path>::SharedPtr singleRobot_controller_client = rclcpp_action::create_client<Path>(
+        //     this->get_node_base_interface(),
+        //     this->get_node_graph_interface(),
+        //     this->get_node_logging_interface(),
+        //     this->get_node_waitables_interface(),
+        //     "/" + agent.name_ + "/controller");
+        // controller_action_clinets_.push_back(std::make_pair(agent.name_, singleRobot_controller_client));
+
         Robot robot;
-        robot.robotInfo_    = agent;
-        robot.pose_         = agent.start_.component_; 
+        robot.robotInfo_ = agent;
+        robot.pose_ = agent.start_.component_;
 
         robotList_.insert(std::make_pair(robot.robotInfo_.name_, robot));
     }
@@ -234,8 +374,6 @@ double MultibotServer::displacementComputer(const double start_, const double go
 MultibotServer::MultibotServer()
     : Node("server")
 {
-    // read_task();
-
     auto qos = rclcpp::QoS(rclcpp::KeepLast(10));
 
     mapLoading_ = this->create_client<nav_msgs::srv::GetMap>("/map_server/map");
@@ -244,6 +382,8 @@ MultibotServer::MultibotServer()
 
     registration_server_ = this->create_service<RobotConfigs>("registration",
                                                               std::bind(&MultibotServer::send_robotConfigs, this, std::placeholders::_1, std::placeholders::_2));
+    registration_request_.clear();
+    // controller_action_clinets_.clear();
 
     update_timer_ = this->create_wall_timer(
         10ms, std::bind(&MultibotServer::update_callback, this));

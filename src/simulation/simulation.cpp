@@ -57,39 +57,39 @@ void MultibotSim::request_registration()
         registration_->async_send_request(request, response_received_callback);
 }
 
-void MultibotSim::set_odomSubscribers()
-{
-    for(auto& robot : robotList_)
-    {
-        auto thread = std::async(std::launch::async, &MultibotSim::set_odomSubscriber, this, std::ref(robot.second));
-    }
-}
+// void MultibotSim::set_odomSubscribers()
+// {
+//     for(auto& robot : robotList_)
+//     {
+//         auto thread = std::async(std::launch::async, &MultibotSim::set_odomSubscriber, this, std::ref(robot.second));
+//     }
+// }
 
-void MultibotSim::set_odomSubscriber(Robot &_robot)
-{
-    _robot.odom_sub_    = this->create_subscription<nav_msgs::msg::Odometry>
-    (
-        "/" + _robot.name_ + "/odom", qos_,
-        [&_robot](const nav_msgs::msg::Odometry::SharedPtr _odom_msg)
-        {
-            _robot.gazebo_pose_.x      = _odom_msg->pose.pose.position.x;
-            _robot.gazebo_pose_.y      = _odom_msg->pose.pose.position.y;
+// void MultibotSim::set_odomSubscriber(Robot &_robot)
+// {
+//     _robot.odom_sub_    = this->create_subscription<nav_msgs::msg::Odometry>
+//     (
+//         "/" + _robot.name_ + "/odom", qos_,
+//         [&_robot](const nav_msgs::msg::Odometry::SharedPtr _odom_msg)
+//         {
+//             _robot.gazebo_pose_.x      = _odom_msg->pose.pose.position.x;
+//             _robot.gazebo_pose_.y      = _odom_msg->pose.pose.position.y;
 
-            tf2::Quaternion q
-            (
-                _odom_msg->pose.pose.orientation.x,
-                _odom_msg->pose.pose.orientation.y,
-                _odom_msg->pose.pose.orientation.z,
-                _odom_msg->pose.pose.orientation.w
-            );
-            tf2::Matrix3x3 m(q);
-            double roll, pitch, yaw;
-            m.getRPY(roll, pitch, yaw);
+//             tf2::Quaternion q
+//             (
+//                 _odom_msg->pose.pose.orientation.x,
+//                 _odom_msg->pose.pose.orientation.y,
+//                 _odom_msg->pose.pose.orientation.z,
+//                 _odom_msg->pose.pose.orientation.w
+//             );
+//             tf2::Matrix3x3 m(q);
+//             double roll, pitch, yaw;
+//             m.getRPY(roll, pitch, yaw);
 
-            _robot.gazebo_pose_.theta  = yaw;
-        }
-    );
-}
+//             _robot.gazebo_pose_.theta  = yaw;
+//         }
+//     );
+// }
 
 void MultibotSim::update_callback()
 {
@@ -208,7 +208,7 @@ MultibotSim::MultibotSim()
 
     registration_ = this->create_client<RobotConfigs>("registration");
 
-    robot_odom_sub_list_.clear();
+    // robot_odom_sub_list_.clear();
 
     rviz_poses_pub_ = this->create_publisher<visualization_msgs::msg::MarkerArray>("robot_list", qos_);
 

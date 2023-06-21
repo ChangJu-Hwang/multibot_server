@@ -52,14 +52,14 @@
 				{
 					"directoryIndex" : 0,
 					"id" : "server::@6890427a1f51a3e7e1df",
-					"jsonFile" : "target-server-Debug-4c5975471d73b6e997de.json",
+					"jsonFile" : "target-server-Debug-3d78f2060c2618edeb4f.json",
 					"name" : "server",
 					"projectIndex" : 0
 				},
 				{
 					"directoryIndex" : 0,
 					"id" : "simulation::@6890427a1f51a3e7e1df",
-					"jsonFile" : "target-simulation-Debug-363848a9c8b2c7612847.json",
+					"jsonFile" : "target-simulation-Debug-536fa88ff52c65fafba0.json",
 					"name" : "simulation",
 					"projectIndex" : 0
 				},

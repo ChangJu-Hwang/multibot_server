@@ -11,15 +11,15 @@ int main(int argc, char * argv[])
     auto simul = std::make_shared<Simulation::MultibotSim>();
 
     simul->register_robots();
+    rclcpp::spin(simul);
+    // rclcpp::WallRate loop_rate(10ms);
+    // while(rclcpp::ok())
+    // {
+    //     rclcpp::spin_some(simul);
+    //     simul->set_odomSubscribers();
 
-    rclcpp::WallRate loop_rate(10ms);
-    while(rclcpp::ok())
-    {
-        rclcpp::spin_some(simul);
-        simul->set_odomSubscribers();
-
-        loop_rate.sleep();
-    }
+    //     loop_rate.sleep();
+    // }
 
     rclcpp::shutdown();
     return 0;

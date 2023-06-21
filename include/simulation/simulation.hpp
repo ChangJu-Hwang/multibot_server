@@ -47,11 +47,11 @@ namespace Simulation
 
     public:
         void register_robots();
-        void set_odomSubscribers();
+        // void set_odomSubscribers();
 
     private:
         void request_registration();
-        void set_odomSubscriber(Robot &_robot);
+        // void set_odomSubscriber(Robot &_robot);
 
         void update_callback();
         visualization_msgs::msg::Marker update_rviz(const Robot &_robot);
@@ -73,7 +73,7 @@ namespace Simulation
 
         // ROS topic subscribers
         rclcpp::Subscription<RobotStateArray>::SharedPtr robot_states_sub_;
-        std::unordered_map<std::string, rclcpp::Subscription<nav_msgs::msg::Odometry>::SharedPtr> robot_odom_sub_list_;
+        // std::unordered_map<std::string, rclcpp::Subscription<nav_msgs::msg::Odometry>::SharedPtr> robot_odom_sub_list_;
 
         // ROS Service
         rclcpp::Client<RobotConfigs>::SharedPtr registration_;

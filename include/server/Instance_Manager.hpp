@@ -1,7 +1,7 @@
 #pragma once
 
-#include "server/Instance.hpp"
-#include "server/Interface/Observer_Interface.hpp"
+#include "multibot_util/Instance.hpp"
+#include "multibot_util/Interface/Observer_Interface.hpp"
 
 using namespace MAPF_Util;
 
