@@ -85,6 +85,21 @@ def generate_launch_description():
                     ]
     )
 
+    with open(os.path.join(multibot_server_dir, 'maps', 'map_server_params.yaml')) as map_server_params:
+        map_server_params = yaml.load(map_server_params, Loader=yaml.Loader)
+        map_param_dir = map_server_params['map_server']['ros__parameters']['yaml_filename']
+
+        with open(os.path.join(map_param_dir)) as map_params:
+            map_params = yaml.load(map_params, Loader=yaml.Loader)
+            map_origin = map_params['origin']
+
+    world_map_cmd = Node(
+        package='tf2_ros',
+        executable='static_transform_publisher',
+        output='screen',
+        arguments=[str(map_origin[0]), str(map_origin[0]), '0', '0', '0', '0', 'world', 'map']
+    )
+
     # lifecycle manager
     start_lifecycle_manager_cmd = launch_ros.actions.Node(
             package='nav2_lifecycle_manager',
@@ -188,6 +203,7 @@ def generate_launch_description():
     # Add any conditioned actions
     ld.add_action(start_rviz_cmd)
     ld.add_action(map_server_cmd)
+    ld.add_action(world_map_cmd)
     ld.add_action(start_lifecycle_manager_cmd)
 
     ld.add_action(start_gazebo_server_cmd)

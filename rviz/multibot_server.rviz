@@ -50,8 +50,8 @@ Visualization Manager:
         All Enabled: false
       Marker Scale: 1
       Name: TF
-      Show Arrows: true
-      Show Axes: true
+      Show Arrows: false
+      Show Axes: false
       Show Names: false
       Tree:
         {}
