@@ -38,9 +38,14 @@ def generate_launch_description():
         description='Whether to execute gzclient'
     )
 
+    # declare_world_cmd = DeclareLaunchArgument(
+    #     'world',
+    #     default_value=os.path.join(multibot_server_dir, 'worlds', 'testbed.world'),
+    #     description='Full path to world model file to load'
+    # )
     declare_world_cmd = DeclareLaunchArgument(
         'world',
-        default_value=os.path.join(multibot_server_dir, 'worlds', 'testbed.world'),
+        default_value=os.path.join(multibot_server_dir, 'worlds', 'modified_testbed.world'),
         description='Full path to world model file to load'
     )
 
