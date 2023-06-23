@@ -1,4 +1,4 @@
-#include "server/server.hpp"
+#include "multibot_server/server.hpp"
 
 #include <yaml-cpp/yaml.h> // Need to install libyaml-cpp-dev
 #include <typeinfo>
@@ -31,54 +31,43 @@ void MultibotServer::request_registrations()
     }
 }
 
+void MultibotServer::request_controls()
+{
+    for (auto robot : robotList_)
+    {
+        while (!robot.second.control_cmd_->wait_for_service(1s))
+        {
+            if (!rclcpp::ok())
+            {
+                RCLCPP_ERROR(this->get_logger(), "Interrupted while waiting for the service.");
+                return;
+            }
+            RCLCPP_ERROR(this->get_logger(), "Send path not availiable, waiting again...");
+        }
+        request_control(robot.second.robotInfo_.name_, robot.second.control_cmd_);
+    }
+}
+
 void MultibotServer::update_callback()
 {
-    // auto robot_states = RobotStateArray();
-    // update_robotStates(robot_states);
-    // robot_states_pub_->publish(robot_states);
-
+    if (robotList_.empty())
+        return;
+    
     visualization_msgs::msg::MarkerArray arrowArray;    arrowArray.markers.clear();
     for(const auto& robot : robotList_)
-        arrowArray.markers.push_back(update_Rviz_SinglePose(robot.second));
+    {
+        if(robot.second.prior_update_time_.seconds() < 1e-8)
+            continue;
+
+        auto robotMarker = update_Rviz_SinglePose(robot.second);
+       
+        if (robotMarker.ns == "")
+            continue;
+        arrowArray.markers.push_back(robotMarker);
+    }
 
     rviz_poses_pub_->publish(arrowArray);
 }
-
-// // Todo: Seperate Server and Robot
-// void MultibotServer::update_robotStates(RobotStateArray &_robot_states)
-// {
-//     _robot_states.robot_states.clear();
-
-//     for (auto &robot : robotList_)
-//     {
-//         auto robotState = RobotState();
-//         std::string robotName = robot.second.robotInfo_.name_;
-//         robotState.name = robotName;
-
-//         auto time = this->now();
-//         if (this->now() - nodeStartTime_ > rclcpp::Duration(10, 0))
-//             updateRobotPose(robotName);
-
-//         robotState.pose = robot.second.pose_;
-
-//         _robot_states.robot_states.push_back(robotState);
-//     }
-// }
-
-// void MultibotServer::send_robotConfigs(const std::shared_ptr<RobotConfigs::Request>,
-//                                        std::shared_ptr<RobotConfigs::Response> _response)
-// {
-//     for (const auto &robot : robotList_)
-//     {
-//         auto robotConfig = RobotConfig();
-//         robotConfig.name = robot.second.robotInfo_.name_;
-//         robotConfig.size = robot.second.robotInfo_.size_;
-//         robotConfig.wheel_seperation = robot.second.robotInfo_.wheel_seperation_;
-//         robotConfig.wheel_radius = robot.second.robotInfo_.wheel_radius_;
-
-//         _response->configs.push_back(robotConfig);
-//     }
-// }
 
 void MultibotServer::robotState_callback(const RobotState::SharedPtr _state_msg)
 {
@@ -87,8 +76,9 @@ void MultibotServer::robotState_callback(const RobotState::SharedPtr _state_msg)
     robotList_[_state_msg->name].robotInfo_.pose_.component_   = _state_msg->pose;
 }
 
-void MultibotServer::request_registration(const std::string &_robotName,
-                                          std::shared_ptr<rclcpp::Client<Server::MultibotServer::RobotInfo>> _service)
+void MultibotServer::request_registration(
+    const std::string &_robotName,
+    std::shared_ptr<rclcpp::Client<MultibotServer::RobotInfo>> _service)
 {
     auto request = std::make_shared<RobotInfo::Request>();
 
@@ -112,12 +102,40 @@ void MultibotServer::request_registration(const std::string &_robotName,
         _service->async_send_request(request, response_received_callback);
 }
 
+void MultibotServer::request_control(
+    const std::string &_robotName,
+    std::shared_ptr<rclcpp::Client<MultibotServer::Path>> _service)
+{
+    auto request = std::make_shared<Path::Request>();
+
+    // Todo: Change to MAPF Result
+    LocalPath localPath;
+        localPath.start = robotList_[_robotName].robotInfo_.start_.component_;
+        localPath.goal  = robotList_[_robotName].robotInfo_.goal_.component_;
+        localPath.departure_time = 10;
+        localPath.arrival_time   = 20;
+    
+    request->path.clear();
+    request->path.push_back(localPath);
+    request->start_time = 0.0;
+
+    auto response_received_callback = [this](rclcpp::Client<Path>::SharedFuture _future)
+    {
+        auto response = _future.get();
+        return;
+    };
+
+    auto future_rusult = 
+        _service->async_send_request(request, response_received_callback);
+}
+
 visualization_msgs::msg::Marker MultibotServer::update_Rviz_SinglePose(const Robot &_robot)
 {
     auto robotMarker = visualization_msgs::msg::Marker();
 
-    robotMarker.header.frame_id = "/map";
+    robotMarker.header.frame_id = "map";
     robotMarker.header.stamp    = _robot.last_update_time_;
+    robotMarker.ns = _robot.robotInfo_.name_;
     robotMarker.id = _robot.id_;
     robotMarker.type = visualization_msgs::msg::Marker::ARROW;
     robotMarker.action = visualization_msgs::msg::Marker::ADD;
@@ -273,78 +291,20 @@ void MultibotServer::loadTasks()
         robot.state_sub_ = this->create_subscription<RobotState>(
             "/" + agent.name_ + "/state", qos_,
             std::bind(&MultibotServer::robotState_callback, this, std::placeholders::_1));
+        robot.control_cmd_ = this->create_client<Path>("/" + agent.name_ + "/path");
 
         robotList_.insert(std::make_pair(robot.robotInfo_.name_, robot));
     }
     instance_manager_.saveAgents(agentList);
 }
 
-// void MultibotServer::updateRobotPose(const std::string &_robotName)
-// {
-//     Robot &robot = robotList_[_robotName];
-//     robot.localTimer_ = robot.localTimer_ + 10ms;
-
-//     if (std::fabs(robot.robotInfo_.goal_.component_.x - robot.pose_.x) < 1e-8 and
-//         std::fabs(robot.robotInfo_.goal_.component_.y - robot.pose_.y) < 1e-8)
-//         return;
-
-//     double theta = std::atan2(robot.robotInfo_.goal_.component_.y - robot.robotInfo_.start_.component_.y,
-//                               robot.robotInfo_.goal_.component_.x - robot.robotInfo_.start_.component_.x);
-//     double max_v_x = robot.robotInfo_.max_linVel_ * std::cos(theta);
-//     double max_v_y = robot.robotInfo_.max_linVel_ * std::sin(theta);
-//     double max_a_x = robot.robotInfo_.max_linAcc_ * std::cos(theta);
-//     double max_a_y = robot.robotInfo_.max_linAcc_ * std::sin(theta);
-
-//     robot.pose_.x = displacementComputer(robot.robotInfo_.start_.component_.x, robot.robotInfo_.goal_.component_.x, robot.localTimer_.count() * 1e-3, max_v_x, max_a_x);
-//     robot.pose_.y = displacementComputer(robot.robotInfo_.start_.component_.y, robot.robotInfo_.goal_.component_.y, robot.localTimer_.count() * 1e-3, max_v_y, max_a_y);
-// }
-
-// double MultibotServer::displacementComputer(const double start_, const double goal_, const double t_,
-//                                             const double max_velocity_, const double max_acceleration_)
-// {
-//     double max_s = std::fabs(goal_ - start_);
-
-//     if (max_s < 1e-8)
-//         return start_;
-
-//     int sign = start_ > goal_ ? -1 : 1;
-
-//     double v = std::fabs(max_velocity_);
-//     double a = std::fabs(max_acceleration_);
-
-//     double s = 0;
-//     // Trapezoidal velocity profile
-//     if (max_s > v * v / a)
-//     {
-//         if (t_ < v / a)
-//             s = std::fabs(0.5 * a * t_ * t_);
-//         else if (t_ < max_s / v)
-//             s = std::fabs(v * t_ - 0.5 * v * v / a);
-//         else
-//             s = std::fabs(max_s - 0.5 * a * std::pow((max_s / v + v / a - t_), 2));
-//     }
-//     // Triangular velocity profile
-//     else
-//     {
-//         if (t_ < std::fabs(0.5 * a * t_ * t_))
-//             s = std::fabs(0.5 * a * t_ * t_);
-//         else
-//             s = std::fabs(max_s - 0.5 * a * std::pow((2 * std::sqrt(max_s / a) - t_), 2));
-//     }
-
-//     return (start_ + sign * s);
-// }
-
 MultibotServer::MultibotServer()
     : Node("server")
 {
     mapLoading_ = this->create_client<nav_msgs::srv::GetMap>("/map_server/map");
 
-    // robot_states_pub_   = this->create_publisher<RobotStateArray>("robot_states", qos_);
     rviz_poses_pub_     = this->create_publisher<visualization_msgs::msg::MarkerArray>("robot_list", qos_);
 
-    // registration_server_ = this->create_service<RobotConfigs>("registration",
-    //                                                           std::bind(&MultibotServer::send_robotConfigs, this, std::placeholders::_1, std::placeholders::_2));
     registration_request_.clear();
 
     update_timer_ = this->create_wall_timer(

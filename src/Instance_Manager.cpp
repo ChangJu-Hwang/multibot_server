@@ -1,4 +1,4 @@
-#include "server/Instance_Manager.hpp"
+#include "multibot_server/Instance_Manager.hpp"
 
 #include <mutex>
 #include <yaml-cpp/yaml.h>
@@ -8,16 +8,11 @@ using namespace Instance;
 void Instance_Manager::saveAgents(const std::unordered_map<std::string, AgentInstance::Agent> &_agents)
 {
     agents_ = _agents;
-    
-    for(const auto &agent : agents_)
-        std::cout << agent.second << std::endl;
 }
 
 void Instance_Manager::saveMap(const MapInstance::BinaryOccupancyMap &_map)
 {
     map_    = _map;
-
-    std::cout << map_.property_ << std::endl;
 }
 
 void Instance_Manager::attach(Observer::ObserverInterface<InstanceMsg> &_observer)

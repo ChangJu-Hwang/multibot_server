@@ -10,12 +10,11 @@
 #include <visualization_msgs/msg/marker_array.hpp>
 
 #include "multibot_ros2_interface/msg/robot_state.hpp"
-#include "multibot_ros2_interface/msg/robot_state_array.hpp"
-#include "multibot_ros2_interface/msg/robot_config.hpp"
-#include "multibot_ros2_interface/srv/robot_configs.hpp"
 #include "multibot_ros2_interface/srv/robot_info.hpp"
+#include "multibot_ros2_interface/msg/local_path.hpp"
+#include "multibot_ros2_interface/srv/path.hpp"
 
-#include "server/Instance_Manager.hpp"
+#include "multibot_server/Instance_Manager.hpp"
 
 using namespace Instance;
 
@@ -27,10 +26,9 @@ namespace Server
     {
     private:
         using RobotState        = multibot_ros2_interface::msg::RobotState;
-        using RobotStateArray   = multibot_ros2_interface::msg::RobotStateArray;
-        using RobotConfig       = multibot_ros2_interface::msg::RobotConfig;
-        using RobotConfigs      = multibot_ros2_interface::srv::RobotConfigs;
         using RobotInfo         = multibot_ros2_interface::srv::RobotInfo;
+        using Path              = multibot_ros2_interface::srv::Path;
+        using LocalPath         = multibot_ros2_interface::msg::LocalPath;
 
     private:
         struct Robot
@@ -39,6 +37,7 @@ namespace Server
             int32_t id_;
 
             rclcpp::Subscription<RobotState>::SharedPtr state_sub_;
+            rclcpp::Client<Path>::SharedPtr control_cmd_;
 
             rclcpp::Time last_update_time_;
             rclcpp::Time prior_update_time_;
@@ -47,23 +46,23 @@ namespace Server
     public:
         void loadInstances();
         void request_registrations();
+        void request_controls();
 
     private:
         void update_callback();
-        // void update_robotStates(RobotStateArray &_robot_states);
-        // void send_robotConfigs(const std::shared_ptr<RobotConfigs::Request> _request,
-        //                        std::shared_ptr<RobotConfigs::Response> _response);
         void robotState_callback(const RobotState::SharedPtr _state_msg);
         
-        void request_registration(const std::string &_robotName,
-                                  std::shared_ptr<rclcpp::Client<Server::MultibotServer::RobotInfo>> _service);
+        void request_registration(
+            const std::string &_robotName,
+            std::shared_ptr<rclcpp::Client<RobotInfo>> _service);
         
+        void request_control(
+            const std::string &_robotName,
+            std::shared_ptr<rclcpp::Client<Path>> _service);
         
     private:
         rclcpp::QoS qos_ = rclcpp::QoS(rclcpp::KeepLast(10));
 
-        // rclcpp::Publisher<RobotStateArray>::SharedPtr robot_states_pub_;
-        // rclcpp::Service<RobotConfigs>::SharedPtr registration_server_;
         std::vector<std::pair<std::string, rclcpp::Client<RobotInfo>::SharedPtr>> registration_request_;
 
         rclcpp::Client<nav_msgs::srv::GetMap>::SharedPtr mapLoading_;
@@ -75,16 +74,11 @@ namespace Server
 
         visualization_msgs::msg::Marker update_Rviz_SinglePose(const Robot &_robot);
 
-        // Todo: Refactorying(Split, Generalize)
-        // void updateRobotPose(const std::string &_robotName);
-        // double displacementComputer(const double start_, const double goal_, const double t_,
-        //                             const double max_velocity_, const double max_acceleration_);
-
     private:
         rclcpp::TimerBase::SharedPtr update_timer_;
         rclcpp::Time nodeStartTime_;
 
-        std::unordered_map<std::string, Robot> robotList_;
+        std::map<std::string, Robot> robotList_;
         Instance_Manager instance_manager_;
 
     public:

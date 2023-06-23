@@ -3,11 +3,10 @@ import os
 from ament_index_python.packages import get_package_share_directory
 
 from launch import LaunchDescription
-from launch.actions import DeclareLaunchArgument, ExecuteProcess, IncludeLaunchDescription, RegisterEventHandler
+from launch.actions import DeclareLaunchArgument, ExecuteProcess, IncludeLaunchDescription
 from launch.conditions import IfCondition
 from launch.launch_description_sources import PythonLaunchDescriptionSource
 from launch.substitutions import LaunchConfiguration, PythonExpression
-from launch.event_handlers import OnExecutionComplete
 
 from launch_ros.actions import Node
 from nav2_common.launch import RewrittenYaml
@@ -140,7 +139,9 @@ def generate_launch_description():
                                                  agent['type'], 'model.sdf'),
                         'x': str(agent['start']['x']),
                         'y': str(agent['start']['y']),
-                        'Y': str(agent['start']['theta'])
+                        'Y': str(agent['start']['theta']),
+                        'linear_tolerance': '0.10',
+                        'angular_tolerance': '0.015'
                     }.items()
                 )
             )
@@ -154,43 +155,6 @@ def generate_launch_description():
         parameters=[os.path.join(multibot_server_dir, 'agents', 'agentConfig.yaml'),
                     {'task_fPath': os.path.join(multibot_server_dir, 'task', 'multibot_task.yaml')}]
     )
-
-    # start_server_cmd = Node(
-    #     package='multibot_server',
-    #     executable='server',
-    #     name='server',
-    #     output='screen',
-    #     parameters=[os.path.join(multibot_server_dir, 'agents', 'agentConfig.yaml'),
-    #                 {'task_fPath': os.path.join(multibot_server_dir, 'task', 'multibot_task.yaml')}]
-    # )
-
-    # multibot_server_cmd = RegisterEventHandler(
-    #     event_handler=OnExecutionComplete(
-    #         target_action=start_gazebo_client_cmd,
-    #         on_completion=[start_server_cmd]
-    #     )
-    # )
-
-    # multibot_simulation_cmd = Node(
-    #     package='multibot_server',
-    #     executable='simulation',
-    #     name='simulation',
-    #     output='screen'
-    # )
-
-    # start_simulation_cmd = Node(
-    #     package='multibot_server',
-    #     executable='simulation',
-    #     name='simulation',
-    #     output='screen'
-    # )
-
-    # multibot_simulation_cmd = RegisterEventHandler(
-    #     event_handler=OnExecutionComplete(
-    #         target_action=start_server_cmd,
-    #         on_completion=[start_simulation_cmd]
-    #     )
-    # )
 
     # Create the launch description and populate
     ld = LaunchDescription()
@@ -213,6 +177,5 @@ def generate_launch_description():
         ld.add_action(spawn_robot_cmd)
 
     ld.add_action(multibot_server_cmd)
-    # ld.add_action(multibot_simulation_cmd)
 
     return ld

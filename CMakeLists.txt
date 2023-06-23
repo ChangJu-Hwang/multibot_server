@@ -50,28 +50,13 @@ set(SERVER_DEPENDENCIES
   "multibot_util"
 )
 set(SERVER_EXEC_NAME "server")
-file(GLOB SERVER_SOURCES "src/server/*.cpp")
+file(GLOB SERVER_SOURCES "src/*.cpp")
 add_executable(${SERVER_EXEC_NAME} ${SERVER_SOURCES})
 ament_target_dependencies(${SERVER_EXEC_NAME} ${SERVER_DEPENDENCIES})
 
 find_package(yaml-cpp REQUIRED)
 include_directories(${YAML_CPP_INCUDE_DIRS})
 target_link_libraries( ${SERVER_EXEC_NAME} ${YAML_CPP_LIBRARIES})
-
-# simulation
-set(SIMUL_DEPENDENCIES
-  "rclcpp"
-  "tf2"
-  "visualization_msgs"
-  "geometry_msgs"
-  "nav_msgs"
-  "multibot_ros2_interface"
-  "multibot_util"
-)
-set(SIMUL_EXEC_NAME "simulation")
-file(GLOB SIMUL_SOURCES "src/simulation/*.cpp")
-add_executable(${SIMUL_EXEC_NAME} ${SIMUL_SOURCES})
-ament_target_dependencies(${SIMUL_EXEC_NAME} ${SIMUL_DEPENDENCIES})
 
 ################################################################################
 # Install

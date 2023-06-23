@@ -1,7 +1,7 @@
 #include <iostream>
 #include <memory>
 
-#include "server/server.hpp"
+#include "multibot_server/server.hpp"
 
 int main(int argc, char * argv[])
 {
@@ -9,7 +9,7 @@ int main(int argc, char * argv[])
     auto server = std::make_shared<Server::MultibotServer>();
     server->loadInstances();
     server->request_registrations();
-    // server->request_controls();
+    server->request_controls();
 
     rclcpp::spin(server);
     rclcpp::shutdown();

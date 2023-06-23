@@ -17,8 +17,7 @@
 					[
 						0,
 						1,
-						2,
-						3
+						2
 					]
 				}
 			],
@@ -35,8 +34,7 @@
 					[
 						0,
 						1,
-						2,
-						3
+						2
 					]
 				}
 			],
@@ -52,15 +50,8 @@
 				{
 					"directoryIndex" : 0,
 					"id" : "server::@6890427a1f51a3e7e1df",
-					"jsonFile" : "target-server-Debug-7505b608253cb2498b42.json",
+					"jsonFile" : "target-server-Debug-ad90f89f6354a7418581.json",
 					"name" : "server",
-					"projectIndex" : 0
-				},
-				{
-					"directoryIndex" : 0,
-					"id" : "simulation::@6890427a1f51a3e7e1df",
-					"jsonFile" : "target-simulation-Debug-52e4f5f8209db3fe6131.json",
-					"name" : "simulation",
 					"projectIndex" : 0
 				},
 				{
