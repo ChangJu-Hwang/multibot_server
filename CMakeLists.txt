@@ -22,7 +22,6 @@ endif()
 ################################################################################
 find_package(ament_cmake REQUIRED)
 find_package(rclcpp REQUIRED)
-find_package(rclcpp_action REQUIRED)
 find_package(rclpy REQUIRED)
 find_package(multibot_ros2_interface REQUIRED)
 find_package(multibot_util REQUIRED)
@@ -45,8 +44,8 @@ include_directories(
 # server
 set(SERVER_DEPENDENCIES
   "rclcpp"
-  "rclcpp_action"
   "nav_msgs"
+  "visualization_msgs"
   "multibot_ros2_interface"
   "multibot_util"
 )

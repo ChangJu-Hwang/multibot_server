@@ -54,7 +54,7 @@ namespace Simulation
         // void set_odomSubscriber(Robot &_robot);
 
         void update_callback();
-        visualization_msgs::msg::Marker update_rviz(const Robot &_robot);
+        // visualization_msgs::msg::Marker update_rviz(const Robot &_robot);
         void update_gazebo(const Robot &_robot);
 
         void robot_states_callback(const RobotStateArray::SharedPtr _robot_states);
@@ -69,7 +69,7 @@ namespace Simulation
         rclcpp::TimerBase::SharedPtr update_timer_;
 
         // ROS topic publishers
-        rclcpp::Publisher<visualization_msgs::msg::MarkerArray>::SharedPtr rviz_poses_pub_;
+        // rclcpp::Publisher<visualization_msgs::msg::MarkerArray>::SharedPtr rviz_poses_pub_;
 
         // ROS topic subscribers
         rclcpp::Subscription<RobotStateArray>::SharedPtr robot_states_sub_;

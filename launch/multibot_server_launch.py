@@ -171,12 +171,12 @@ def generate_launch_description():
     #     )
     # )
 
-    multibot_simulation_cmd = Node(
-        package='multibot_server',
-        executable='simulation',
-        name='simulation',
-        output='screen'
-    )
+    # multibot_simulation_cmd = Node(
+    #     package='multibot_server',
+    #     executable='simulation',
+    #     name='simulation',
+    #     output='screen'
+    # )
 
     # start_simulation_cmd = Node(
     #     package='multibot_server',
@@ -213,6 +213,6 @@ def generate_launch_description():
         ld.add_action(spawn_robot_cmd)
 
     ld.add_action(multibot_server_cmd)
-    ld.add_action(multibot_simulation_cmd)
+    # ld.add_action(multibot_simulation_cmd)
 
     return ld

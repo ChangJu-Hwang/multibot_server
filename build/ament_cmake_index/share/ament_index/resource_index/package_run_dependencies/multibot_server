@@ -1,1 +1,1 @@
-rclcpp;rclcpp_action;rclpy;nav_msgs;std_msgs;tf2;visualization_msgs;geometry_msgs;map_server;multibot_ros2_interface;multibot_util;ros2launch;rviz;gazebo_ros;gazebo;gazebo_plugins;ament_lint_auto;ament_lint_common
+rclcpp;rclpy;nav_msgs;std_msgs;tf2;visualization_msgs;geometry_msgs;map_server;multibot_ros2_interface;multibot_util;ros2launch;rviz;gazebo_ros;gazebo;gazebo_plugins;ament_lint_auto;ament_lint_common

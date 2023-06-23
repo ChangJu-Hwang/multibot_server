@@ -1,6 +1,9 @@
 #include "server/server.hpp"
 
 #include <yaml-cpp/yaml.h> // Need to install libyaml-cpp-dev
+#include <typeinfo>
+
+#include <tf2/LinearMath/Quaternion.h>
 
 using namespace Server;
 using namespace Instance;
@@ -28,55 +31,60 @@ void MultibotServer::request_registrations()
     }
 }
 
-// void MultibotServer::request_controls()
+void MultibotServer::update_callback()
+{
+    // auto robot_states = RobotStateArray();
+    // update_robotStates(robot_states);
+    // robot_states_pub_->publish(robot_states);
+
+    visualization_msgs::msg::MarkerArray arrowArray;    arrowArray.markers.clear();
+    for(const auto& robot : robotList_)
+        arrowArray.markers.push_back(update_Rviz_SinglePose(robot.second));
+
+    rviz_poses_pub_->publish(arrowArray);
+}
+
+// // Todo: Seperate Server and Robot
+// void MultibotServer::update_robotStates(RobotStateArray &_robot_states)
 // {
-//     for (auto single_request : controller_action_clinets_)
+//     _robot_states.robot_states.clear();
+
+//     for (auto &robot : robotList_)
 //     {
-//         request_control(single_request.first, single_request.second);
+//         auto robotState = RobotState();
+//         std::string robotName = robot.second.robotInfo_.name_;
+//         robotState.name = robotName;
+
+//         auto time = this->now();
+//         if (this->now() - nodeStartTime_ > rclcpp::Duration(10, 0))
+//             updateRobotPose(robotName);
+
+//         robotState.pose = robot.second.pose_;
+
+//         _robot_states.robot_states.push_back(robotState);
 //     }
 // }
 
-void MultibotServer::update_callback()
+// void MultibotServer::send_robotConfigs(const std::shared_ptr<RobotConfigs::Request>,
+//                                        std::shared_ptr<RobotConfigs::Response> _response)
+// {
+//     for (const auto &robot : robotList_)
+//     {
+//         auto robotConfig = RobotConfig();
+//         robotConfig.name = robot.second.robotInfo_.name_;
+//         robotConfig.size = robot.second.robotInfo_.size_;
+//         robotConfig.wheel_seperation = robot.second.robotInfo_.wheel_seperation_;
+//         robotConfig.wheel_radius = robot.second.robotInfo_.wheel_radius_;
+
+//         _response->configs.push_back(robotConfig);
+//     }
+// }
+
+void MultibotServer::robotState_callback(const RobotState::SharedPtr _state_msg)
 {
-    auto robot_states = RobotStateArray();
-    update_robotStates(robot_states);
-    robot_states_pub_->publish(robot_states);
-}
-
-// Todo: Seperate Server and Robot
-void MultibotServer::update_robotStates(RobotStateArray &_robot_states)
-{
-    _robot_states.robot_states.clear();
-
-    for (auto &robot : robotList_)
-    {
-        auto robotState = RobotState();
-        std::string robotName = robot.second.robotInfo_.name_;
-        robotState.name = robotName;
-
-        auto time = this->now();
-        if (this->now() - nodeStartTime_ > rclcpp::Duration(10, 0))
-            updateRobotPose(robotName);
-
-        robotState.pose = robot.second.pose_;
-
-        _robot_states.robot_states.push_back(robotState);
-    }
-}
-
-void MultibotServer::send_robotConfigs(const std::shared_ptr<RobotConfigs::Request>,
-                                       std::shared_ptr<RobotConfigs::Response> _response)
-{
-    for (const auto &robot : robotList_)
-    {
-        auto robotConfig = RobotConfig();
-        robotConfig.name = robot.second.robotInfo_.name_;
-        robotConfig.size = robot.second.robotInfo_.size_;
-        robotConfig.wheel_seperation = robot.second.robotInfo_.wheel_seperation_;
-        robotConfig.wheel_radius = robot.second.robotInfo_.wheel_radius_;
-
-        _response->configs.push_back(robotConfig);
-    }
+    robotList_[_state_msg->name].prior_update_time_ = robotList_[_state_msg->name].last_update_time_;
+    robotList_[_state_msg->name].last_update_time_ = this->now();
+    robotList_[_state_msg->name].robotInfo_.pose_.component_   = _state_msg->pose;
 }
 
 void MultibotServer::request_registration(const std::string &_robotName,
@@ -104,83 +112,40 @@ void MultibotServer::request_registration(const std::string &_robotName,
         _service->async_send_request(request, response_received_callback);
 }
 
-// // void MultibotServer::request_control(const std::string &_robotName,
-// //                                      rclcpp_action::Client<Path>::SharedPtr &_control_client)
-// // {
-// //     if(not(_control_client))
-// //         RCLCPP_WARN(this->get_logger(), "Action client not initialized");
-    
-// //     if(not(_control_client->wait_for_action_server(std::chrono::seconds(10))))
-// //     {
-// //         RCLCPP_WARN(this->get_logger(), "%s controller is not available.", _robotName);
-// //         return;
-// //     }
+visualization_msgs::msg::Marker MultibotServer::update_Rviz_SinglePose(const Robot &_robot)
+{
+    auto robotMarker = visualization_msgs::msg::Marker();
 
-// //     //Todo: Amend to send CPBS results
-// //     LocalPath localPath;
-// //     localPath.start = robotList_[_robotName].robotInfo_.start_.component_;
-// //     localPath.goal  = robotList_[_robotName].robotInfo_.goal_.component_;
-// //     localPath.departure_time  = rclcpp::Time(2, 0, RCL_SYSTEM_TIME);
+    robotMarker.header.frame_id = "/map";
+    robotMarker.header.stamp    = _robot.last_update_time_;
+    robotMarker.id = _robot.id_;
+    robotMarker.type = visualization_msgs::msg::Marker::ARROW;
+    robotMarker.action = visualization_msgs::msg::Marker::ADD;
 
-// //     auto goal_msg = Path::Goal();   goal_msg.path_segments.clear(); 
-// //     goal_msg.path_segments.push_back(localPath);
+    robotMarker.scale.x = 0.5;
+    robotMarker.scale.y = 0.125;
+    robotMarker.scale.z = 0.125;
 
-// //     auto send_goal_options = rclcpp_action::Client<Path>::SendGoalOptions();
-// //     send_goal_options.goal_response_callback = 
-// //         std::bind(&MultibotServer::get_control_action_goal, this, std::placeholders::_1);
-// //     send_goal_options.feedback_callback = 
-// //         std::bind(&MultibotServer::get_control_action_feedback, this, std::placeholders::_1, std::placeholders::_2);
-// //     send_goal_options.result_callback = 
-// //         std::bind(&MultibotServer::get_control_action_result, this, std::placeholders::_1);
+    robotMarker.color.r = 0.5;
+    robotMarker.color.g = 0.5;
+    robotMarker.color.b = 1.0;
+    robotMarker.color.a = 1.0;
 
-// //     _control_client->async_send_goal(goal_msg, send_goal_options);
-// // }
+    robotMarker.lifetime = _robot.last_update_time_ - _robot.prior_update_time_;
 
-// // void MultibotServer::get_control_action_goal(std::shared_future<GoalHandlePath::SharedPtr> _future)
-// // {
-// //     auto goal_handle = _future.get();
-// //     if (!goal_handle)
-// //         RCLCPP_WARN(this->get_logger(), "Control goal rejected.");
-// //     else
-// //         RCLCPP_INFO(this->get_logger(), "Control goal accepted.");
-// // }
+    robotMarker.pose.position.x = _robot.robotInfo_.pose_.component_.x;
+    robotMarker.pose.position.y = _robot.robotInfo_.pose_.component_.y;
+    robotMarker.pose.position.z = 0.0;
 
-// // void MultibotServer::get_control_action_feedback(
-// //     GoalHandlePath::SharedPtr,
-// //     const std::shared_ptr<const Path::Feedback> _feedback)
-// // {
-// //     std::cout << _feedback->odom.pose.pose.position.x << ", "
-// //               << _feedback->odom.pose.pose.position.y << std::endl;
-// // }
+    tf2::Quaternion q;
+    q.setRPY(0.0, 0.0, _robot.robotInfo_.pose_.component_.theta);
+    robotMarker.pose.orientation.x = q.x();
+    robotMarker.pose.orientation.y = q.y();
+    robotMarker.pose.orientation.z = q.z();
+    robotMarker.pose.orientation.w = q.w();
 
-// void MultibotServer::get_control_action_result(const GoalHandlePath::WrappedResult &_result)
-// {
-//     switch (_result.code)
-//     {
-//         case rclcpp_action::ResultCode::SUCCEEDED:
-//         {
-//             RCLCPP_INFO(this->get_logger(), "Control action succeeded.");
-//             Position::Pose resultPose(_result.result->pose);
-//             std::cout << resultPose << std::endl;
-//             return;
-//         }
-//         case rclcpp_action::ResultCode::ABORTED:
-//         {
-//             RCLCPP_WARN(this->get_logger(), "The control action was aborted.");
-//             return;
-//         }
-//         case rclcpp_action::ResultCode::CANCELED:
-//         {
-//             RCLCPP_WARN(this->get_logger(), "The control action was canceled.");
-//             return;
-//         }
-//         default:
-//         {
-//             RCLCPP_WARN(this->get_logger(), "Unkown result code");
-//             return;
-//         }
-//     }
-// }
+    return robotMarker;
+}
 
 void MultibotServer::loadMap()
 {
@@ -295,95 +260,92 @@ void MultibotServer::loadTasks()
 
         agentList.insert(std::make_pair(agent.name_, agent));
 
-        auto singleRobot_registration = this->create_client<RobotInfo>("/" + agent.name_ + "/robotInfo");
+        auto singleRobot_registration = this->create_client<RobotInfo>("/" + agent.name_ + "/info");
         registration_request_.push_back(std::make_pair(agent.name_, singleRobot_registration));
-
-        // rclcpp_action::Client<Path>::SharedPtr singleRobot_controller_client = rclcpp_action::create_client<Path>(
-        //     this->get_node_base_interface(),
-        //     this->get_node_graph_interface(),
-        //     this->get_node_logging_interface(),
-        //     this->get_node_waitables_interface(),
-        //     "/" + agent.name_ + "/controller");
-        // controller_action_clinets_.push_back(std::make_pair(agent.name_, singleRobot_controller_client));
 
         Robot robot;
         robot.robotInfo_ = agent;
-        robot.pose_ = agent.start_.component_;
+        robot.id_        = robotList_.size();
+
+        robot.prior_update_time_ = this->now();
+        robot.last_update_time_  = this->now();
+
+        robot.state_sub_ = this->create_subscription<RobotState>(
+            "/" + agent.name_ + "/state", qos_,
+            std::bind(&MultibotServer::robotState_callback, this, std::placeholders::_1));
 
         robotList_.insert(std::make_pair(robot.robotInfo_.name_, robot));
     }
     instance_manager_.saveAgents(agentList);
 }
 
-void MultibotServer::updateRobotPose(const std::string &_robotName)
-{
-    Robot &robot = robotList_[_robotName];
-    robot.localTimer_ = robot.localTimer_ + 10ms;
+// void MultibotServer::updateRobotPose(const std::string &_robotName)
+// {
+//     Robot &robot = robotList_[_robotName];
+//     robot.localTimer_ = robot.localTimer_ + 10ms;
 
-    if (std::fabs(robot.robotInfo_.goal_.component_.x - robot.pose_.x) < 1e-8 and
-        std::fabs(robot.robotInfo_.goal_.component_.y - robot.pose_.y) < 1e-8)
-        return;
+//     if (std::fabs(robot.robotInfo_.goal_.component_.x - robot.pose_.x) < 1e-8 and
+//         std::fabs(robot.robotInfo_.goal_.component_.y - robot.pose_.y) < 1e-8)
+//         return;
 
-    double theta = std::atan2(robot.robotInfo_.goal_.component_.y - robot.robotInfo_.start_.component_.y,
-                              robot.robotInfo_.goal_.component_.x - robot.robotInfo_.start_.component_.x);
-    double max_v_x = robot.robotInfo_.max_linVel_ * std::cos(theta);
-    double max_v_y = robot.robotInfo_.max_linVel_ * std::sin(theta);
-    double max_a_x = robot.robotInfo_.max_linAcc_ * std::cos(theta);
-    double max_a_y = robot.robotInfo_.max_linAcc_ * std::sin(theta);
+//     double theta = std::atan2(robot.robotInfo_.goal_.component_.y - robot.robotInfo_.start_.component_.y,
+//                               robot.robotInfo_.goal_.component_.x - robot.robotInfo_.start_.component_.x);
+//     double max_v_x = robot.robotInfo_.max_linVel_ * std::cos(theta);
+//     double max_v_y = robot.robotInfo_.max_linVel_ * std::sin(theta);
+//     double max_a_x = robot.robotInfo_.max_linAcc_ * std::cos(theta);
+//     double max_a_y = robot.robotInfo_.max_linAcc_ * std::sin(theta);
 
-    robot.pose_.x = displacementComputer(robot.robotInfo_.start_.component_.x, robot.robotInfo_.goal_.component_.x, robot.localTimer_.count() * 1e-3, max_v_x, max_a_x);
-    robot.pose_.y = displacementComputer(robot.robotInfo_.start_.component_.y, robot.robotInfo_.goal_.component_.y, robot.localTimer_.count() * 1e-3, max_v_y, max_a_y);
-}
+//     robot.pose_.x = displacementComputer(robot.robotInfo_.start_.component_.x, robot.robotInfo_.goal_.component_.x, robot.localTimer_.count() * 1e-3, max_v_x, max_a_x);
+//     robot.pose_.y = displacementComputer(robot.robotInfo_.start_.component_.y, robot.robotInfo_.goal_.component_.y, robot.localTimer_.count() * 1e-3, max_v_y, max_a_y);
+// }
 
-double MultibotServer::displacementComputer(const double start_, const double goal_, const double t_,
-                                            const double max_velocity_, const double max_acceleration_)
-{
-    double max_s = std::fabs(goal_ - start_);
+// double MultibotServer::displacementComputer(const double start_, const double goal_, const double t_,
+//                                             const double max_velocity_, const double max_acceleration_)
+// {
+//     double max_s = std::fabs(goal_ - start_);
 
-    if (max_s < 1e-8)
-        return start_;
+//     if (max_s < 1e-8)
+//         return start_;
 
-    int sign = start_ > goal_ ? -1 : 1;
+//     int sign = start_ > goal_ ? -1 : 1;
 
-    double v = std::fabs(max_velocity_);
-    double a = std::fabs(max_acceleration_);
+//     double v = std::fabs(max_velocity_);
+//     double a = std::fabs(max_acceleration_);
 
-    double s = 0;
-    // Trapezoidal velocity profile
-    if (max_s > v * v / a)
-    {
-        if (t_ < v / a)
-            s = std::fabs(0.5 * a * t_ * t_);
-        else if (t_ < max_s / v)
-            s = std::fabs(v * t_ - 0.5 * v * v / a);
-        else
-            s = std::fabs(max_s - 0.5 * a * std::pow((max_s / v + v / a - t_), 2));
-    }
-    // Triangular velocity profile
-    else
-    {
-        if (t_ < std::fabs(0.5 * a * t_ * t_))
-            s = std::fabs(0.5 * a * t_ * t_);
-        else
-            s = std::fabs(max_s - 0.5 * a * std::pow((2 * std::sqrt(max_s / a) - t_), 2));
-    }
+//     double s = 0;
+//     // Trapezoidal velocity profile
+//     if (max_s > v * v / a)
+//     {
+//         if (t_ < v / a)
+//             s = std::fabs(0.5 * a * t_ * t_);
+//         else if (t_ < max_s / v)
+//             s = std::fabs(v * t_ - 0.5 * v * v / a);
+//         else
+//             s = std::fabs(max_s - 0.5 * a * std::pow((max_s / v + v / a - t_), 2));
+//     }
+//     // Triangular velocity profile
+//     else
+//     {
+//         if (t_ < std::fabs(0.5 * a * t_ * t_))
+//             s = std::fabs(0.5 * a * t_ * t_);
+//         else
+//             s = std::fabs(max_s - 0.5 * a * std::pow((2 * std::sqrt(max_s / a) - t_), 2));
+//     }
 
-    return (start_ + sign * s);
-}
+//     return (start_ + sign * s);
+// }
 
 MultibotServer::MultibotServer()
     : Node("server")
 {
-    auto qos = rclcpp::QoS(rclcpp::KeepLast(10));
-
     mapLoading_ = this->create_client<nav_msgs::srv::GetMap>("/map_server/map");
 
-    robot_states_pub_ = this->create_publisher<RobotStateArray>("robot_states", qos);
+    // robot_states_pub_   = this->create_publisher<RobotStateArray>("robot_states", qos_);
+    rviz_poses_pub_     = this->create_publisher<visualization_msgs::msg::MarkerArray>("robot_list", qos_);
 
-    registration_server_ = this->create_service<RobotConfigs>("registration",
-                                                              std::bind(&MultibotServer::send_robotConfigs, this, std::placeholders::_1, std::placeholders::_2));
+    // registration_server_ = this->create_service<RobotConfigs>("registration",
+    //                                                           std::bind(&MultibotServer::send_robotConfigs, this, std::placeholders::_1, std::placeholders::_2));
     registration_request_.clear();
-    // controller_action_clinets_.clear();
 
     update_timer_ = this->create_wall_timer(
         10ms, std::bind(&MultibotServer::update_callback, this));

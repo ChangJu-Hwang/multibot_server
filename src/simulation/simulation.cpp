@@ -93,59 +93,59 @@ void MultibotSim::request_registration()
 
 void MultibotSim::update_callback()
 {
-    std::vector<std::future<visualization_msgs::msg::Marker>> rviz_threads;
-    rviz_threads.clear();
+    // std::vector<std::future<visualization_msgs::msg::Marker>> rviz_threads;
+    // rviz_threads.clear();
 
     for (const auto &robot_state : robotList_)
     {
-        rviz_threads.push_back(std::async(std::launch::async, &MultibotSim::update_rviz, this, robot_state.second));
+        // rviz_threads.push_back(std::async(std::launch::async, &MultibotSim::update_rviz, this, robot_state.second));
         auto gazebo_thread = std::async(std::launch::async, &MultibotSim::update_gazebo, this, robot_state.second);
     }
 
-    visualization_msgs::msg::MarkerArray arrowArray;
-    arrowArray.markers.clear();
-    for (auto &rviz_thread : rviz_threads)
-    {
-        arrowArray.markers.push_back(rviz_thread.get());
-    }
+    // visualization_msgs::msg::MarkerArray arrowArray;
+    // arrowArray.markers.clear();
+    // for (auto &rviz_thread : rviz_threads)
+    // {
+    //     arrowArray.markers.push_back(rviz_thread.get());
+    // }
 
-    rviz_poses_pub_->publish(arrowArray);
+    // rviz_poses_pub_->publish(arrowArray);
 }
 
-visualization_msgs::msg::Marker MultibotSim::update_rviz(const Robot &_robot)
-{
-    auto robotMarker = visualization_msgs::msg::Marker();
+// visualization_msgs::msg::Marker MultibotSim::update_rviz(const Robot &_robot)
+// {
+//     auto robotMarker = visualization_msgs::msg::Marker();
 
-    robotMarker.header.frame_id = "/map";
-    robotMarker.header.stamp = _robot.time_now_;
-    robotMarker.id = _robot.id_;
-    robotMarker.type = visualization_msgs::msg::Marker::ARROW;
-    robotMarker.action = visualization_msgs::msg::Marker::ADD;
+//     robotMarker.header.frame_id = "/map";
+//     robotMarker.header.stamp = _robot.time_now_;
+//     robotMarker.id = _robot.id_;
+//     robotMarker.type = visualization_msgs::msg::Marker::ARROW;
+//     robotMarker.action = visualization_msgs::msg::Marker::ADD;
 
-    robotMarker.scale.x = 0.5;
-    robotMarker.scale.y = 0.125;
-    robotMarker.scale.z = 0.125;
+//     robotMarker.scale.x = 0.5;
+//     robotMarker.scale.y = 0.125;
+//     robotMarker.scale.z = 0.125;
 
-    robotMarker.color.r = 0.5;
-    robotMarker.color.g = 0.5;
-    robotMarker.color.b = 1.0;
-    robotMarker.color.a = 1.0;
+//     robotMarker.color.r = 0.5;
+//     robotMarker.color.g = 0.5;
+//     robotMarker.color.b = 1.0;
+//     robotMarker.color.a = 1.0;
 
-    robotMarker.lifetime = _robot.time_now_ - _robot.prior_time_;
+//     robotMarker.lifetime = _robot.time_now_ - _robot.prior_time_;
 
-    robotMarker.pose.position.x = _robot.pose_.x;
-    robotMarker.pose.position.y = _robot.pose_.y;
-    robotMarker.pose.position.z = 0.0;
+//     robotMarker.pose.position.x = _robot.pose_.x;
+//     robotMarker.pose.position.y = _robot.pose_.y;
+//     robotMarker.pose.position.z = 0.0;
 
-    tf2::Quaternion q;
-    q.setRPY(0.0, 0.0, _robot.pose_.theta);
-    robotMarker.pose.orientation.x = q.x();
-    robotMarker.pose.orientation.y = q.y();
-    robotMarker.pose.orientation.z = q.z();
-    robotMarker.pose.orientation.w = q.w();
+//     tf2::Quaternion q;
+//     q.setRPY(0.0, 0.0, _robot.pose_.theta);
+//     robotMarker.pose.orientation.x = q.x();
+//     robotMarker.pose.orientation.y = q.y();
+//     robotMarker.pose.orientation.z = q.z();
+//     robotMarker.pose.orientation.w = q.w();
 
-    return robotMarker;
-}
+//     return robotMarker;
+// }
 
 void MultibotSim::update_gazebo(const Robot &_robot)
 {
@@ -210,7 +210,7 @@ MultibotSim::MultibotSim()
 
     // robot_odom_sub_list_.clear();
 
-    rviz_poses_pub_ = this->create_publisher<visualization_msgs::msg::MarkerArray>("robot_list", qos_);
+    // rviz_poses_pub_ = this->create_publisher<visualization_msgs::msg::MarkerArray>("robot_list", qos_);
 
     robot_states_sub_ = this->create_subscription<RobotStateArray>(
         "robot_states", qos_, std::bind(&MultibotSim::robot_states_callback, this, std::placeholders::_1));
