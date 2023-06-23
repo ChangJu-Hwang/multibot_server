@@ -57,82 +57,72 @@ include CMakeFiles/server.dir/progress.make
 # Include the compile flags for this target's objects.
 include CMakeFiles/server.dir/flags.make
 
-CMakeFiles/server.dir/src/server/Instance.cpp.o: CMakeFiles/server.dir/flags.make
-CMakeFiles/server.dir/src/server/Instance.cpp.o: ../src/server/Instance.cpp
-	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --progress-dir=/home/changju/multibot_ws/src/multibot_server/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_1) "Building CXX object CMakeFiles/server.dir/src/server/Instance.cpp.o"
-	/usr/bin/c++  $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -o CMakeFiles/server.dir/src/server/Instance.cpp.o -c /home/changju/multibot_ws/src/multibot_server/src/server/Instance.cpp
+CMakeFiles/server.dir/src/Instance_Manager.cpp.o: CMakeFiles/server.dir/flags.make
+CMakeFiles/server.dir/src/Instance_Manager.cpp.o: ../src/Instance_Manager.cpp
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --progress-dir=/home/changju/multibot_ws/src/multibot_server/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_1) "Building CXX object CMakeFiles/server.dir/src/Instance_Manager.cpp.o"
+	/usr/bin/c++  $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -o CMakeFiles/server.dir/src/Instance_Manager.cpp.o -c /home/changju/multibot_ws/src/multibot_server/src/Instance_Manager.cpp
 
-CMakeFiles/server.dir/src/server/Instance.cpp.i: cmake_force
-	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Preprocessing CXX source to CMakeFiles/server.dir/src/server/Instance.cpp.i"
-	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -E /home/changju/multibot_ws/src/multibot_server/src/server/Instance.cpp > CMakeFiles/server.dir/src/server/Instance.cpp.i
+CMakeFiles/server.dir/src/Instance_Manager.cpp.i: cmake_force
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Preprocessing CXX source to CMakeFiles/server.dir/src/Instance_Manager.cpp.i"
+	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -E /home/changju/multibot_ws/src/multibot_server/src/Instance_Manager.cpp > CMakeFiles/server.dir/src/Instance_Manager.cpp.i
 
-CMakeFiles/server.dir/src/server/Instance.cpp.s: cmake_force
-	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Compiling CXX source to assembly CMakeFiles/server.dir/src/server/Instance.cpp.s"
-	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -S /home/changju/multibot_ws/src/multibot_server/src/server/Instance.cpp -o CMakeFiles/server.dir/src/server/Instance.cpp.s
+CMakeFiles/server.dir/src/Instance_Manager.cpp.s: cmake_force
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Compiling CXX source to assembly CMakeFiles/server.dir/src/Instance_Manager.cpp.s"
+	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -S /home/changju/multibot_ws/src/multibot_server/src/Instance_Manager.cpp -o CMakeFiles/server.dir/src/Instance_Manager.cpp.s
 
-CMakeFiles/server.dir/src/server/MAPF_Util.cpp.o: CMakeFiles/server.dir/flags.make
-CMakeFiles/server.dir/src/server/MAPF_Util.cpp.o: ../src/server/MAPF_Util.cpp
-	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --progress-dir=/home/changju/multibot_ws/src/multibot_server/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_2) "Building CXX object CMakeFiles/server.dir/src/server/MAPF_Util.cpp.o"
-	/usr/bin/c++  $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -o CMakeFiles/server.dir/src/server/MAPF_Util.cpp.o -c /home/changju/multibot_ws/src/multibot_server/src/server/MAPF_Util.cpp
+CMakeFiles/server.dir/src/main.cpp.o: CMakeFiles/server.dir/flags.make
+CMakeFiles/server.dir/src/main.cpp.o: ../src/main.cpp
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --progress-dir=/home/changju/multibot_ws/src/multibot_server/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_2) "Building CXX object CMakeFiles/server.dir/src/main.cpp.o"
+	/usr/bin/c++  $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -o CMakeFiles/server.dir/src/main.cpp.o -c /home/changju/multibot_ws/src/multibot_server/src/main.cpp
 
-CMakeFiles/server.dir/src/server/MAPF_Util.cpp.i: cmake_force
-	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Preprocessing CXX source to CMakeFiles/server.dir/src/server/MAPF_Util.cpp.i"
-	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -E /home/changju/multibot_ws/src/multibot_server/src/server/MAPF_Util.cpp > CMakeFiles/server.dir/src/server/MAPF_Util.cpp.i
+CMakeFiles/server.dir/src/main.cpp.i: cmake_force
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Preprocessing CXX source to CMakeFiles/server.dir/src/main.cpp.i"
+	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -E /home/changju/multibot_ws/src/multibot_server/src/main.cpp > CMakeFiles/server.dir/src/main.cpp.i
 
-CMakeFiles/server.dir/src/server/MAPF_Util.cpp.s: cmake_force
-	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Compiling CXX source to assembly CMakeFiles/server.dir/src/server/MAPF_Util.cpp.s"
-	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -S /home/changju/multibot_ws/src/multibot_server/src/server/MAPF_Util.cpp -o CMakeFiles/server.dir/src/server/MAPF_Util.cpp.s
+CMakeFiles/server.dir/src/main.cpp.s: cmake_force
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Compiling CXX source to assembly CMakeFiles/server.dir/src/main.cpp.s"
+	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -S /home/changju/multibot_ws/src/multibot_server/src/main.cpp -o CMakeFiles/server.dir/src/main.cpp.s
 
-CMakeFiles/server.dir/src/server/main.cpp.o: CMakeFiles/server.dir/flags.make
-CMakeFiles/server.dir/src/server/main.cpp.o: ../src/server/main.cpp
-	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --progress-dir=/home/changju/multibot_ws/src/multibot_server/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_3) "Building CXX object CMakeFiles/server.dir/src/server/main.cpp.o"
-	/usr/bin/c++  $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -o CMakeFiles/server.dir/src/server/main.cpp.o -c /home/changju/multibot_ws/src/multibot_server/src/server/main.cpp
+CMakeFiles/server.dir/src/server.cpp.o: CMakeFiles/server.dir/flags.make
+CMakeFiles/server.dir/src/server.cpp.o: ../src/server.cpp
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --progress-dir=/home/changju/multibot_ws/src/multibot_server/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_3) "Building CXX object CMakeFiles/server.dir/src/server.cpp.o"
+	/usr/bin/c++  $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -o CMakeFiles/server.dir/src/server.cpp.o -c /home/changju/multibot_ws/src/multibot_server/src/server.cpp
 
-CMakeFiles/server.dir/src/server/main.cpp.i: cmake_force
-	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Preprocessing CXX source to CMakeFiles/server.dir/src/server/main.cpp.i"
-	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -E /home/changju/multibot_ws/src/multibot_server/src/server/main.cpp > CMakeFiles/server.dir/src/server/main.cpp.i
+CMakeFiles/server.dir/src/server.cpp.i: cmake_force
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Preprocessing CXX source to CMakeFiles/server.dir/src/server.cpp.i"
+	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -E /home/changju/multibot_ws/src/multibot_server/src/server.cpp > CMakeFiles/server.dir/src/server.cpp.i
 
-CMakeFiles/server.dir/src/server/main.cpp.s: cmake_force
-	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Compiling CXX source to assembly CMakeFiles/server.dir/src/server/main.cpp.s"
-	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -S /home/changju/multibot_ws/src/multibot_server/src/server/main.cpp -o CMakeFiles/server.dir/src/server/main.cpp.s
-
-CMakeFiles/server.dir/src/server/server.cpp.o: CMakeFiles/server.dir/flags.make
-CMakeFiles/server.dir/src/server/server.cpp.o: ../src/server/server.cpp
-	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --progress-dir=/home/changju/multibot_ws/src/multibot_server/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_4) "Building CXX object CMakeFiles/server.dir/src/server/server.cpp.o"
-	/usr/bin/c++  $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -o CMakeFiles/server.dir/src/server/server.cpp.o -c /home/changju/multibot_ws/src/multibot_server/src/server/server.cpp
-
-CMakeFiles/server.dir/src/server/server.cpp.i: cmake_force
-	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Preprocessing CXX source to CMakeFiles/server.dir/src/server/server.cpp.i"
-	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -E /home/changju/multibot_ws/src/multibot_server/src/server/server.cpp > CMakeFiles/server.dir/src/server/server.cpp.i
-
-CMakeFiles/server.dir/src/server/server.cpp.s: cmake_force
-	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Compiling CXX source to assembly CMakeFiles/server.dir/src/server/server.cpp.s"
-	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -S /home/changju/multibot_ws/src/multibot_server/src/server/server.cpp -o CMakeFiles/server.dir/src/server/server.cpp.s
+CMakeFiles/server.dir/src/server.cpp.s: cmake_force
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Compiling CXX source to assembly CMakeFiles/server.dir/src/server.cpp.s"
+	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -S /home/changju/multibot_ws/src/multibot_server/src/server.cpp -o CMakeFiles/server.dir/src/server.cpp.s
 
 # Object files for target server
 server_OBJECTS = \
-"CMakeFiles/server.dir/src/server/Instance.cpp.o" \
-"CMakeFiles/server.dir/src/server/MAPF_Util.cpp.o" \
-"CMakeFiles/server.dir/src/server/main.cpp.o" \
-"CMakeFiles/server.dir/src/server/server.cpp.o"
+"CMakeFiles/server.dir/src/Instance_Manager.cpp.o" \
+"CMakeFiles/server.dir/src/main.cpp.o" \
+"CMakeFiles/server.dir/src/server.cpp.o"
 
 # External object files for target server
 server_EXTERNAL_OBJECTS =
 
-server: CMakeFiles/server.dir/src/server/Instance.cpp.o
-server: CMakeFiles/server.dir/src/server/MAPF_Util.cpp.o
-server: CMakeFiles/server.dir/src/server/main.cpp.o
-server: CMakeFiles/server.dir/src/server/server.cpp.o
+server: CMakeFiles/server.dir/src/Instance_Manager.cpp.o
+server: CMakeFiles/server.dir/src/main.cpp.o
+server: CMakeFiles/server.dir/src/server.cpp.o
 server: CMakeFiles/server.dir/build.make
 server: /opt/ros/foxy/lib/librclcpp.so
 server: /opt/ros/foxy/lib/libnav_msgs__rosidl_typesupport_introspection_c.so
 server: /opt/ros/foxy/lib/libnav_msgs__rosidl_typesupport_c.so
 server: /opt/ros/foxy/lib/libnav_msgs__rosidl_typesupport_introspection_cpp.so
 server: /opt/ros/foxy/lib/libnav_msgs__rosidl_typesupport_cpp.so
+server: /opt/ros/foxy/lib/libvisualization_msgs__rosidl_typesupport_introspection_c.so
+server: /opt/ros/foxy/lib/libvisualization_msgs__rosidl_typesupport_c.so
+server: /opt/ros/foxy/lib/libvisualization_msgs__rosidl_typesupport_introspection_cpp.so
+server: /opt/ros/foxy/lib/libvisualization_msgs__rosidl_typesupport_cpp.so
 server: /home/changju/multibot_ws/install/multibot_ros2_interface/lib/libmultibot_ros2_interface__rosidl_typesupport_introspection_c.so
 server: /home/changju/multibot_ws/install/multibot_ros2_interface/lib/libmultibot_ros2_interface__rosidl_typesupport_c.so
 server: /home/changju/multibot_ws/install/multibot_ros2_interface/lib/libmultibot_ros2_interface__rosidl_typesupport_introspection_cpp.so
 server: /home/changju/multibot_ws/install/multibot_ros2_interface/lib/libmultibot_ros2_interface__rosidl_typesupport_cpp.so
+server: /home/changju/multibot_ws/install/multibot_util/lib/libmultibot_util.so
 server: /usr/lib/x86_64-linux-gnu/libyaml-cpp.so.0.6.2
 server: /opt/ros/foxy/lib/liblibstatistics_collector.so
 server: /opt/ros/foxy/lib/liblibstatistics_collector_test_msgs__rosidl_typesupport_introspection_c.so
@@ -164,6 +154,7 @@ server: /opt/ros/foxy/lib/libstatistics_msgs__rosidl_typesupport_introspection_c
 server: /opt/ros/foxy/lib/libstatistics_msgs__rosidl_typesupport_cpp.so
 server: /opt/ros/foxy/lib/libtracetools.so
 server: /opt/ros/foxy/lib/libnav_msgs__rosidl_generator_c.so
+server: /opt/ros/foxy/lib/libvisualization_msgs__rosidl_generator_c.so
 server: /home/changju/multibot_ws/install/multibot_ros2_interface/lib/libmultibot_ros2_interface__rosidl_generator_c.so
 server: /opt/ros/foxy/lib/libgeometry_msgs__rosidl_typesupport_introspection_c.so
 server: /opt/ros/foxy/lib/libgeometry_msgs__rosidl_generator_c.so
@@ -188,7 +179,7 @@ server: /opt/ros/foxy/lib/librcpputils.so
 server: /opt/ros/foxy/lib/librosidl_runtime_c.so
 server: /opt/ros/foxy/lib/librcutils.so
 server: CMakeFiles/server.dir/link.txt
-	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --bold --progress-dir=/home/changju/multibot_ws/src/multibot_server/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_5) "Linking CXX executable server"
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --bold --progress-dir=/home/changju/multibot_ws/src/multibot_server/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_4) "Linking CXX executable server"
 	$(CMAKE_COMMAND) -E cmake_link_script CMakeFiles/server.dir/link.txt --verbose=$(VERBOSE)
 
 # Rule to build all files generated by this target.

@@ -1,10 +1,9 @@
+/home/changju/multibot_ws/src/multibot_server/build/CMakeFiles/install/strip.dir
 /home/changju/multibot_ws/src/multibot_server/build/CMakeFiles/install.dir
 /home/changju/multibot_ws/src/multibot_server/build/CMakeFiles/list_install_components.dir
 /home/changju/multibot_ws/src/multibot_server/build/CMakeFiles/rebuild_cache.dir
 /home/changju/multibot_ws/src/multibot_server/build/CMakeFiles/edit_cache.dir
 /home/changju/multibot_ws/src/multibot_server/build/CMakeFiles/test.dir
-/home/changju/multibot_ws/src/multibot_server/build/CMakeFiles/install/strip.dir
-/home/changju/multibot_ws/src/multibot_server/build/CMakeFiles/simulation.dir
 /home/changju/multibot_ws/src/multibot_server/build/CMakeFiles/install/local.dir
 /home/changju/multibot_ws/src/multibot_server/build/CMakeFiles/server.dir
 /home/changju/multibot_ws/src/multibot_server/build/CMakeFiles/multibot_server_uninstall.dir

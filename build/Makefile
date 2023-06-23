@@ -56,6 +56,18 @@ CMAKE_BINARY_DIR = /home/changju/multibot_ws/src/multibot_server/build
 #=============================================================================
 # Targets provided globally by CMake.
 
+# Special rule for the target install/strip
+install/strip: preinstall
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --cyan "Installing the project stripped..."
+	/usr/bin/cmake -DCMAKE_INSTALL_DO_STRIP=1 -P cmake_install.cmake
+.PHONY : install/strip
+
+# Special rule for the target install/strip
+install/strip/fast: preinstall/fast
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --cyan "Installing the project stripped..."
+	/usr/bin/cmake -DCMAKE_INSTALL_DO_STRIP=1 -P cmake_install.cmake
+.PHONY : install/strip/fast
+
 # Special rule for the target install
 install: preinstall
 	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --cyan "Install the project..."
@@ -111,18 +123,6 @@ test/fast: test
 
 .PHONY : test/fast
 
-# Special rule for the target install/strip
-install/strip: preinstall
-	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --cyan "Installing the project stripped..."
-	/usr/bin/cmake -DCMAKE_INSTALL_DO_STRIP=1 -P cmake_install.cmake
-.PHONY : install/strip
-
-# Special rule for the target install/strip
-install/strip/fast: preinstall/fast
-	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --cyan "Installing the project stripped..."
-	/usr/bin/cmake -DCMAKE_INSTALL_DO_STRIP=1 -P cmake_install.cmake
-.PHONY : install/strip/fast
-
 # Special rule for the target install/local
 install/local: preinstall
 	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --cyan "Installing only the local directory..."
@@ -168,19 +168,6 @@ depend:
 .PHONY : depend
 
 #=============================================================================
-# Target rules for targets named simulation
-
-# Build rule for target.
-simulation: cmake_check_build_system
-	$(MAKE) -f CMakeFiles/Makefile2 simulation
-.PHONY : simulation
-
-# fast build rule for target.
-simulation/fast:
-	$(MAKE) -f CMakeFiles/simulation.dir/build.make CMakeFiles/simulation.dir/build
-.PHONY : simulation/fast
-
-#=============================================================================
 # Target rules for targets named server
 
 # Build rule for target.
@@ -219,167 +206,86 @@ uninstall/fast:
 	$(MAKE) -f CMakeFiles/uninstall.dir/build.make CMakeFiles/uninstall.dir/build
 .PHONY : uninstall/fast
 
-src/server/Instance.o: src/server/Instance.cpp.o
+src/Instance_Manager.o: src/Instance_Manager.cpp.o
 
-.PHONY : src/server/Instance.o
-
-# target to build an object file
-src/server/Instance.cpp.o:
-	$(MAKE) -f CMakeFiles/server.dir/build.make CMakeFiles/server.dir/src/server/Instance.cpp.o
-.PHONY : src/server/Instance.cpp.o
-
-src/server/Instance.i: src/server/Instance.cpp.i
-
-.PHONY : src/server/Instance.i
-
-# target to preprocess a source file
-src/server/Instance.cpp.i:
-	$(MAKE) -f CMakeFiles/server.dir/build.make CMakeFiles/server.dir/src/server/Instance.cpp.i
-.PHONY : src/server/Instance.cpp.i
-
-src/server/Instance.s: src/server/Instance.cpp.s
-
-.PHONY : src/server/Instance.s
-
-# target to generate assembly for a file
-src/server/Instance.cpp.s:
-	$(MAKE) -f CMakeFiles/server.dir/build.make CMakeFiles/server.dir/src/server/Instance.cpp.s
-.PHONY : src/server/Instance.cpp.s
-
-src/server/MAPF_Util.o: src/server/MAPF_Util.cpp.o
-
-.PHONY : src/server/MAPF_Util.o
+.PHONY : src/Instance_Manager.o
 
 # target to build an object file
-src/server/MAPF_Util.cpp.o:
-	$(MAKE) -f CMakeFiles/server.dir/build.make CMakeFiles/server.dir/src/server/MAPF_Util.cpp.o
-.PHONY : src/server/MAPF_Util.cpp.o
+src/Instance_Manager.cpp.o:
+	$(MAKE) -f CMakeFiles/server.dir/build.make CMakeFiles/server.dir/src/Instance_Manager.cpp.o
+.PHONY : src/Instance_Manager.cpp.o
 
-src/server/MAPF_Util.i: src/server/MAPF_Util.cpp.i
+src/Instance_Manager.i: src/Instance_Manager.cpp.i
 
-.PHONY : src/server/MAPF_Util.i
+.PHONY : src/Instance_Manager.i
 
 # target to preprocess a source file
-src/server/MAPF_Util.cpp.i:
-	$(MAKE) -f CMakeFiles/server.dir/build.make CMakeFiles/server.dir/src/server/MAPF_Util.cpp.i
-.PHONY : src/server/MAPF_Util.cpp.i
+src/Instance_Manager.cpp.i:
+	$(MAKE) -f CMakeFiles/server.dir/build.make CMakeFiles/server.dir/src/Instance_Manager.cpp.i
+.PHONY : src/Instance_Manager.cpp.i
 
-src/server/MAPF_Util.s: src/server/MAPF_Util.cpp.s
+src/Instance_Manager.s: src/Instance_Manager.cpp.s
 
-.PHONY : src/server/MAPF_Util.s
+.PHONY : src/Instance_Manager.s
 
 # target to generate assembly for a file
-src/server/MAPF_Util.cpp.s:
-	$(MAKE) -f CMakeFiles/server.dir/build.make CMakeFiles/server.dir/src/server/MAPF_Util.cpp.s
-.PHONY : src/server/MAPF_Util.cpp.s
+src/Instance_Manager.cpp.s:
+	$(MAKE) -f CMakeFiles/server.dir/build.make CMakeFiles/server.dir/src/Instance_Manager.cpp.s
+.PHONY : src/Instance_Manager.cpp.s
 
-src/server/main.o: src/server/main.cpp.o
+src/main.o: src/main.cpp.o
 
-.PHONY : src/server/main.o
+.PHONY : src/main.o
 
 # target to build an object file
-src/server/main.cpp.o:
-	$(MAKE) -f CMakeFiles/server.dir/build.make CMakeFiles/server.dir/src/server/main.cpp.o
-.PHONY : src/server/main.cpp.o
+src/main.cpp.o:
+	$(MAKE) -f CMakeFiles/server.dir/build.make CMakeFiles/server.dir/src/main.cpp.o
+.PHONY : src/main.cpp.o
 
-src/server/main.i: src/server/main.cpp.i
+src/main.i: src/main.cpp.i
 
-.PHONY : src/server/main.i
+.PHONY : src/main.i
 
 # target to preprocess a source file
-src/server/main.cpp.i:
-	$(MAKE) -f CMakeFiles/server.dir/build.make CMakeFiles/server.dir/src/server/main.cpp.i
-.PHONY : src/server/main.cpp.i
+src/main.cpp.i:
+	$(MAKE) -f CMakeFiles/server.dir/build.make CMakeFiles/server.dir/src/main.cpp.i
+.PHONY : src/main.cpp.i
 
-src/server/main.s: src/server/main.cpp.s
+src/main.s: src/main.cpp.s
 
-.PHONY : src/server/main.s
+.PHONY : src/main.s
 
 # target to generate assembly for a file
-src/server/main.cpp.s:
-	$(MAKE) -f CMakeFiles/server.dir/build.make CMakeFiles/server.dir/src/server/main.cpp.s
-.PHONY : src/server/main.cpp.s
+src/main.cpp.s:
+	$(MAKE) -f CMakeFiles/server.dir/build.make CMakeFiles/server.dir/src/main.cpp.s
+.PHONY : src/main.cpp.s
 
-src/server/server.o: src/server/server.cpp.o
+src/server.o: src/server.cpp.o
 
-.PHONY : src/server/server.o
+.PHONY : src/server.o
 
 # target to build an object file
-src/server/server.cpp.o:
-	$(MAKE) -f CMakeFiles/server.dir/build.make CMakeFiles/server.dir/src/server/server.cpp.o
-.PHONY : src/server/server.cpp.o
+src/server.cpp.o:
+	$(MAKE) -f CMakeFiles/server.dir/build.make CMakeFiles/server.dir/src/server.cpp.o
+.PHONY : src/server.cpp.o
 
-src/server/server.i: src/server/server.cpp.i
+src/server.i: src/server.cpp.i
 
-.PHONY : src/server/server.i
-
-# target to preprocess a source file
-src/server/server.cpp.i:
-	$(MAKE) -f CMakeFiles/server.dir/build.make CMakeFiles/server.dir/src/server/server.cpp.i
-.PHONY : src/server/server.cpp.i
-
-src/server/server.s: src/server/server.cpp.s
-
-.PHONY : src/server/server.s
-
-# target to generate assembly for a file
-src/server/server.cpp.s:
-	$(MAKE) -f CMakeFiles/server.dir/build.make CMakeFiles/server.dir/src/server/server.cpp.s
-.PHONY : src/server/server.cpp.s
-
-src/simulation/main.o: src/simulation/main.cpp.o
-
-.PHONY : src/simulation/main.o
-
-# target to build an object file
-src/simulation/main.cpp.o:
-	$(MAKE) -f CMakeFiles/simulation.dir/build.make CMakeFiles/simulation.dir/src/simulation/main.cpp.o
-.PHONY : src/simulation/main.cpp.o
-
-src/simulation/main.i: src/simulation/main.cpp.i
-
-.PHONY : src/simulation/main.i
+.PHONY : src/server.i
 
 # target to preprocess a source file
-src/simulation/main.cpp.i:
-	$(MAKE) -f CMakeFiles/simulation.dir/build.make CMakeFiles/simulation.dir/src/simulation/main.cpp.i
-.PHONY : src/simulation/main.cpp.i
+src/server.cpp.i:
+	$(MAKE) -f CMakeFiles/server.dir/build.make CMakeFiles/server.dir/src/server.cpp.i
+.PHONY : src/server.cpp.i
 
-src/simulation/main.s: src/simulation/main.cpp.s
+src/server.s: src/server.cpp.s
 
-.PHONY : src/simulation/main.s
-
-# target to generate assembly for a file
-src/simulation/main.cpp.s:
-	$(MAKE) -f CMakeFiles/simulation.dir/build.make CMakeFiles/simulation.dir/src/simulation/main.cpp.s
-.PHONY : src/simulation/main.cpp.s
-
-src/simulation/simulation.o: src/simulation/simulation.cpp.o
-
-.PHONY : src/simulation/simulation.o
-
-# target to build an object file
-src/simulation/simulation.cpp.o:
-	$(MAKE) -f CMakeFiles/simulation.dir/build.make CMakeFiles/simulation.dir/src/simulation/simulation.cpp.o
-.PHONY : src/simulation/simulation.cpp.o
-
-src/simulation/simulation.i: src/simulation/simulation.cpp.i
-
-.PHONY : src/simulation/simulation.i
-
-# target to preprocess a source file
-src/simulation/simulation.cpp.i:
-	$(MAKE) -f CMakeFiles/simulation.dir/build.make CMakeFiles/simulation.dir/src/simulation/simulation.cpp.i
-.PHONY : src/simulation/simulation.cpp.i
-
-src/simulation/simulation.s: src/simulation/simulation.cpp.s
-
-.PHONY : src/simulation/simulation.s
+.PHONY : src/server.s
 
 # target to generate assembly for a file
-src/simulation/simulation.cpp.s:
-	$(MAKE) -f CMakeFiles/simulation.dir/build.make CMakeFiles/simulation.dir/src/simulation/simulation.cpp.s
-.PHONY : src/simulation/simulation.cpp.s
+src/server.cpp.s:
+	$(MAKE) -f CMakeFiles/server.dir/build.make CMakeFiles/server.dir/src/server.cpp.s
+.PHONY : src/server.cpp.s
 
 # Help Target
 help:
@@ -387,35 +293,25 @@ help:
 	@echo "... all (the default if no target is provided)"
 	@echo "... clean"
 	@echo "... depend"
+	@echo "... install/strip"
 	@echo "... install"
 	@echo "... list_install_components"
 	@echo "... rebuild_cache"
 	@echo "... edit_cache"
 	@echo "... test"
-	@echo "... install/strip"
-	@echo "... simulation"
 	@echo "... install/local"
 	@echo "... server"
 	@echo "... multibot_server_uninstall"
 	@echo "... uninstall"
-	@echo "... src/server/Instance.o"
-	@echo "... src/server/Instance.i"
-	@echo "... src/server/Instance.s"
-	@echo "... src/server/MAPF_Util.o"
-	@echo "... src/server/MAPF_Util.i"
-	@echo "... src/server/MAPF_Util.s"
-	@echo "... src/server/main.o"
-	@echo "... src/server/main.i"
-	@echo "... src/server/main.s"
-	@echo "... src/server/server.o"
-	@echo "... src/server/server.i"
-	@echo "... src/server/server.s"
-	@echo "... src/simulation/main.o"
-	@echo "... src/simulation/main.i"
-	@echo "... src/simulation/main.s"
-	@echo "... src/simulation/simulation.o"
-	@echo "... src/simulation/simulation.i"
-	@echo "... src/simulation/simulation.s"
+	@echo "... src/Instance_Manager.o"
+	@echo "... src/Instance_Manager.i"
+	@echo "... src/Instance_Manager.s"
+	@echo "... src/main.o"
+	@echo "... src/main.i"
+	@echo "... src/main.s"
+	@echo "... src/server.o"
+	@echo "... src/server.i"
+	@echo "... src/server.s"
 .PHONY : help
 
 

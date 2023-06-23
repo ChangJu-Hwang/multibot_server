@@ -68,7 +68,9 @@
         "typeinfo": "cpp",
         "variant": "cpp",
         "bit": "cpp",
-        "queue": "cpp"
+        "queue": "cpp",
+        "hash_map": "cpp",
+        "hash_set": "cpp"
     },
     "python.autoComplete.extraPaths": [
         "/opt/ros/foxy/lib/python3.8/site-packages"

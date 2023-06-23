@@ -17,6 +17,7 @@ import yaml
 def generate_launch_description():
     # Get the launch directory
     multibot_server_dir = get_package_share_directory('multibot_server')
+    multibot_robot_dir  = get_package_share_directory('multibot_robot')
 
     # Launch argument setting
     lifecycle_nodes = ['map_server']
@@ -37,9 +38,14 @@ def generate_launch_description():
         description='Whether to execute gzclient'
     )
 
+    # declare_world_cmd = DeclareLaunchArgument(
+    #     'world',
+    #     default_value=os.path.join(multibot_server_dir, 'worlds', 'testbed.world'),
+    #     description='Full path to world model file to load'
+    # )
     declare_world_cmd = DeclareLaunchArgument(
         'world',
-        default_value=os.path.join(multibot_server_dir, 'worlds', 'testbed.world'),
+        default_value=os.path.join(multibot_server_dir, 'worlds', 'modified_testbed.world'),
         description='Full path to world model file to load'
     )
 
@@ -83,6 +89,21 @@ def generate_launch_description():
                     ]
     )
 
+    with open(os.path.join(multibot_server_dir, 'maps', 'map_server_params.yaml')) as map_server_params:
+        map_server_params = yaml.load(map_server_params, Loader=yaml.Loader)
+        map_param_dir = map_server_params['map_server']['ros__parameters']['yaml_filename']
+
+        with open(os.path.join(map_param_dir)) as map_params:
+            map_params = yaml.load(map_params, Loader=yaml.Loader)
+            map_origin = map_params['origin']
+
+    world_map_cmd = Node(
+        package='tf2_ros',
+        executable='static_transform_publisher',
+        output='screen',
+        arguments=[str(map_origin[0]), str(map_origin[0]), '0', '0', '0', '0', 'world', 'map']
+    )
+
     # lifecycle manager
     start_lifecycle_manager_cmd = launch_ros.actions.Node(
             package='nav2_lifecycle_manager',
@@ -114,16 +135,18 @@ def generate_launch_description():
         for agent in agents:
             spawn_robots_cmds.append(
                 IncludeLaunchDescription(
-                    PythonLaunchDescriptionSource(os.path.join(multibot_server_dir, 'launch',
-                                                            'spawn_robot_launch.py')),
+                    PythonLaunchDescriptionSource(os.path.join(multibot_robot_dir, 'launch',
+                                                            'multibot_robot_simul_launch.py')),
                     launch_arguments={
                         'robot_namespace': agent['name'],
                         'robot_name': agent['name'],
-                        'sdf_file': os.path.join(multibot_server_dir, 'models',
+                        'sdf_file': os.path.join(multibot_robot_dir, 'models',
                                                  agent['type'], 'model.sdf'),
                         'x': str(agent['start']['x']),
                         'y': str(agent['start']['y']),
-                        'Y': str(agent['start']['theta'])
+                        'Y': str(agent['start']['theta']),
+                        'linear_tolerance': '0.10',
+                        'angular_tolerance': '0.015'
                     }.items()
                 )
             )
@@ -138,13 +161,6 @@ def generate_launch_description():
                     {'task_fPath': os.path.join(multibot_server_dir, 'task', 'multibot_task.yaml')}]
     )
 
-    multibot_simulation_cmd = Node(
-        package='multibot_server',
-        executable='simulation',
-        name='simulation',
-        output='screen'
-    )
-
     # Create the launch description and populate
     ld = LaunchDescription()
 
@@ -156,6 +172,7 @@ def generate_launch_description():
     # Add any conditioned actions
     ld.add_action(start_rviz_cmd)
     ld.add_action(map_server_cmd)
+    ld.add_action(world_map_cmd)
     ld.add_action(start_lifecycle_manager_cmd)
 
     ld.add_action(start_gazebo_server_cmd)
@@ -165,6 +182,5 @@ def generate_launch_description():
         ld.add_action(spawn_robot_cmd)
 
     ld.add_action(multibot_server_cmd)
-    ld.add_action(multibot_simulation_cmd)
 
     return ld
