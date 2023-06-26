@@ -1,7 +1,6 @@
 #include "multibot_server/server.hpp"
 
 #include <yaml-cpp/yaml.h> // Need to install libyaml-cpp-dev
-#include <typeinfo>
 
 #include <tf2/LinearMath/Quaternion.h>
 
@@ -29,6 +28,11 @@ void MultibotServer::request_registrations()
         }
         request_registration(single_request.first, single_request.second);
     }
+}
+
+void MultibotServer::plan_multibots()
+{
+    solver_->solve();
 }
 
 void MultibotServer::request_controls()

@@ -206,6 +206,60 @@ uninstall/fast:
 	$(MAKE) -f CMakeFiles/uninstall.dir/build.make CMakeFiles/uninstall.dir/build
 .PHONY : uninstall/fast
 
+src/AA_SIPP.o: src/AA_SIPP.cpp.o
+
+.PHONY : src/AA_SIPP.o
+
+# target to build an object file
+src/AA_SIPP.cpp.o:
+	$(MAKE) -f CMakeFiles/server.dir/build.make CMakeFiles/server.dir/src/AA_SIPP.cpp.o
+.PHONY : src/AA_SIPP.cpp.o
+
+src/AA_SIPP.i: src/AA_SIPP.cpp.i
+
+.PHONY : src/AA_SIPP.i
+
+# target to preprocess a source file
+src/AA_SIPP.cpp.i:
+	$(MAKE) -f CMakeFiles/server.dir/build.make CMakeFiles/server.dir/src/AA_SIPP.cpp.i
+.PHONY : src/AA_SIPP.cpp.i
+
+src/AA_SIPP.s: src/AA_SIPP.cpp.s
+
+.PHONY : src/AA_SIPP.s
+
+# target to generate assembly for a file
+src/AA_SIPP.cpp.s:
+	$(MAKE) -f CMakeFiles/server.dir/build.make CMakeFiles/server.dir/src/AA_SIPP.cpp.s
+.PHONY : src/AA_SIPP.cpp.s
+
+src/CPBS.o: src/CPBS.cpp.o
+
+.PHONY : src/CPBS.o
+
+# target to build an object file
+src/CPBS.cpp.o:
+	$(MAKE) -f CMakeFiles/server.dir/build.make CMakeFiles/server.dir/src/CPBS.cpp.o
+.PHONY : src/CPBS.cpp.o
+
+src/CPBS.i: src/CPBS.cpp.i
+
+.PHONY : src/CPBS.i
+
+# target to preprocess a source file
+src/CPBS.cpp.i:
+	$(MAKE) -f CMakeFiles/server.dir/build.make CMakeFiles/server.dir/src/CPBS.cpp.i
+.PHONY : src/CPBS.cpp.i
+
+src/CPBS.s: src/CPBS.cpp.s
+
+.PHONY : src/CPBS.s
+
+# target to generate assembly for a file
+src/CPBS.cpp.s:
+	$(MAKE) -f CMakeFiles/server.dir/build.make CMakeFiles/server.dir/src/CPBS.cpp.s
+.PHONY : src/CPBS.cpp.s
+
 src/Instance_Manager.o: src/Instance_Manager.cpp.o
 
 .PHONY : src/Instance_Manager.o
@@ -303,6 +357,12 @@ help:
 	@echo "... server"
 	@echo "... multibot_server_uninstall"
 	@echo "... uninstall"
+	@echo "... src/AA_SIPP.o"
+	@echo "... src/AA_SIPP.i"
+	@echo "... src/AA_SIPP.s"
+	@echo "... src/CPBS.o"
+	@echo "... src/CPBS.i"
+	@echo "... src/CPBS.s"
 	@echo "... src/Instance_Manager.o"
 	@echo "... src/Instance_Manager.i"
 	@echo "... src/Instance_Manager.s"

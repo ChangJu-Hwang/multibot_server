@@ -1,4 +1,6 @@
 file(REMOVE_RECURSE
+  "CMakeFiles/server.dir/src/AA_SIPP.cpp.o"
+  "CMakeFiles/server.dir/src/CPBS.cpp.o"
   "CMakeFiles/server.dir/src/Instance_Manager.cpp.o"
   "CMakeFiles/server.dir/src/main.cpp.o"
   "CMakeFiles/server.dir/src/server.cpp.o"

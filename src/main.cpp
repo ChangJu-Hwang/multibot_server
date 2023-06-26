@@ -9,6 +9,8 @@ int main(int argc, char * argv[])
     auto server = std::make_shared<Server::MultibotServer>();
     server->loadInstances();
     server->request_registrations();
+    
+    server->plan_multibots();
     server->request_controls();
 
     rclcpp::spin(server);
