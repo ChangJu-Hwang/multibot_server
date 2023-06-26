@@ -10,8 +10,6 @@ std::pair<Path::SinglePath, bool> AA_SIPP::Planner::search(
 {
     std::cout << "AA_SIPP::Planner::search" << std::endl;
 
-    std::cout << agents_[_agentName] << std::endl;
-
     return find_partial_path(
         _agentName,
         std::list<Time::TimeInterval>(),
@@ -32,5 +30,6 @@ AA_SIPP::Planner::Planner(std::shared_ptr<Instance_Manager> _instance_manager)
 {
     _instance_manager->attach(*this);
 
+    _instance_manager->attach(*(map_utility_));
     _instance_manager->attach(*(motion_manager_));
 }

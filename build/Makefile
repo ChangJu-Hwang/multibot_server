@@ -233,6 +233,33 @@ src/AA_SIPP.cpp.s:
 	$(MAKE) -f CMakeFiles/server.dir/build.make CMakeFiles/server.dir/src/AA_SIPP.cpp.s
 .PHONY : src/AA_SIPP.cpp.s
 
+src/AA_SIPP_Map_Utility.o: src/AA_SIPP_Map_Utility.cpp.o
+
+.PHONY : src/AA_SIPP_Map_Utility.o
+
+# target to build an object file
+src/AA_SIPP_Map_Utility.cpp.o:
+	$(MAKE) -f CMakeFiles/server.dir/build.make CMakeFiles/server.dir/src/AA_SIPP_Map_Utility.cpp.o
+.PHONY : src/AA_SIPP_Map_Utility.cpp.o
+
+src/AA_SIPP_Map_Utility.i: src/AA_SIPP_Map_Utility.cpp.i
+
+.PHONY : src/AA_SIPP_Map_Utility.i
+
+# target to preprocess a source file
+src/AA_SIPP_Map_Utility.cpp.i:
+	$(MAKE) -f CMakeFiles/server.dir/build.make CMakeFiles/server.dir/src/AA_SIPP_Map_Utility.cpp.i
+.PHONY : src/AA_SIPP_Map_Utility.cpp.i
+
+src/AA_SIPP_Map_Utility.s: src/AA_SIPP_Map_Utility.cpp.s
+
+.PHONY : src/AA_SIPP_Map_Utility.s
+
+# target to generate assembly for a file
+src/AA_SIPP_Map_Utility.cpp.s:
+	$(MAKE) -f CMakeFiles/server.dir/build.make CMakeFiles/server.dir/src/AA_SIPP_Map_Utility.cpp.s
+.PHONY : src/AA_SIPP_Map_Utility.cpp.s
+
 src/AA_SIPP_Motion.o: src/AA_SIPP_Motion.cpp.o
 
 .PHONY : src/AA_SIPP_Motion.o
@@ -341,33 +368,6 @@ src/Instance_Manager.cpp.s:
 	$(MAKE) -f CMakeFiles/server.dir/build.make CMakeFiles/server.dir/src/Instance_Manager.cpp.s
 .PHONY : src/Instance_Manager.cpp.s
 
-src/Map_Utility_Manager.o: src/Map_Utility_Manager.cpp.o
-
-.PHONY : src/Map_Utility_Manager.o
-
-# target to build an object file
-src/Map_Utility_Manager.cpp.o:
-	$(MAKE) -f CMakeFiles/server.dir/build.make CMakeFiles/server.dir/src/Map_Utility_Manager.cpp.o
-.PHONY : src/Map_Utility_Manager.cpp.o
-
-src/Map_Utility_Manager.i: src/Map_Utility_Manager.cpp.i
-
-.PHONY : src/Map_Utility_Manager.i
-
-# target to preprocess a source file
-src/Map_Utility_Manager.cpp.i:
-	$(MAKE) -f CMakeFiles/server.dir/build.make CMakeFiles/server.dir/src/Map_Utility_Manager.cpp.i
-.PHONY : src/Map_Utility_Manager.cpp.i
-
-src/Map_Utility_Manager.s: src/Map_Utility_Manager.cpp.s
-
-.PHONY : src/Map_Utility_Manager.s
-
-# target to generate assembly for a file
-src/Map_Utility_Manager.cpp.s:
-	$(MAKE) -f CMakeFiles/server.dir/build.make CMakeFiles/server.dir/src/Map_Utility_Manager.cpp.s
-.PHONY : src/Map_Utility_Manager.cpp.s
-
 src/main.o: src/main.cpp.o
 
 .PHONY : src/main.o
@@ -441,6 +441,9 @@ help:
 	@echo "... src/AA_SIPP.o"
 	@echo "... src/AA_SIPP.i"
 	@echo "... src/AA_SIPP.s"
+	@echo "... src/AA_SIPP_Map_Utility.o"
+	@echo "... src/AA_SIPP_Map_Utility.i"
+	@echo "... src/AA_SIPP_Map_Utility.s"
 	@echo "... src/AA_SIPP_Motion.o"
 	@echo "... src/AA_SIPP_Motion.i"
 	@echo "... src/AA_SIPP_Motion.s"
@@ -453,9 +456,6 @@ help:
 	@echo "... src/Instance_Manager.o"
 	@echo "... src/Instance_Manager.i"
 	@echo "... src/Instance_Manager.s"
-	@echo "... src/Map_Utility_Manager.o"
-	@echo "... src/Map_Utility_Manager.i"
-	@echo "... src/Map_Utility_Manager.s"
 	@echo "... src/main.o"
 	@echo "... src/main.i"
 	@echo "... src/main.s"

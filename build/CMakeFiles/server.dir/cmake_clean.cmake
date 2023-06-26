@@ -1,10 +1,10 @@
 file(REMOVE_RECURSE
   "CMakeFiles/server.dir/src/AA_SIPP.cpp.o"
+  "CMakeFiles/server.dir/src/AA_SIPP_Map_Utility.cpp.o"
   "CMakeFiles/server.dir/src/AA_SIPP_Motion.cpp.o"
   "CMakeFiles/server.dir/src/AA_SIPP_Node.cpp.o"
   "CMakeFiles/server.dir/src/CPBS.cpp.o"
   "CMakeFiles/server.dir/src/Instance_Manager.cpp.o"
-  "CMakeFiles/server.dir/src/Map_Utility_Manager.cpp.o"
   "CMakeFiles/server.dir/src/main.cpp.o"
   "CMakeFiles/server.dir/src/server.cpp.o"
   "server"

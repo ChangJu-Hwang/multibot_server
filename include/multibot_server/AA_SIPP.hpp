@@ -4,6 +4,7 @@
 #include "multibot_util/MAPF_Util.hpp"
 
 #include "multibot_server/Instance_Manager.hpp"
+#include "multibot_server/AA_SIPP_Map_Utility.hpp"
 #include "multibot_server/AA_SIPP_Motion.hpp"
 
 using namespace MAPF_Util;
@@ -33,14 +34,13 @@ namespace Low_Level_Engine
             void update(const InstanceMsg &_msg)
             {
                 agents_ = _msg.first;
-                map_ = _msg.second;
             }
 
         private:
             std::unordered_map<std::string, AgentInstance::Agent> agents_;
-            MapInstance::BinaryOccupancyMap map_;
 
-            std::shared_ptr<Motion> motion_manager_ = std::make_shared<Motion>();
+            std::shared_ptr<Map_Utility> map_utility_ = std::make_shared<Map_Utility>();
+            std::shared_ptr<Motion> motion_manager_ = std::make_shared<Motion>(map_utility_);
 
         public:
             Planner(std::shared_ptr<Instance_Manager> _instance_manager);

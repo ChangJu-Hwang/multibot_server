@@ -21,6 +21,9 @@ namespace Low_Level_Engine
             const Position::Pose convertIndexToPose(
                 const Position::Index &_target,
                 const Position::Pose &_from, const Position::Pose &_to) const;
+            const Position::Index convertPoseToIndex(const Position::Pose &_target) const;
+            const std::vector<Position::Index> getRouteComponents(
+                const Position::Pose &_from, const Position::Pose &_to) const;
 
         public:
             void update(const InstanceMsg &_msg)

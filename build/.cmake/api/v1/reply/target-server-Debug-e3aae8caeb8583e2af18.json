@@ -659,6 +659,12 @@
 		{
 			"backtrace" : 1,
 			"compileGroupIndex" : 0,
+			"path" : "src/AA_SIPP_Map_Utility.cpp",
+			"sourceGroupIndex" : 0
+		},
+		{
+			"backtrace" : 1,
+			"compileGroupIndex" : 0,
 			"path" : "src/AA_SIPP_Motion.cpp",
 			"sourceGroupIndex" : 0
 		},
@@ -678,12 +684,6 @@
 			"backtrace" : 1,
 			"compileGroupIndex" : 0,
 			"path" : "src/Instance_Manager.cpp",
-			"sourceGroupIndex" : 0
-		},
-		{
-			"backtrace" : 1,
-			"compileGroupIndex" : 0,
-			"path" : "src/Map_Utility_Manager.cpp",
 			"sourceGroupIndex" : 0
 		},
 		{

@@ -1,7 +1,9 @@
 #pragma once
 
 #include "multibot_util/Interface/Observer_Interface.hpp"
+
 #include "multibot_server/Instance_Manager.hpp"
+#include "multibot_server/AA_SIPP_Map_Utility.hpp"
 
 using namespace MAPF_Util;
 using namespace Instance;
@@ -21,7 +23,7 @@ namespace Low_Level_Engine
                 const Position::Pose &_from, const Position::Pose &_to) const;
             const Time::TimePoint getPartialMoveTime(
                 const std::string &_agentName, const Position::Index &_target,
-                const Position::Index &_from, const Position::Index &_to) const;
+                const Position::Pose &_from, const Position::Pose &_to) const;
 
         private:
             const Time::TimePoint MoveTimeComputer(
@@ -37,8 +39,11 @@ namespace Low_Level_Engine
         private:
             std::unordered_map<std::string, AgentInstance::Agent> agents_;
 
+            std::shared_ptr<Map_Utility> map_utility_ = std::make_shared<Map_Utility>();
+
         public:
-            Motion() {}
+            Motion(std::shared_ptr<Map_Utility> _map_utility)
+                : map_utility_(_map_utility) {}
             ~Motion() {}
 
         }; // class Motion

@@ -112,3 +112,72 @@ const Position::Pose AA_SIPP::Map_Utility::convertIndexToPose(
     
     return Position::Pose(x, y, theta);
 }
+
+const Position::Index AA_SIPP::Map_Utility::convertPoseToIndex(const Position::Pose &_target) const
+{
+    int x = std::round((_target.component_.x - map_.property_.origin_.x_) / map_.property_.resolution_);
+    int y = std::round((_target.component_.y - map_.property_.origin_.y_) / map_.property_.resolution_);
+
+    return Position::Index(x, y);
+}
+
+const std::vector<Position::Index> AA_SIPP::Map_Utility::getRouteComponents(
+    const Position::Pose &_from, const Position::Pose &_to) const
+{
+    Position::Index from = convertPoseToIndex(_from);
+    Position::Index to = convertPoseToIndex(_to);
+
+    int x0 = from.x_, y0 = from.y_;
+    int x1 = to.x_, y1 = to.y_;
+
+    bool steep = false;
+    if (std::abs(y1 - y0) > std::abs(x1 - x0))
+    {
+        steep = true;
+        std::swap(x0, y0);
+        std::swap(x1, y1);
+    }
+
+    int deltaX = std::abs(x1 - x0), deltaY = std::abs(y1 - y0);
+    int error = 0;
+    int deltaError = deltaY;
+
+    int x = x0, y = y0;
+
+    int xStep = x0 < x1 ? 1 : -1;
+    int yStep = y0 < y1 ? 1 : -1;
+
+    std::vector<Position::Index> routeComponents;   routeComponents.clear();
+    while (x != x1 + xStep)
+    {
+        Position::Index componentIndex;
+        if (steep)
+        {
+            if (not(map_.isOutofMap(map_.mapData_[y][x])))
+            {
+                componentIndex.x_ = y;
+                componentIndex.y_ = x;
+            }
+        }
+        else
+        {
+            if (not(map_.isOutofMap(map_.mapData_[x][y])))
+            {
+                componentIndex.x_ = x;
+                componentIndex.y_ = y;
+            }
+        }
+        routeComponents.push_back(componentIndex);
+
+        x = x + xStep;
+        error = error + deltaError;
+
+        if (2 * error >= deltaX)
+        {
+            y = y + yStep;
+            error = error + deltaError;
+        }
+    }
+
+    return routeComponents;
+}
