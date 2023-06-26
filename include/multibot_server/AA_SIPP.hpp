@@ -1,72 +1,50 @@
 #pragma once
 
+#include "multibot_util/Interface/Observer_Interface.hpp"
 #include "multibot_util/MAPF_Util.hpp"
 
+#include "multibot_server/Instance_Manager.hpp"
+#include "multibot_server/AA_SIPP_Motion.hpp"
+
 using namespace MAPF_Util;
+using namespace Instance;
 
 namespace Low_Level_Engine
 {
     namespace AA_SIPP
     {
-        struct Node
+        class Planner : public Observer::ObserverInterface<InstanceMsg>
         {
         public:
-            void updateHeuristic(
-                const Position::Pose &_goal,
-                const double _max_linVel);
-            bool validationCheck() const;
+            std::pair<Path::SinglePath, bool> search(
+                const std::string &_agentName,
+                const double _timeLimit = 10,
+                const std::vector<std::string> &_higher_agents = std::vector<std::string>(),
+                const Path::PathSet &_pathSet = Path::PathSet());
+
+        private:
+            std::pair<Path::SinglePath, bool> find_partial_path(
+                const std::string &_agentName,
+                const std::list<Time::TimeInterval> &_starts,
+                const std::list<Time::TimeInterval> &_goals,
+                const double _timeLimit);
 
         public:
-            Node &operator=(const AA_SIPP::Node &_other);
-            bool operator==(const AA_SIPP::Node &_other) const;
-            bool operator!=(const AA_SIPP::Node &_other) const;
-
-            friend std::ostream &operator<<(std::ostream &_os, const AA_SIPP::Node &_node)
+            void update(const InstanceMsg &_msg)
             {
-                _os << _node.pose_ << ": "
-                    << "Arrive at " << _node.arrival_time_.count() << "s, "
-                    << "Depart at " << _node.departure_time_.count() << "s";
-                
-                return _os;
+                agents_ = _msg.first;
+                map_ = _msg.second;
             }
-        
-        public:
-            Position::Index idx_;
-            Position::Pose pose_;
-            
-            Time::TimeInterval safe_interval_;
-            Time::TimePoint arrival_time_;
-            Time::TimePoint departure_time_;
 
-            double gVal_;
-            double hVal_;
+        private:
+            std::unordered_map<std::string, AgentInstance::Agent> agents_;
+            MapInstance::BinaryOccupancyMap map_;
 
-            const Node* parent_;
-        
-        public:
-            Node(const Node &_other);
-            Node(
-                Position::Index _idx = Position::Index(),
-                Position::Pose _pose = Position::Pose(),
-                Time::TimeInterval _safe_interval = Time::TimeInterval(),
-                Time::TimePoint _arrival_time = Time::TimePoint::zero(),
-                Time::TimePoint _departure_time = Time::TimePoint::zero(),
-                double _gVal = std::numeric_limits<double>::quiet_NaN(),
-                double _hVal = std::numeric_limits<double>::quiet_NaN(),
-                Node *_parent = nullptr)
-                : idx_(_idx), pose_(_pose), safe_interval_(_safe_interval),
-                  arrival_time_(_arrival_time), departure_time_(_departure_time),
-                  gVal_(_gVal), hVal_(_hVal), parent_(_parent) {}
-        }; // struct Node
-
-        class Planner
-        {
-        public:
-            void search();
+            std::shared_ptr<Motion> motion_manager_ = std::make_shared<Motion>();
 
         public:
-            Planner() {}
+            Planner(std::shared_ptr<Instance_Manager> _instance_manager);
             ~Planner() {}
         }; // class Planner
-    } // namespace AA_SIPP
+    }      // namespace AA_SIPP
 } // namespace Low_Level_Engine

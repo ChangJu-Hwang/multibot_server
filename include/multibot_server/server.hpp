@@ -83,8 +83,8 @@ namespace Server
 
         std::map<std::string, Robot> robotList_;
 
-        std::shared_ptr<CPBS::Solver> solver_ = std::make_shared<CPBS::Solver>();
-        Instance_Manager instance_manager_;
+        std::shared_ptr<CPBS::Solver> solver_;
+        std::shared_ptr<Instance_Manager> instance_manager_;
 
     public:
         MultibotServer();

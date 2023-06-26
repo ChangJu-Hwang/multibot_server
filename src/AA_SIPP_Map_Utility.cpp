@@ -1,0 +1,114 @@
+#include "multibot_server/AA_SIPP_Map_Utility.hpp"
+
+using namespace Low_Level_Engine;
+
+std::vector<Position::Index> AA_SIPP::Map_Utility::getNeighborIndex(const Position::Index &_index) const
+{
+    std::vector<std::pair<int, int>> neighborIdx_candidates(0);
+    {
+        neighborIdx_candidates.push_back({1, 0});
+        neighborIdx_candidates.push_back({0, 1});
+        neighborIdx_candidates.push_back({-1, 0});
+        neighborIdx_candidates.push_back({0, -1});
+    }
+    if (extension_level > 2)
+    {
+        neighborIdx_candidates.push_back({1, 1});
+        neighborIdx_candidates.push_back({-1, 1});
+        neighborIdx_candidates.push_back({-1, -1});
+        neighborIdx_candidates.push_back({1, -1});
+    }
+    if (extension_level > 3)
+    {
+        neighborIdx_candidates.push_back({2, 1});   neighborIdx_candidates.push_back({2, 1});
+        neighborIdx_candidates.push_back({-1, 2});  neighborIdx_candidates.push_back({-2, 1});
+        neighborIdx_candidates.push_back({-2, -1}); neighborIdx_candidates.push_back({-1, -2});
+        neighborIdx_candidates.push_back({1, -2});  neighborIdx_candidates.push_back({2, -1});
+    }
+    if (extension_level > 4)
+    {
+        neighborIdx_candidates.push_back({3, 1});   neighborIdx_candidates.push_back({3, 2});   neighborIdx_candidates.push_back({2, 3});   neighborIdx_candidates.push_back({1, 3});
+        neighborIdx_candidates.push_back({-1, 3});  neighborIdx_candidates.push_back({-2, 3});  neighborIdx_candidates.push_back({-3, 2});  neighborIdx_candidates.push_back({-3, 1});
+        neighborIdx_candidates.push_back({-3, -2}); neighborIdx_candidates.push_back({-3, -1}); neighborIdx_candidates.push_back({-2, -3}); neighborIdx_candidates.push_back({-1, -3});
+        neighborIdx_candidates.push_back({1, -3});  neighborIdx_candidates.push_back({3, -2});  neighborIdx_candidates.push_back({3, -2});  neighborIdx_candidates.push_back({3, -1});
+    }
+
+    std::vector<Position::Index> neighbors; neighbors.clear();
+    for (const auto &relative_index : neighborIdx_candidates)
+    {
+        Position::Index neighbor_idx(
+            _index.x_ + relative_index.first,
+            _index.y_ + relative_index.second);
+        
+        if (neighbor_idx.x_ < 0 or neighbor_idx.y_ < 0)
+            continue;
+        
+        if (neighbor_idx.x_ >= map_.property_.width_ or
+            neighbor_idx.y_ >= map_.property_.height_)
+            continue;
+        
+        neighbors.push_back(neighbor_idx);
+    }
+
+    return neighbors;
+}
+
+std::vector<Position::Index> AA_SIPP::Map_Utility::getValidIndexes(
+    const std::string &_agentName, const std::vector<Position::Index> &_target)
+{
+    double agentSize = agentSizeDB_[_agentName] + std::sqrt(2) * map_.property_.resolution_;
+
+    if (std::isnan(map_.property_.inflation_radius_) or
+        std::fabs(map_.property_.inflation_radius_ - agentSize) > 1e-8)
+    {
+        double inflation_radius = agentSize;
+        inflated_mapData_ = map_.inflate(inflation_radius);
+    }
+
+    std::vector<Position::Index> validIndexes;  validIndexes.clear();
+    for (const auto &index : _target)
+    {
+        if (inflated_mapData_[index.x_][index.y_].occupied_)
+            continue;
+        
+        validIndexes.push_back(index);
+    }
+
+    return validIndexes;
+}
+
+bool AA_SIPP::Map_Utility::isValidIndexes(
+    const std::string &_agentName, const std::vector<Position::Index> &_target)
+{
+    double agentSize = agentSizeDB_[_agentName] + std::sqrt(2) * map_.property_.resolution_;
+
+    if (std::isnan(map_.property_.inflation_radius_) or
+        std::fabs(map_.property_.inflation_radius_ - agentSize) > 1e-8)
+    {
+        double inflation_radius = agentSize;
+        inflated_mapData_ = map_.inflate(inflation_radius);
+    }
+
+    for (const auto &index : _target)
+    {
+        if (inflated_mapData_[index.x_][index.y_].occupied_)
+            return false;
+    }
+
+    return true;
+}
+
+const Position::Pose AA_SIPP::Map_Utility::convertIndexToPose(
+    const Position::Index &_target,
+    const Position::Pose &_from, const Position::Pose &_to) const
+{
+    double x = map_.property_.origin_.x_ + _target.x_ * map_.property_.resolution_;
+    double y = map_.property_.origin_.y_ + _target.y_ * map_.property_.resolution_;
+    double theta = _to.component_.theta;
+
+    if (x == _from.component_.x and
+        y == _from.component_.y)
+        theta = _from.component_.theta;
+    
+    return Position::Pose(x, y, theta);
+}

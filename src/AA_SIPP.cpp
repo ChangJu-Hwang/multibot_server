@@ -2,70 +2,35 @@
 
 using namespace Low_Level_Engine;
 
-void AA_SIPP::Node::updateHeuristic(
-    const Position::Pose &_goal,
-    const double _max_linVel)
+std::pair<Path::SinglePath, bool> AA_SIPP::Planner::search(
+    const std::string &_agentName,
+    const double _timeLimit,
+    const std::vector<std::string> &_higher_agents,
+    const Path::PathSet &_pathSet)
 {
-    hVal_ = Position::getDistance(pose_, _goal) / _max_linVel;
+    std::cout << "AA_SIPP::Planner::search" << std::endl;
+
+    std::cout << agents_[_agentName] << std::endl;
+
+    return find_partial_path(
+        _agentName,
+        std::list<Time::TimeInterval>(),
+        std::list<Time::TimeInterval>(),
+        0);
 }
 
-bool AA_SIPP::Node::validationCheck() const
+std::pair<Path::SinglePath, bool> AA_SIPP::Planner::find_partial_path(
+    const std::string &_agentName,
+    const std::list<Time::TimeInterval> &_starts,
+    const std::list<Time::TimeInterval> &_goals,
+    const double _timeLimit)
 {
-    if (pose_.component_.theta + 1e-8 < -M_PI or
-        pose_.component_.theta + 1e-8 > M_PI)
-        return false;
-
-    if (not(safe_interval_.is_safe_))
-        return false;
-
-    if (safe_interval_.startTime_.count() + 1e-8 > safe_interval_.endTime_.count())
-        return false;
-
-    if (arrival_time_.count() > departure_time_.count() + 1e-8)
-        return false;
-
-    if (safe_interval_.startTime_.count() > arrival_time_.count() + 1e-8)
-        return false;
-
-    if (departure_time_.count() + 1e-8 > safe_interval_.endTime_.count())
-        return false;
-
-    return true;
+    return std::make_pair(Path::SinglePath(), false);
 }
 
-AA_SIPP::Node &AA_SIPP::Node::operator=(const AA_SIPP::Node &_other)
+AA_SIPP::Planner::Planner(std::shared_ptr<Instance_Manager> _instance_manager)
 {
-    idx_ = _other.idx_;
-    pose_ = _other.pose_;
+    _instance_manager->attach(*this);
 
-    safe_interval_ = _other.safe_interval_;
-    arrival_time_ = _other.arrival_time_;
-    departure_time_ = _other.departure_time_;
-
-    gVal_ = _other.gVal_;
-    hVal_ = _other.hVal_;
-    parent_ = _other.parent_;
-
-    return *this;
-}
-
-bool AA_SIPP::Node::operator==(const AA_SIPP::Node &_other) const
-{
-    if (not(idx_ == _other.idx_))
-        return false;
-    
-    if (not(safe_interval_ == _other.safe_interval_))
-        return false;
-    
-    return true;
-}
-
-bool AA_SIPP::Node::operator!=(const AA_SIPP::Node &_other) const
-{
-    return not(*this == _other);
-}
-
-void AA_SIPP::Planner::search()
-{
-    std::cout << "Single Agent Solver" << std::endl;
+    _instance_manager->attach(*(motion_manager_));
 }

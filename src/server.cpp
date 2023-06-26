@@ -11,6 +11,8 @@ void MultibotServer::loadInstances()
 {
     loadMap();
     loadTasks();
+
+    instance_manager_->notify();
 }
 
 void MultibotServer::request_registrations()
@@ -216,7 +218,7 @@ void MultibotServer::loadMap()
             map.mapData_.push_back(mapColumnData);
         }
 
-        instance_manager_.saveMap(map);
+        instance_manager_->saveMap(map);
 
         return;
     };
@@ -299,7 +301,7 @@ void MultibotServer::loadTasks()
 
         robotList_.insert(std::make_pair(robot.robotInfo_.name_, robot));
     }
-    instance_manager_.saveAgents(agentList);
+    instance_manager_->saveAgents(agentList);
 }
 
 MultibotServer::MultibotServer()
@@ -313,6 +315,9 @@ MultibotServer::MultibotServer()
 
     update_timer_ = this->create_wall_timer(
         10ms, std::bind(&MultibotServer::update_callback, this));
+
+    instance_manager_   = std::make_shared<Instance_Manager>();
+    solver_             = std::make_shared<CPBS::Solver>(instance_manager_);
 
     RCLCPP_INFO(this->get_logger(), "MultibotServer has been initialized");
 }
