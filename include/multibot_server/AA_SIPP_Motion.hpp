@@ -24,10 +24,16 @@ namespace Low_Level_Engine
             const Time::TimePoint getPartialMoveTime(
                 const std::string &_agentName, const Position::Index &_target,
                 const Position::Pose &_from, const Position::Pose &_to) const;
+            const Position::Pose getPosition(
+                const std::string &_agentName, const Time::TimePoint &_key, const Time::TimePoint &_start_time,
+                const Position::Pose &_from, const Position::Pose &_to);
 
         private:
             const Time::TimePoint MoveTimeComputer(
                 const double _s,
+                const double _max_s, const double _max_v, const double _max_a) const;
+            double DisplacementComputer(
+                const Time::TimePoint &_key,
                 const double _max_s, const double _max_v, const double _max_a) const;
 
         public:

@@ -1,5 +1,6 @@
 file(REMOVE_RECURSE
   "CMakeFiles/server.dir/src/AA_SIPP.cpp.o"
+  "CMakeFiles/server.dir/src/AA_SIPP_Conflict_Checker.cpp.o"
   "CMakeFiles/server.dir/src/AA_SIPP_Map_Utility.cpp.o"
   "CMakeFiles/server.dir/src/AA_SIPP_Motion.cpp.o"
   "CMakeFiles/server.dir/src/AA_SIPP_Node.cpp.o"
