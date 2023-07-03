@@ -25,6 +25,9 @@ double AA_SIPP::ConflictChecker::getDelayTime(
                 isConflict = true;
                 if (max_delay > 1e-8)
                     ++higher_PartialPath;
+                
+                if (higher_PartialPath == _higherPath.nodes_.end())
+                    return (std::numeric_limits<double>::max() - 1e-8);
 
                 max_delay = getDelayScope(
                     _higherPath.agentName_, higher_PartialPath,
