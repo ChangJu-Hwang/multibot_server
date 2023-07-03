@@ -16,7 +16,7 @@ std::pair<Path::SinglePath, bool> AA_SIPP::Planner::search(
                 lowerStart.pose_.component_.x = 0;
                 lowerStart.pose_.component_.y = 5;
                 lowerStart.pose_.component_.theta = 0;
-                lowerStart.departure_time_ = Time::TimePoint(0.7);
+                lowerStart.departure_time_ = Time::TimePoint(3);
             Path::SinglePath::Node lowerGoal;
                 lowerGoal.pose_.component_.x = 10;
                 lowerGoal.pose_.component_.y = 5;
@@ -47,8 +47,8 @@ std::pair<Path::SinglePath, bool> AA_SIPP::Planner::search(
         HigherPath.nodes_.push_back(std::make_pair(higherStart, higherGoal));
         HigherPath.cost_ = (higherGoal.arrival_time_ - higherStart.departure_time_).count();
 
-    auto foo = conflict_checker_->checkConflict(HigherPath, LowerPath);
-    std::cout << foo << std::endl;
+    auto delay = conflict_checker_->getDelayTime(HigherPath, LowerPath);
+    std::cout << "Delay: "<<  delay << std::endl;
 
     return find_partial_path(
         _agentName,

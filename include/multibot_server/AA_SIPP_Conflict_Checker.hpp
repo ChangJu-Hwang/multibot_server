@@ -16,26 +16,23 @@ namespace Low_Level_Engine
             enum DIRECTION{FORWARD, REVERSE};
 
         public:
-            Time::TimeInterval checkConflict(
+            double getDelayTime(
                 const Path::SinglePath &_higherPath, const Path::SinglePath &_lowerPath);
 
         private:
-            Time::TimeInterval checkPartialConflict(
+            bool checkPartialConflict(
                 const std::string &_higherName,  std::vector<PartialPath>::const_iterator _higher_PartialPath,
-                const std::string &_lowerName, std::vector<PartialPath>::const_iterator _lower_PartialPath);
-            Time::TimeInterval findCriticalInterval(
+                const std::string &_lowerName, std::vector<PartialPath>::const_iterator _lower_PartialPath,
+                double _delay);
+            double getDelayScope(
+                const std::string &_higherName, std::vector<PartialPath>::const_iterator _higher_PartialPath,
+                const std::string &_lowerName, std::vector<PartialPath>::const_iterator _lower_PartialPath,
+                double _safe_distance);
+            bool conflictSearch(
                 const std::string &_higherName,  const PartialPath &_higher_PartialPath,
                 const std::string &_lowerName, const PartialPath &_lower_PartialPath,
-                const Time::TimePoint &_lower_bound, const Time::TimePoint &_upper_bound);
-            Time::TimePoint binarySearch(
-                bool _mode,
-                const std::string &_higherName,  const PartialPath &_higher_PartialPath,
-                const std::string &_lowerName, const PartialPath &_lower_PartialPath,
-                const Time::TimePoint &_lower_bound, const Time::TimePoint &_upper_bound);
-            Time::TimeInterval getCollisionInterval(
-                const Time::TimePoint _time, const double _safe_distance,
-                const Path::SinglePath &_higherPath, std::vector<PartialPath>::const_iterator _higher_PartialPath,
-                const Position::Pose &_lower_pose);
+                const Time::TimePoint &_lower_bound, const Time::TimePoint &_upper_bound,
+                double _delay);
 
         public:
             void update(const InstanceMsg &_msg)
