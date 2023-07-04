@@ -12,12 +12,14 @@ namespace Low_Level_Engine
         {
         private:
             using PartialPath = std::pair<Path::SinglePath::Node, Path::SinglePath::Node>;
-            enum SEARCH{LEFT, RIGHT};
-            enum DIRECTION{FORWARD, REVERSE};
 
         public:
             double getDelayTime(
                 const Path::SinglePath &_higherPath, const Path::SinglePath &_lowerPath);
+            std::pair<Position::Index, Position::Index> getConflictScope(
+                const Position::Index &_target,
+                const std::vector<Position::Index> &_indexGroup,
+                const double _safe_distance);
 
         private:
             bool checkPartialConflict(
@@ -42,10 +44,14 @@ namespace Low_Level_Engine
                     agentSizeDB_.insert(std::make_pair(
                         agent.second.name_, agent.second.size_));
                 }
+
+                map_ = _msg.second;
             }
 
         private:
             std::unordered_map<std::string, double> agentSizeDB_;
+            MapInstance::BinaryOccupancyMap map_;
+
             static constexpr double time_precision_ = 1e-2;
 
             std::shared_ptr<Motion> motion_manager_;

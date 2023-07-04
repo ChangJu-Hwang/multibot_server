@@ -80,6 +80,46 @@ double AA_SIPP::ConflictChecker::getDelayTime(
     return 0;
 }
 
+
+std::pair<Position::Index, Position::Index> AA_SIPP::ConflictChecker::getConflictScope(
+    const Position::Index &_target,
+    const std::vector<Position::Index> &_indexGroup,
+    const double _safe_distance)
+{
+    Position::Coordinates target = map_.mapData_[_target.x_][_target.y_].coord_;
+
+    Position::Index conflict_start, conflict_end;
+    bool conflictFlag = false, resultFlag = false;
+
+    for (const auto &index : _indexGroup)
+    {
+        Position::Coordinates routeComponent = map_.mapData_[index.x_][index.y_].coord_;
+        double distance = Position::getDistance(target, routeComponent);
+    
+        if (not(conflictFlag) and _safe_distance > distance + std::sqrt(2) * map_.property_.resolution_ + 1e-8)
+        {
+            conflictFlag = true, resultFlag = true;
+            conflict_start = index;
+        }
+
+        if (conflictFlag and distance + std::sqrt(2) * map_.property_.resolution_ > _safe_distance + 1e-8)
+        {
+            conflictFlag = false;
+            auto index_iter = std::find(_indexGroup.begin(), _indexGroup.end(), index);
+            conflict_end = *std::prev(index_iter,1);
+            break;
+        }
+    }
+
+    if (not(resultFlag))
+        return std::pair(Position::Index(), Position::Index());
+    
+    if (conflictFlag)
+        conflict_end = _indexGroup.back();
+    
+    return std::pair(conflict_start, conflict_end);
+}
+
 bool AA_SIPP::ConflictChecker::checkPartialConflict(
     const std::string &_higherName, std::vector<PartialPath>::const_iterator _higher_PartialPath,
     const std::string &_lowerName, std::vector<PartialPath>::const_iterator _lower_PartialPath,
