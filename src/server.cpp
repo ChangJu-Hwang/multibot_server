@@ -1,7 +1,6 @@
 #include "multibot_server/server.hpp"
 
 #include <yaml-cpp/yaml.h> // Need to install libyaml-cpp-dev
-#include <typeinfo>
 
 #include <tf2/LinearMath/Quaternion.h>
 
@@ -12,6 +11,8 @@ void MultibotServer::loadInstances()
 {
     loadMap();
     loadTasks();
+
+    instance_manager_->notify();
 }
 
 void MultibotServer::request_registrations()
@@ -29,6 +30,11 @@ void MultibotServer::request_registrations()
         }
         request_registration(single_request.first, single_request.second);
     }
+}
+
+void MultibotServer::plan_multibots()
+{
+    solver_->solve();
 }
 
 void MultibotServer::request_controls()
@@ -181,12 +187,14 @@ void MultibotServer::loadMap()
 
     auto request = std::make_shared<nav_msgs::srv::GetMap::Request>();
 
-    auto response_received_callback = [this](rclcpp::Client<nav_msgs::srv::GetMap>::SharedFuture _future)
+    auto result = mapLoading_->async_send_request(request);
+
+    if (rclcpp::spin_until_future_complete(this->get_node_base_interface(), result) == rclcpp::FutureReturnCode::SUCCESS)
     {
-        auto response = _future.get();
+        auto response = result.get();
 
         MapInstance::BinaryOccupancyMap map;
-
+        
         map.property_.resolution_ = response->map.info.resolution;
         map.property_.width_ = response->map.info.width;
         map.property_.height_ = response->map.info.height;
@@ -212,13 +220,8 @@ void MultibotServer::loadMap()
             map.mapData_.push_back(mapColumnData);
         }
 
-        instance_manager_.saveMap(map);
-
-        return;
-    };
-
-    auto future_result =
-        mapLoading_->async_send_request(request, response_received_callback);
+        instance_manager_->saveMap(map);
+    }
 }
 
 void MultibotServer::loadTasks()
@@ -295,7 +298,7 @@ void MultibotServer::loadTasks()
 
         robotList_.insert(std::make_pair(robot.robotInfo_.name_, robot));
     }
-    instance_manager_.saveAgents(agentList);
+    instance_manager_->saveAgents(agentList);
 }
 
 MultibotServer::MultibotServer()
@@ -309,6 +312,9 @@ MultibotServer::MultibotServer()
 
     update_timer_ = this->create_wall_timer(
         10ms, std::bind(&MultibotServer::update_callback, this));
+
+    instance_manager_   = std::make_shared<Instance_Manager>();
+    solver_             = std::make_shared<CPBS::Solver>(instance_manager_);
 
     RCLCPP_INFO(this->get_logger(), "MultibotServer has been initialized");
 }

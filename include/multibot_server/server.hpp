@@ -14,8 +14,10 @@
 #include "multibot_ros2_interface/msg/local_path.hpp"
 #include "multibot_ros2_interface/srv/path.hpp"
 
+#include "multibot_server/CPBS.hpp"
 #include "multibot_server/Instance_Manager.hpp"
 
+using namespace High_Level_Engine;
 using namespace Instance;
 
 namespace Server
@@ -46,6 +48,7 @@ namespace Server
     public:
         void loadInstances();
         void request_registrations();
+        void plan_multibots();
         void request_controls();
 
     private:
@@ -79,7 +82,9 @@ namespace Server
         rclcpp::Time nodeStartTime_;
 
         std::map<std::string, Robot> robotList_;
-        Instance_Manager instance_manager_;
+
+        std::shared_ptr<CPBS::Solver> solver_;
+        std::shared_ptr<Instance_Manager> instance_manager_;
 
     public:
         MultibotServer();

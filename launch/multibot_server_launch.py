@@ -146,7 +146,7 @@ def generate_launch_description():
                         'y': str(agent['start']['y']),
                         'Y': str(agent['start']['theta']),
                         'linear_tolerance': '0.10',
-                        'angular_tolerance': '0.015'
+                        'angular_tolerance': '0.018'
                     }.items()
                 )
             )
