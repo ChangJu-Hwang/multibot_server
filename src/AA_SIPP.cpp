@@ -4,14 +4,17 @@ using namespace Low_Level_Engine;
 
 std::pair<Path::SinglePath, bool> AA_SIPP::Planner::search(
     const std::string &_agentName,
+    const std::pair<Position::Coordinates, Position::Coordinates> &_searchSpace,
     const double _timeLimit,
     const std::vector<std::string> &_higher_agents,
     const Path::PathSet &_pathSet)
 {
     std::cout << "AA_SIPP::Planner::search" << std::endl;
 
+    map_utility_->restrictArea(_searchSpace);
     reservation_table_->init(agents_[_agentName].size_);
     higher_paths_.clear();
+
     for (const auto &singlePath : _pathSet)
     {
         if (std::find(_higher_agents.begin(), _higher_agents.end(), singlePath.second.agentName_) == _higher_agents.end())
@@ -38,18 +41,18 @@ std::pair<Path::SinglePath, bool> AA_SIPP::Planner::find_partial_path(
     const std::list<Time::TimeInterval> &_goals,
     const double _timeLimit)
 {
-    open_.clear();
-    close_.clear();
-
-        
+    generateRoot(agents_[_agentName].start_, _starts);
 
     return std::make_pair(Path::SinglePath(), false);
 }
 
-void AA_SIPP::Planner::init(
+void AA_SIPP::Planner::generateRoot(
     const Position::Pose &_startPose,
     const std::list<Time::TimeInterval> &_starts)
 {
+    open_.clear();
+    close_.clear();
+
     for (const auto &safe_interval : _starts)
     {
         AA_SIPP::Node startNode;

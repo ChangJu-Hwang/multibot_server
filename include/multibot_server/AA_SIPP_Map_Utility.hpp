@@ -13,6 +13,8 @@ namespace Low_Level_Engine
         class Map_Utility : public Observer::ObserverInterface<InstanceMsg>
         {
         public:
+            void restrictArea(
+                const std::pair<Position::Coordinates, Position::Coordinates> &_searchSpace);
             std::vector<Position::Index> getNeighborIndex(const Position::Index &_index) const;
             std::vector<Position::Index> getValidIndexes(
                 const std::string &_agentName, const std::vector<Position::Index> &_target);
@@ -37,6 +39,9 @@ namespace Low_Level_Engine
                 }
 
                 map_ = _msg.second;
+
+                lower_left_ = Position::Index(0,0);
+                upper_right_ = Position::Index(map_.property_.width_-1, map_.property_.height_-1);
             }
         
         private:
@@ -45,7 +50,11 @@ namespace Low_Level_Engine
 
             std::vector<std::vector<MapInstance::Cell>> inflated_mapData_;
 
-            static constexpr int extension_level = 3;
+            Position::Index lower_left_;
+            Position::Index upper_right_;
+
+            static constexpr int extension_level_ = 3;
+            static constexpr double space_margine_ = 2.0;
         
         public:
             Map_Utility() {}
