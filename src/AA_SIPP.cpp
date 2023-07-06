@@ -20,6 +20,15 @@ std::pair<Path::SinglePath, bool> AA_SIPP::Planner::search(
         reservation_table_->applySinglePath(_agentName, singlePath.second);
         higher_paths_.push_back(singlePath.second);
     }
+
+    std::list<Time::TimeInterval> starts = {reservation_table_->getSafeIntervals(
+        agents_[_agentName].start_).front()};
+    std::list<Time::TimeInterval> goals = reservation_table_->getSafeIntervals(
+        agents_[_agentName].goal_);
+    
+    auto partialPath = find_partial_path(
+        _agentName, starts, goals, _timeLimit);
+
     return std::make_pair(Path::SinglePath(), false);
 }
 
@@ -29,10 +38,36 @@ std::pair<Path::SinglePath, bool> AA_SIPP::Planner::find_partial_path(
     const std::list<Time::TimeInterval> &_goals,
     const double _timeLimit)
 {
+    open_.clear();
+    close_.clear();
+
+        
+
     return std::make_pair(Path::SinglePath(), false);
 }
 
-AA_SIPP::Planner::Planner(std::shared_ptr<Instance_Manager> _instance_manager)
+void AA_SIPP::Planner::init(
+    const Position::Pose &_startPose,
+    const std::list<Time::TimeInterval> &_starts)
+{
+    for (const auto &safe_interval : _starts)
+    {
+        AA_SIPP::Node startNode;
+
+        startNode.pose_ = _startPose;
+        startNode.idx_  = map_utility_->convertPoseToIndex(_startPose);
+
+        startNode.gVal_ = 0;
+        startNode.hVal_ = 0;
+
+        startNode.safe_interval_ = safe_interval;
+        startNode.parent_ = nullptr;
+        
+        open_.insert(startNode);
+    }
+}
+
+AA_SIPP::Planner::Planner(std::shared_ptr<Instance_Manager> &_instance_manager)
 {
     _instance_manager->attach(*this);
 

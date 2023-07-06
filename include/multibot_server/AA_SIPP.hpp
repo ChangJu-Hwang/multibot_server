@@ -1,9 +1,12 @@
 #pragma once
 
+#include <set>
+
 #include "multibot_util/Interface/Observer_Interface.hpp"
 #include "multibot_util/MAPF_Util.hpp"
 
 #include "multibot_server/Instance_Manager.hpp"
+#include "multibot_server/AA_SIPP_Node.hpp"
 #include "multibot_server/AA_SIPP_Map_Utility.hpp"
 #include "multibot_server/AA_SIPP_Motion.hpp"
 #include "multibot_server/AA_SIPP_Conflict_Checker.hpp"
@@ -31,6 +34,9 @@ namespace Low_Level_Engine
                 const std::list<Time::TimeInterval> &_starts,
                 const std::list<Time::TimeInterval> &_goals,
                 const double _timeLimit);
+            void init(
+                const Position::Pose &_startPose,
+                const std::list<Time::TimeInterval> &_starts);
 
         public:
             void update(const InstanceMsg &_msg)
@@ -43,6 +49,9 @@ namespace Low_Level_Engine
 
             std::vector<Path::SinglePath> higher_paths_;
 
+            std::set<AA_SIPP::Node, AA_SIPP::Compare> open_;
+            std::unordered_map<AA_SIPP::Node, AA_SIPP::Node, AA_SIPP::Node_HashFunc> close_;
+
             std::shared_ptr<Map_Utility> map_utility_ = std::make_shared<Map_Utility>();
             std::shared_ptr<Motion> motion_manager_ = std::make_shared<Motion>(map_utility_);
             std::shared_ptr<ConflictChecker> conflict_checker_ = std::make_shared<ConflictChecker>(motion_manager_);
@@ -50,8 +59,9 @@ namespace Low_Level_Engine
                 map_utility_, motion_manager_, conflict_checker_);
 
         public:
-            Planner(std::shared_ptr<Instance_Manager> _instance_manager);
+            Planner(std::shared_ptr<Instance_Manager> &_instance_manager);
             ~Planner() {}
         }; // class Planner
-    }      // namespace AA_SIPP
+
+    } // namespace AA_SIPP
 } // namespace Low_Level_Engine

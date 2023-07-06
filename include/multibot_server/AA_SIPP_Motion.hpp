@@ -48,7 +48,7 @@ namespace Low_Level_Engine
             std::shared_ptr<Map_Utility> map_utility_ = std::make_shared<Map_Utility>();
 
         public:
-            Motion(std::shared_ptr<Map_Utility> _map_utility)
+            Motion(std::shared_ptr<Map_Utility> &_map_utility)
                 : map_utility_(_map_utility) {}
             ~Motion() {}
 

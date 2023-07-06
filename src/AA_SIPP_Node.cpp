@@ -64,3 +64,17 @@ bool AA_SIPP::Node::operator!=(const AA_SIPP::Node &_other) const
 {
     return not(*this == _other);
 }
+
+AA_SIPP::Node::Node(const AA_SIPP::Node &_other)
+{
+    idx_ = _other.idx_;
+    pose_ = _other.pose_;
+
+    safe_interval_ = _other.safe_interval_;
+    arrival_time_ = _other.arrival_time_;
+    departure_time_ = _other.departure_time_;
+
+    gVal_ = _other.gVal_;
+    hVal_ = _other.hVal_;
+    parent_ = _other.parent_;
+}
