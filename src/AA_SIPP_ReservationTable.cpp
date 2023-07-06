@@ -67,7 +67,7 @@ bool AA_SIPP::ReservationTable::applySinglePath(
         for (const auto &index : sweepArea)
         {
             Position::Index conflict_startIndex, conflict_endIndex;
-            std::tie(conflict_startIndex, conflict_endIndex) = conflict_manager_->getConflictScope(
+            std::tie(conflict_startIndex, conflict_endIndex) = conflict_checker_->getConflictScope(
                 index, routeArea, inflation_radius);
             
             Time::TimePoint conflict_startTime = nodePairIter->first.departure_time_ + motion_manager_->getPartialMoveTime(
@@ -84,7 +84,7 @@ bool AA_SIPP::ReservationTable::applySinglePath(
                 {
                     nextRouteArea = map_utility_->getRouteComponents(
                         nextNodePairIter->first.pose_, nextNodePairIter->second.pose_);
-                    conflict_endIndex = conflict_manager_->getConflictScope(
+                    conflict_endIndex = conflict_checker_->getConflictScope(
                         index, nextRouteArea, inflation_radius).second;
                 }
 
@@ -111,6 +111,8 @@ bool AA_SIPP::ReservationTable::applySinglePath(
             }
         }
     }
+
+    return true;
 }
 
 bool AA_SIPP::ReservationTable::isValidMove(
@@ -212,4 +214,6 @@ bool AA_SIPP::ReservationTable::addCollisionInterval(
         else
             interval = timeLine.interval_list_.erase(interval);
     }
+
+    return true;
 }

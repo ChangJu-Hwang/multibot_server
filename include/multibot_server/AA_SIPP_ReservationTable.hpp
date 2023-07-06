@@ -41,8 +41,6 @@ namespace Low_Level_Engine
                 }
 
                 map_ = _msg.second;
-
-                init(0);
             }
 
         private:
@@ -53,17 +51,17 @@ namespace Low_Level_Engine
 
             std::shared_ptr<Map_Utility> map_utility_;
             std::shared_ptr<Motion> motion_manager_;
-            std::shared_ptr<ConflictChecker> conflict_manager_;
+            std::shared_ptr<ConflictChecker> conflict_checker_;
 
         public:
             ReservationTable(
-                std::shared_ptr<Map_Utility> &_map_utility,
-                std::shared_ptr<Motion> &_motion_manager,
-                std::shared_ptr<ConflictChecker> &_conflict_manager)
+                std::shared_ptr<Map_Utility> _map_utility,
+                std::shared_ptr<Motion> _motion_manager,
+                std::shared_ptr<ConflictChecker> _conflict_checker)
                 : map_utility_(_map_utility),
                   motion_manager_(_motion_manager),
-                  conflict_manager_(_conflict_manager) {}
+                  conflict_checker_(_conflict_checker) {}
             ~ReservationTable() {}
-        };
+        }; // class ReservationTable
     } // namespace AA_SIPP
 } // namespace Low_Level_Engine

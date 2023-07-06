@@ -46,6 +46,10 @@ namespace Low_Level_Engine
             std::vector<std::vector<MapInstance::Cell>> inflated_mapData_;
 
             static constexpr int extension_level = 3;
+        
+        public:
+            Map_Utility() {}
+            ~Map_Utility() {}
         }; // class Map_Utility
     } // namespace AA_SIPP
 } // namespace Low_Level_Engine

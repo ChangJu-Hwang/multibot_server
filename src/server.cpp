@@ -187,12 +187,14 @@ void MultibotServer::loadMap()
 
     auto request = std::make_shared<nav_msgs::srv::GetMap::Request>();
 
-    auto response_received_callback = [this](rclcpp::Client<nav_msgs::srv::GetMap>::SharedFuture _future)
+    auto result = mapLoading_->async_send_request(request);
+
+    if (rclcpp::spin_until_future_complete(this->get_node_base_interface(), result) == rclcpp::FutureReturnCode::SUCCESS)
     {
-        auto response = _future.get();
+        auto response = result.get();
 
         MapInstance::BinaryOccupancyMap map;
-
+        
         map.property_.resolution_ = response->map.info.resolution;
         map.property_.width_ = response->map.info.width;
         map.property_.height_ = response->map.info.height;
@@ -219,12 +221,7 @@ void MultibotServer::loadMap()
         }
 
         instance_manager_->saveMap(map);
-
-        return;
-    };
-
-    auto future_result =
-        mapLoading_->async_send_request(request, response_received_callback);
+    }
 }
 
 void MultibotServer::loadTasks()
