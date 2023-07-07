@@ -6,8 +6,7 @@ void CPBS::Solver::solve()
 {
     std::cout << "CPBS::Solver::solve()" << std::endl;
 
-    auto searchSpace = restrict_searchSpace();
-
+    // auto searchSpace = restrict_searchSpace();
     planner_->search("Agent1");
 }
 

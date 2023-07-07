@@ -53,14 +53,14 @@ bool AA_SIPP::ReservationTable::applySinglePath(
 {
     if (_agentName == _singlePath.agentName_)
         return false;
-    
+
     double inflation_radius = agentSizeDB_[_agentName] + agentSizeDB_[_singlePath.agentName_];
 
     for (auto nodePairIter = _singlePath.nodes_.begin(); nodePairIter != _singlePath.nodes_.end(); ++nodePairIter)
     {
         std::vector<Position::Index> routeArea = map_utility_->getRouteComponents(
             nodePairIter->first.pose_, nodePairIter->second.pose_);
-        
+
         std::vector<Position::Index> sweepArea = map_.getInflatedArea(
             routeArea, inflation_radius);
 
@@ -69,13 +69,13 @@ bool AA_SIPP::ReservationTable::applySinglePath(
             Position::Index conflict_startIndex, conflict_endIndex;
             std::tie(conflict_startIndex, conflict_endIndex) = conflict_checker_->getConflictScope(
                 index, routeArea, inflation_radius);
-            
+
             Time::TimePoint conflict_startTime = nodePairIter->first.departure_time_ + motion_manager_->getPartialMoveTime(
-                _singlePath.agentName_, conflict_startIndex,
-                nodePairIter->first.pose_, nodePairIter->second.pose_);
-            
+                                                                                           _singlePath.agentName_, conflict_startIndex,
+                                                                                           nodePairIter->first.pose_, nodePairIter->second.pose_);
+
             Time::TimePoint conflict_endTime = Time::TimePoint::max();
-            
+
             auto nextNodePairIter = nodePairIter;
             auto nextRouteArea = routeArea;
             do
@@ -85,27 +85,29 @@ bool AA_SIPP::ReservationTable::applySinglePath(
                     nextRouteArea = map_utility_->getRouteComponents(
                         nextNodePairIter->first.pose_, nextNodePairIter->second.pose_);
                     conflict_endIndex = conflict_checker_->getConflictScope(
-                        index, nextRouteArea, inflation_radius).second;
+                                                             index, nextRouteArea, inflation_radius)
+                                            .second;
                 }
 
                 if (conflict_endIndex != nextRouteArea.back())
                 {
                     conflict_endTime = nextNodePairIter->first.departure_time_;
-                    
+
                     if (conflict_endIndex != Position::Index())
                         conflict_endTime = conflict_endTime + motion_manager_->getPartialMoveTime(
-                            _singlePath.agentName_, conflict_endIndex,
-                            nextNodePairIter->first.pose_, nextNodePairIter->second.pose_);
-                    
+                                                                  _singlePath.agentName_, conflict_endIndex,
+                                                                  nextNodePairIter->first.pose_, nextNodePairIter->second.pose_);
+
                     break;
                 }
                 else
                     ++nextNodePairIter;
-            } while(nextNodePairIter != _singlePath.nodes_.end());
+            } while (nextNodePairIter != _singlePath.nodes_.end());
 
             if (not(addCollisionInterval(index, conflict_startTime, conflict_endTime)))
             {
-                std::cerr << "[Error] " << "AA_SIPP_ReservationTable::applySinglePath: "
+                std::cerr << "[Error] "
+                          << "AA_SIPP_ReservationTable::applySinglePath: "
                           << "Invalid Time Interval" << std::endl;
                 std::abort();
             }
@@ -141,7 +143,7 @@ bool AA_SIPP::ReservationTable::isValidMove(
 const std::list<Time::TimeInterval> AA_SIPP::ReservationTable::getSafeIntervals(const Position::Index &_index) const
 {
     return reservationTable_[_index.x_][_index.y_].interval_list_;
-}   
+}
 
 const std::list<Time::TimeInterval> AA_SIPP::ReservationTable::getSafeIntervals(const Position::Pose &_pose) const
 {

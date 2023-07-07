@@ -16,6 +16,7 @@ namespace Low_Level_Engine
             void restrictArea(
                 const std::pair<Position::Coordinates, Position::Coordinates> &_searchSpace);
             std::vector<Position::Index> getNeighborIndex(const Position::Index &_index) const;
+            std::vector<Position::Index> getNeighborIndex(const Position::Pose &_pose) const;
             std::vector<Position::Index> getValidIndexes(
                 const std::string &_agentName, const std::vector<Position::Index> &_target);
             bool isValidIndexes(
@@ -23,6 +24,9 @@ namespace Low_Level_Engine
             const Position::Pose convertIndexToPose(
                 const Position::Index &_target,
                 const Position::Pose &_from, const Position::Pose &_to) const;
+            const Position::Pose convertIndexToPose(
+                const Position::Index &_target,
+                double _theta) const;
             const Position::Index convertPoseToIndex(const Position::Pose &_target) const;
             const std::vector<Position::Index> getRouteComponents(
                 const Position::Pose &_from, const Position::Pose &_to) const;

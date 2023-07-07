@@ -97,6 +97,13 @@ std::vector<Position::Index> AA_SIPP::Map_Utility::getNeighborIndex(const Positi
     return neighbors;
 }
 
+std::vector<Position::Index> AA_SIPP::Map_Utility::getNeighborIndex(const Position::Pose &_pose) const
+{
+    Position::Index index = convertPoseToIndex(_pose);
+
+    return getNeighborIndex(index);
+}
+
 std::vector<Position::Index> AA_SIPP::Map_Utility::getValidIndexes(
     const std::string &_agentName, const std::vector<Position::Index> &_target)
 {
@@ -125,7 +132,7 @@ std::vector<Position::Index> AA_SIPP::Map_Utility::getValidIndexes(
 bool AA_SIPP::Map_Utility::isValidIndexes(
     const std::string &_agentName, const std::vector<Position::Index> &_target)
 {
-    double agentSize = agentSizeDB_[_agentName] + std::sqrt(2) * map_.property_.resolution_;
+    double agentSize = agentSizeDB_[_agentName];
 
     if (std::isnan(map_.property_.inflation_radius_) or
         std::fabs(map_.property_.inflation_radius_ - agentSize) > 1e-8)
@@ -156,6 +163,16 @@ const Position::Pose AA_SIPP::Map_Utility::convertIndexToPose(
         theta = _from.component_.theta;
 
     return Position::Pose(x, y, theta);
+}
+
+const Position::Pose AA_SIPP::Map_Utility::convertIndexToPose(
+    const Position::Index &_target,
+    double _theta) const
+{
+    double x = map_.property_.origin_.x_ + _target.x_ * map_.property_.resolution_;
+    double y = map_.property_.origin_.y_ + _target.y_ * map_.property_.resolution_;
+    
+    return Position::Pose(x, y, _theta);
 }
 
 const Position::Index AA_SIPP::Map_Utility::convertPoseToIndex(const Position::Pose &_target) const
@@ -221,7 +238,7 @@ const std::vector<Position::Index> AA_SIPP::Map_Utility::getRouteComponents(
         if (2 * error >= deltaX)
         {
             y = y + yStep;
-            error = error + deltaError;
+            error = error - deltaX;
         }
     }
 

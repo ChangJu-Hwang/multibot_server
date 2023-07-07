@@ -41,6 +41,16 @@ namespace Low_Level_Engine
             void generateRoot(
                 const Position::Pose &_startPose,
                 const std::list<Time::TimeInterval> &_starts);
+            std::vector<AA_SIPP::Node> getSuccessors(
+                const std::string &_agentName,
+                const Position::Index &_index, const AA_SIPP::Node &_parentNode);
+            Path::SinglePath constructSinglePath(
+                const std::string &_agentName, const AA_SIPP::Node &_goalNode);
+
+            double computeTotalDelays(
+                const std::string &_agentName,
+                const Position::Pose &_startPose, const Position::Pose &_goalPose,
+                const Time::TimePoint &_departure_time);
 
         public:
             void update(const InstanceMsg &_msg)
