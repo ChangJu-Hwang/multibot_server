@@ -1,7 +1,13 @@
 #pragma once
 
+#include <stack>
+#include <unordered_set>
+
 #include "multibot_util/MAPF_Util.hpp"
+#include "multibot_server/CPBS_Node.hpp"
 #include "multibot_server/AA_SIPP.hpp"
+#include "multibot_server/AA_SIPP_Motion.hpp"
+#include "multibot_server/AA_SIPP_Conflict_Checker.hpp"
 #include "multibot_server/Instance_Manager.hpp"
 
 using namespace Low_Level_Engine;
@@ -11,6 +17,21 @@ namespace High_Level_Engine
 {
     namespace CPBS
     {
+        struct StringPair_HashFunc
+        {
+            std::size_t operator()(const std::pair<std::string, std::string> &_stringPair) const
+            {
+                auto firstString = std::hash<std::string>{}(_stringPair.first);
+                auto secondString = std::hash<std::string>{}(_stringPair.second);
+
+                std::size_t seed = 0;
+                seed = seed ^ (firstString + 0x9e3779b9 + (seed << 6) + (seed >> 2));
+                seed = seed ^ (secondString + 0x9e3779b9 + (seed << 6) + (seed >> 2));
+
+                return seed;
+            }
+        }; // struct StringPair_HashFunc
+
         class Solver : public Observer::ObserverInterface<InstanceMsg>
         {
         public:
@@ -28,13 +49,19 @@ namespace High_Level_Engine
         private:
             std::unordered_map<std::string, AgentInstance::Agent> agents_;
 
+            std::stack<Node *> open_;
+            std::unordered_set<std::pair<std::string, std::string>, StringPair_HashFunc> priority_graph_;
+
             Path::PathSet paths_;
 
             std::shared_ptr<AA_SIPP::Planner> planner_;
+            std::shared_ptr<AA_SIPP::Motion> motion_manager_;
+            std::shared_ptr<AA_SIPP::ConflictChecker> conflict_checker_;
 
         public:
             Solver(std::shared_ptr<Instance_Manager> _instance_manager);
             ~Solver() {}
         }; // class Solver
+
     } // namespace CPBS
 } // namespace High_Level_Engine

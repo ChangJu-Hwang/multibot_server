@@ -52,6 +52,9 @@ CPBS::Solver::Solver(std::shared_ptr<Instance::Instance_Manager> _instance_manag
 {
     _instance_manager->attach(*(this));
 
+    _instance_manager->attach(*(motion_manager_));
+    _instance_manager->attach(*(conflict_checker_));
+
     planner_ = std::make_shared<AA_SIPP::Planner>(_instance_manager);
 
     std::cout << "CPBS::Solver Constructor" << std::endl;
