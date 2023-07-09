@@ -11,8 +11,6 @@ std::pair<Path::SinglePath, bool> AA_SIPP::Planner::search(
     const std::vector<std::string> &_higher_agents,
     const Path::PathSet &_pathSet)
 {
-    std::cout << "AA_SIPP::Planner::search" << std::endl;
-
     map_utility_->restrictArea(_searchSpace);
     reservation_table_->init(agents_[_agentName].size_);
     higher_paths_.clear();
@@ -34,11 +32,7 @@ std::pair<Path::SinglePath, bool> AA_SIPP::Planner::search(
     auto partialPath = find_partial_path(
         _agentName, starts, goals, _timeLimit);
 
-    std::cout << "Generate SinglePath : " << (partialPath.second ? "Succeed" : "Fail") << std::endl;
-    if (partialPath.second)
-        std::cout << partialPath.first << std::endl;
-
-    return std::make_pair(Path::SinglePath(), false);
+    return partialPath;
 }
 
 std::pair<Path::SinglePath, bool> AA_SIPP::Planner::find_partial_path(

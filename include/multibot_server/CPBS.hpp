@@ -14,7 +14,7 @@ namespace High_Level_Engine
         class Solver : public Observer::ObserverInterface<InstanceMsg>
         {
         public:
-            void solve();
+            std::pair<Path::PathSet, bool> solve();
         
         private:
             std::pair<Position::Coordinates, Position::Coordinates> restrict_searchSpace();
@@ -27,6 +27,8 @@ namespace High_Level_Engine
         
         private:
             std::unordered_map<std::string, AgentInstance::Agent> agents_;
+
+            Path::PathSet paths_;
 
             std::shared_ptr<AA_SIPP::Planner> planner_;
 

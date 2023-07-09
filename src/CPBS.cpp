@@ -2,12 +2,24 @@
 
 using namespace High_Level_Engine;
 
-void CPBS::Solver::solve()
+std::pair<Path::PathSet, bool> CPBS::Solver::solve()
 {
     std::cout << "CPBS::Solver::solve()" << std::endl;
-
     // auto searchSpace = restrict_searchSpace();
-    planner_->search("Agent1");
+
+    paths_.clear();
+
+    for (const auto &agent : agents_)
+    {
+        auto result = planner_->search(agent.second.name_);
+
+        if (result.second == false)
+            return std::make_pair(Path::PathSet(), false);
+           
+        paths_.insert(std::make_pair(agent.second.name_, result.first));
+    }
+
+    return std::make_pair(paths_, true);
 }
 
 std::pair<Position::Coordinates, Position::Coordinates> CPBS::Solver::restrict_searchSpace()
