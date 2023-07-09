@@ -34,7 +34,12 @@ void MultibotServer::request_registrations()
 
 void MultibotServer::plan_multibots()
 {
-    solver_->solve();
+    auto foo = solver_->solve();
+
+    for (const auto singlePath : foo.first)
+    {   
+        std::cout << singlePath.second << std::endl;
+    }
 }
 
 void MultibotServer::request_controls()

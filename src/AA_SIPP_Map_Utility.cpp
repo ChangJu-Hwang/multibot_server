@@ -2,6 +2,32 @@
 
 using namespace Low_Level_Engine;
 
+void AA_SIPP::Map_Utility::restrictArea(
+    const std::pair<Position::Coordinates, Position::Coordinates> &_searchSpace)
+{
+    if (_searchSpace.first.x_ != -1 * std::numeric_limits<double>::infinity() and
+        _searchSpace.first.y_ != -1 * std::numeric_limits<double>::infinity())
+    {
+        Position::Index input_lower_left;
+        input_lower_left.x_ = std::round((_searchSpace.first.x_ - space_margine_ - map_.property_.origin_.x_) / map_.property_.resolution_);
+        input_lower_left.y_ = std::round((_searchSpace.first.y_ - space_margine_ - map_.property_.origin_.y_) / map_.property_.resolution_);
+
+        lower_left_.x_ = std::max(input_lower_left.x_, lower_left_.x_);
+        lower_left_.y_ = std::max(input_lower_left.y_, lower_left_.y_);
+    }
+
+    if (_searchSpace.second.x_ != std::numeric_limits<double>::infinity() and
+        _searchSpace.second.y_ != std::numeric_limits<double>::infinity())
+    {
+        Position::Index input_upper_right;
+        input_upper_right.x_ = std::round((_searchSpace.second.x_ + space_margine_ - map_.property_.origin_.x_) / map_.property_.resolution_);
+        input_upper_right.y_ = std::round((_searchSpace.second.y_ + space_margine_ - map_.property_.origin_.y_) / map_.property_.resolution_);
+
+        upper_right_.x_ = std::min(input_upper_right.x_, upper_right_.x_);
+        upper_right_.y_ = std::min(input_upper_right.y_, upper_right_.y_);
+    }
+}
+
 std::vector<Position::Index> AA_SIPP::Map_Utility::getNeighborIndex(const Position::Index &_index) const
 {
     std::vector<std::pair<int, int>> neighborIdx_candidates(0);
@@ -11,46 +37,71 @@ std::vector<Position::Index> AA_SIPP::Map_Utility::getNeighborIndex(const Positi
         neighborIdx_candidates.push_back({-1, 0});
         neighborIdx_candidates.push_back({0, -1});
     }
-    if (extension_level > 2)
+    if (extension_level_ > 2)
     {
         neighborIdx_candidates.push_back({1, 1});
         neighborIdx_candidates.push_back({-1, 1});
         neighborIdx_candidates.push_back({-1, -1});
         neighborIdx_candidates.push_back({1, -1});
     }
-    if (extension_level > 3)
+    if (extension_level_ > 3)
     {
-        neighborIdx_candidates.push_back({2, 1});   neighborIdx_candidates.push_back({2, 1});
-        neighborIdx_candidates.push_back({-1, 2});  neighborIdx_candidates.push_back({-2, 1});
-        neighborIdx_candidates.push_back({-2, -1}); neighborIdx_candidates.push_back({-1, -2});
-        neighborIdx_candidates.push_back({1, -2});  neighborIdx_candidates.push_back({2, -1});
+        neighborIdx_candidates.push_back({2, 1});
+        neighborIdx_candidates.push_back({2, 1});
+        neighborIdx_candidates.push_back({-1, 2});
+        neighborIdx_candidates.push_back({-2, 1});
+        neighborIdx_candidates.push_back({-2, -1});
+        neighborIdx_candidates.push_back({-1, -2});
+        neighborIdx_candidates.push_back({1, -2});
+        neighborIdx_candidates.push_back({2, -1});
     }
-    if (extension_level > 4)
+    if (extension_level_ > 4)
     {
-        neighborIdx_candidates.push_back({3, 1});   neighborIdx_candidates.push_back({3, 2});   neighborIdx_candidates.push_back({2, 3});   neighborIdx_candidates.push_back({1, 3});
-        neighborIdx_candidates.push_back({-1, 3});  neighborIdx_candidates.push_back({-2, 3});  neighborIdx_candidates.push_back({-3, 2});  neighborIdx_candidates.push_back({-3, 1});
-        neighborIdx_candidates.push_back({-3, -2}); neighborIdx_candidates.push_back({-3, -1}); neighborIdx_candidates.push_back({-2, -3}); neighborIdx_candidates.push_back({-1, -3});
-        neighborIdx_candidates.push_back({1, -3});  neighborIdx_candidates.push_back({3, -2});  neighborIdx_candidates.push_back({3, -2});  neighborIdx_candidates.push_back({3, -1});
+        neighborIdx_candidates.push_back({3, 1});
+        neighborIdx_candidates.push_back({3, 2});
+        neighborIdx_candidates.push_back({2, 3});
+        neighborIdx_candidates.push_back({1, 3});
+        neighborIdx_candidates.push_back({-1, 3});
+        neighborIdx_candidates.push_back({-2, 3});
+        neighborIdx_candidates.push_back({-3, 2});
+        neighborIdx_candidates.push_back({-3, 1});
+        neighborIdx_candidates.push_back({-3, -2});
+        neighborIdx_candidates.push_back({-3, -1});
+        neighborIdx_candidates.push_back({-2, -3});
+        neighborIdx_candidates.push_back({-1, -3});
+        neighborIdx_candidates.push_back({1, -3});
+        neighborIdx_candidates.push_back({3, -2});
+        neighborIdx_candidates.push_back({3, -2});
+        neighborIdx_candidates.push_back({3, -1});
     }
 
-    std::vector<Position::Index> neighbors; neighbors.clear();
+    std::vector<Position::Index> neighbors;
+    neighbors.clear();
     for (const auto &relative_index : neighborIdx_candidates)
     {
         Position::Index neighbor_idx(
             _index.x_ + relative_index.first,
             _index.y_ + relative_index.second);
-        
-        if (neighbor_idx.x_ < 0 or neighbor_idx.y_ < 0)
+
+        if (neighbor_idx.x_ < lower_left_.x_ or
+            neighbor_idx.y_ < lower_left_.y_)
             continue;
-        
-        if (neighbor_idx.x_ >= map_.property_.width_ or
-            neighbor_idx.y_ >= map_.property_.height_)
+
+        if (neighbor_idx.x_ > upper_right_.x_ or
+            neighbor_idx.y_ > upper_right_.y_)
             continue;
-        
+
         neighbors.push_back(neighbor_idx);
     }
 
     return neighbors;
+}
+
+std::vector<Position::Index> AA_SIPP::Map_Utility::getNeighborIndex(const Position::Pose &_pose) const
+{
+    Position::Index index = convertPoseToIndex(_pose);
+
+    return getNeighborIndex(index);
 }
 
 std::vector<Position::Index> AA_SIPP::Map_Utility::getValidIndexes(
@@ -65,12 +116,13 @@ std::vector<Position::Index> AA_SIPP::Map_Utility::getValidIndexes(
         inflated_mapData_ = map_.inflate(inflation_radius);
     }
 
-    std::vector<Position::Index> validIndexes;  validIndexes.clear();
+    std::vector<Position::Index> validIndexes;
+    validIndexes.clear();
     for (const auto &index : _target)
     {
         if (inflated_mapData_[index.x_][index.y_].occupied_)
             continue;
-        
+
         validIndexes.push_back(index);
     }
 
@@ -80,7 +132,7 @@ std::vector<Position::Index> AA_SIPP::Map_Utility::getValidIndexes(
 bool AA_SIPP::Map_Utility::isValidIndexes(
     const std::string &_agentName, const std::vector<Position::Index> &_target)
 {
-    double agentSize = agentSizeDB_[_agentName] + std::sqrt(2) * map_.property_.resolution_;
+    double agentSize = agentSizeDB_[_agentName];
 
     if (std::isnan(map_.property_.inflation_radius_) or
         std::fabs(map_.property_.inflation_radius_ - agentSize) > 1e-8)
@@ -109,8 +161,18 @@ const Position::Pose AA_SIPP::Map_Utility::convertIndexToPose(
     if (x == _from.component_.x and
         y == _from.component_.y)
         theta = _from.component_.theta;
-    
+
     return Position::Pose(x, y, theta);
+}
+
+const Position::Pose AA_SIPP::Map_Utility::convertIndexToPose(
+    const Position::Index &_target,
+    double _theta) const
+{
+    double x = map_.property_.origin_.x_ + _target.x_ * map_.property_.resolution_;
+    double y = map_.property_.origin_.y_ + _target.y_ * map_.property_.resolution_;
+    
+    return Position::Pose(x, y, _theta);
 }
 
 const Position::Index AA_SIPP::Map_Utility::convertPoseToIndex(const Position::Pose &_target) const
@@ -147,7 +209,8 @@ const std::vector<Position::Index> AA_SIPP::Map_Utility::getRouteComponents(
     int xStep = x0 < x1 ? 1 : -1;
     int yStep = y0 < y1 ? 1 : -1;
 
-    std::vector<Position::Index> routeComponents;   routeComponents.clear();
+    std::vector<Position::Index> routeComponents;
+    routeComponents.clear();
     while (x != x1 + xStep)
     {
         Position::Index componentIndex;
@@ -175,7 +238,7 @@ const std::vector<Position::Index> AA_SIPP::Map_Utility::getRouteComponents(
         if (2 * error >= deltaX)
         {
             y = y + yStep;
-            error = error + deltaError;
+            error = error - deltaX;
         }
     }
 

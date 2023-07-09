@@ -55,9 +55,9 @@ namespace Low_Level_Engine
 
         public:
             ReservationTable(
-                std::shared_ptr<Map_Utility> _map_utility,
-                std::shared_ptr<Motion> _motion_manager,
-                std::shared_ptr<ConflictChecker> _conflict_checker)
+                std::shared_ptr<Map_Utility> &_map_utility,
+                std::shared_ptr<Motion> &_motion_manager,
+                std::shared_ptr<ConflictChecker> &_conflict_checker)
                 : map_utility_(_map_utility),
                   motion_manager_(_motion_manager),
                   conflict_checker_(_conflict_checker) {}

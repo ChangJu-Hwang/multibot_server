@@ -63,5 +63,41 @@ namespace Low_Level_Engine
                   arrival_time_(_arrival_time), departure_time_(_departure_time),
                   gVal_(_gVal), hVal_(_hVal), parent_(_parent) {}
         }; // struct Node
-    }      // namespace AA_SIPP
+
+        struct Node_HashFunc
+        {
+            std::size_t operator()(const AA_SIPP::Node &_node) const
+            {
+                auto index_x = std::hash<int>{}(_node.idx_.x_);
+                auto index_y = std::hash<int>{}(_node.idx_.y_);
+
+                auto startTime = std::hash<double>{}(_node.safe_interval_.startTime_.count());
+                auto endTime = std::hash<double>{}(_node.safe_interval_.endTime_.count());
+
+                std::size_t seed = 0;
+                seed = seed ^ (index_x + 0x9e3779b9 + (seed << 6) + (seed >> 2));
+                seed = seed ^ (index_y + 0x9e3779b9 + (seed << 6) + (seed >> 2));
+                seed = seed ^ (startTime + 0x9e3779b9 + (seed << 6) + (seed >> 2));
+                seed = seed ^ (endTime + 0x9e3779b9 + (seed << 6) + (seed >> 2));
+
+                return seed;
+            }
+        }; // struct Node_HashFunc
+
+        struct Compare
+        {
+            bool operator()(
+                const AA_SIPP::Node &_first, const AA_SIPP::Node &_second) const
+            {
+                if (std::fabs((_first.gVal_ + _first.hVal_) - (_second.gVal_ + _second.hVal_)) > 1e-8)
+                    return (_first.gVal_ + _first.hVal_) < (_second.gVal_ + _second.hVal_);
+                
+                if (std::fabs(_first.hVal_ - _second.hVal_) > 1e-8)
+                    return (_first.hVal_ < _second.hVal_);
+
+                return true;
+            }
+        }; // struct Compare
+
+    } // namespace AA_SIPP
 } // namespace Low_Level_Engine
