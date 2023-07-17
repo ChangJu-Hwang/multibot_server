@@ -82,6 +82,7 @@ namespace Server
         rclcpp::Time nodeStartTime_;
 
         std::map<std::string, Robot> robotList_;
+        MAPF_Util::Path::PathSet paths_;
 
         std::shared_ptr<CPBS::Solver> solver_;
         std::shared_ptr<Instance_Manager> instance_manager_;

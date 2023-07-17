@@ -36,16 +36,34 @@ namespace High_Level_Engine
         {
         public:
             std::pair<Path::PathSet, bool> solve();
-        
+
         private:
             std::pair<Position::Coordinates, Position::Coordinates> restrict_searchSpace();
+
+        private:
+            bool generateRoot();
+            std::pair<Node *, bool> generateChild(
+                Node *_parent, const std::string &_low, const std::string &_high);
+
+            void updateNode(Node *_curNode);
+            bool validateResult();
+
+            Node *initChild(
+                Node *_parent, const std::string &_low, const std::string &_high);
+            void topologicalSort(std::vector<std::string> &_list);
+            void topologicalSortUtil(
+                const std::string &_agentName, std::vector<std::string> &_list);
+            std::vector<std::string> getHigherPriorityAgents(
+                const std::string &_target, const std::vector<std::string> &_list);
+            std::vector<std::string> getLowerPriorityAgents(
+                const std::string &_target, const std::vector<std::string> &_list);
 
         public:
             void update(const InstanceMsg &_msg)
             {
                 agents_ = _msg.first;
             }
-        
+
         private:
             std::unordered_map<std::string, AgentInstance::Agent> agents_;
 
@@ -55,8 +73,9 @@ namespace High_Level_Engine
             Path::PathSet paths_;
 
             std::shared_ptr<AA_SIPP::Planner> planner_;
-            std::shared_ptr<AA_SIPP::Motion> motion_manager_;
-            std::shared_ptr<AA_SIPP::ConflictChecker> conflict_checker_;
+            std::shared_ptr<AA_SIPP::Map_Utility> map_utility_ = std::make_shared<AA_SIPP::Map_Utility>();
+            std::shared_ptr<AA_SIPP::Motion> motion_manager_ = std::make_shared<AA_SIPP::Motion>(map_utility_);
+            std::shared_ptr<AA_SIPP::ConflictChecker> conflict_checker_ = std::make_shared<AA_SIPP::ConflictChecker>(motion_manager_);
 
         public:
             Solver(std::shared_ptr<Instance_Manager> _instance_manager);

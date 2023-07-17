@@ -34,16 +34,23 @@ void MultibotServer::request_registrations()
 
 void MultibotServer::plan_multibots()
 {
-    auto foo = solver_->solve();
+    paths_.clear();
+    auto plans = solver_->solve();
 
-    for (const auto singlePath : foo.first)
-    {   
-        std::cout << singlePath.second << std::endl;
+    if (plans.second == true)
+    {
+        paths_ = plans.first;
+
+        for (const auto singlePath : paths_)
+            std::cout << singlePath.second << std::endl;
     }
 }
 
 void MultibotServer::request_controls()
 {
+    if (paths_.empty())
+        return;
+
     for (auto robot : robotList_)
     {
         while (!robot.second.control_cmd_->wait_for_service(1s))
@@ -63,15 +70,16 @@ void MultibotServer::update_callback()
 {
     if (robotList_.empty())
         return;
-    
-    visualization_msgs::msg::MarkerArray arrowArray;    arrowArray.markers.clear();
-    for(const auto& robot : robotList_)
+
+    visualization_msgs::msg::MarkerArray arrowArray;
+    arrowArray.markers.clear();
+    for (const auto &robot : robotList_)
     {
-        if(robot.second.prior_update_time_.seconds() < 1e-8)
+        if (robot.second.prior_update_time_.seconds() < 1e-8)
             continue;
 
         auto robotMarker = update_Rviz_SinglePose(robot.second);
-       
+
         if (robotMarker.ns == "")
             continue;
         arrowArray.markers.push_back(robotMarker);
@@ -84,7 +92,7 @@ void MultibotServer::robotState_callback(const RobotState::SharedPtr _state_msg)
 {
     robotList_[_state_msg->name].prior_update_time_ = robotList_[_state_msg->name].last_update_time_;
     robotList_[_state_msg->name].last_update_time_ = this->now();
-    robotList_[_state_msg->name].robotInfo_.pose_.component_   = _state_msg->pose;
+    robotList_[_state_msg->name].robotInfo_.pose_.component_ = _state_msg->pose;
 }
 
 void MultibotServer::request_registration(
@@ -119,16 +127,18 @@ void MultibotServer::request_control(
 {
     auto request = std::make_shared<Path::Request>();
 
-    // Todo: Change to MAPF Result
-    LocalPath localPath;
-        localPath.start = robotList_[_robotName].robotInfo_.start_.component_;
-        localPath.goal  = robotList_[_robotName].robotInfo_.goal_.component_;
-        localPath.departure_time = 10;
-        localPath.arrival_time   = 20;
-    
     request->path.clear();
-    request->path.push_back(localPath);
-    request->start_time = 0.0;
+    for (const auto &nodePair : paths_[_robotName].nodes_)
+    {
+        LocalPath localPath;
+        localPath.start = nodePair.first.pose_.component_;
+        localPath.goal = nodePair.second.pose_.component_;
+        localPath.departure_time = nodePair.first.departure_time_.count();
+        localPath.arrival_time = nodePair.second.arrival_time_.count();
+
+        request->path.push_back(localPath);
+    }
+    request->start_time = 10.0;
 
     auto response_received_callback = [this](rclcpp::Client<Path>::SharedFuture _future)
     {
@@ -136,7 +146,7 @@ void MultibotServer::request_control(
         return;
     };
 
-    auto future_rusult = 
+    auto future_rusult =
         _service->async_send_request(request, response_received_callback);
 }
 
@@ -145,7 +155,7 @@ visualization_msgs::msg::Marker MultibotServer::update_Rviz_SinglePose(const Rob
     auto robotMarker = visualization_msgs::msg::Marker();
 
     robotMarker.header.frame_id = "map";
-    robotMarker.header.stamp    = _robot.last_update_time_;
+    robotMarker.header.stamp = _robot.last_update_time_;
     robotMarker.ns = _robot.robotInfo_.name_;
     robotMarker.id = _robot.id_;
     robotMarker.type = visualization_msgs::msg::Marker::ARROW;
@@ -199,7 +209,7 @@ void MultibotServer::loadMap()
         auto response = result.get();
 
         MapInstance::BinaryOccupancyMap map;
-        
+
         map.property_.resolution_ = response->map.info.resolution;
         map.property_.width_ = response->map.info.width;
         map.property_.height_ = response->map.info.height;
@@ -291,10 +301,10 @@ void MultibotServer::loadTasks()
 
         Robot robot;
         robot.robotInfo_ = agent;
-        robot.id_        = robotList_.size();
+        robot.id_ = robotList_.size();
 
         robot.prior_update_time_ = this->now();
-        robot.last_update_time_  = this->now();
+        robot.last_update_time_ = this->now();
 
         robot.state_sub_ = this->create_subscription<RobotState>(
             "/" + agent.name_ + "/state", qos_,
@@ -311,15 +321,15 @@ MultibotServer::MultibotServer()
 {
     mapLoading_ = this->create_client<nav_msgs::srv::GetMap>("/map_server/map");
 
-    rviz_poses_pub_     = this->create_publisher<visualization_msgs::msg::MarkerArray>("robot_list", qos_);
+    rviz_poses_pub_ = this->create_publisher<visualization_msgs::msg::MarkerArray>("robot_list", qos_);
 
     registration_request_.clear();
 
     update_timer_ = this->create_wall_timer(
         10ms, std::bind(&MultibotServer::update_callback, this));
 
-    instance_manager_   = std::make_shared<Instance_Manager>();
-    solver_             = std::make_shared<CPBS::Solver>(instance_manager_);
+    instance_manager_ = std::make_shared<Instance_Manager>();
+    solver_ = std::make_shared<CPBS::Solver>(instance_manager_);
 
     RCLCPP_INFO(this->get_logger(), "MultibotServer has been initialized");
 }

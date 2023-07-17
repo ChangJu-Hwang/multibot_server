@@ -22,6 +22,8 @@ namespace High_Level_Engine
 
             Node *parent_;
 
+            unsigned int ignoredConflictNum_ = 0;
+
         public:
             Node &operator=(const Node &_other)
             {
