@@ -24,13 +24,13 @@ namespace Low_Level_Engine
         public:
             std::pair<Path::SinglePath, bool> search(
                 const std::string &_agentName,
+                const std::vector<std::string> &_higher_agents = std::vector<std::string>(),
+                const Path::PathSet &_pathSet = Path::PathSet(),
                 const std::pair<Position::Coordinates, Position::Coordinates> &_searchSpace
                  = std::make_pair(
                     Position::Coordinates(-1 * std::numeric_limits<double>::infinity(), -1 * std::numeric_limits<double>::infinity()),
                     Position::Coordinates(std::numeric_limits<double>::infinity(), std::numeric_limits<double>::infinity())),
-                const double _timeLimit = 10,
-                const std::vector<std::string> &_higher_agents = std::vector<std::string>(),
-                const Path::PathSet &_pathSet = Path::PathSet());
+                const double _timeLimit = 10);
 
         private:
             std::pair<Path::SinglePath, bool> find_partial_path(

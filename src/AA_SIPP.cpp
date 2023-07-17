@@ -6,10 +6,10 @@ using namespace Low_Level_Engine;
 
 std::pair<Path::SinglePath, bool> AA_SIPP::Planner::search(
     const std::string &_agentName,
-    const std::pair<Position::Coordinates, Position::Coordinates> &_searchSpace,
-    const double _timeLimit,
     const std::vector<std::string> &_higher_agents,
-    const Path::PathSet &_pathSet)
+    const Path::PathSet &_pathSet,
+    const std::pair<Position::Coordinates, Position::Coordinates> &_searchSpace,
+    const double _timeLimit)
 {
     map_utility_->restrictArea(_searchSpace);
     reservation_table_->init(agents_[_agentName].size_);
@@ -289,7 +289,7 @@ double AA_SIPP::Planner::computeTotalDelays(
         for (const auto &higher_path : higher_paths_)
         {
             delayTimeThreads.push_back(
-                std::async(std::launch::async, [this, &higher_path, &lower_path]() -> double
+                std::async(std::launch::async, [this, higher_path, lower_path]() -> double
                            { return this->conflict_checker_->getDelayTime(higher_path, lower_path); }));
         }
 
@@ -299,7 +299,7 @@ double AA_SIPP::Planner::computeTotalDelays(
             delay = std::max(delay, delayTimeThread.get());
         }
         total_delay += delay;
-    } while (delay > 1e-8);
+    } while (delay > 1e-3);
 
     return total_delay;
 }
