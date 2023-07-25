@@ -51,7 +51,6 @@ std::pair<Path::SinglePath, bool> AA_SIPP::Planner::find_partial_path(
         AA_SIPP::Node curNode = *open_.begin();
         open_.erase(open_.begin());
 
-        
         if (curNode.idx_ == map_utility_->convertPoseToIndex(agents_[_agentName].goal_) and
             curNode.arrival_time_ + std::numeric_limits<Time::TimePoint>::epsilon() >= _goals.back().startTime_)
             return std::make_pair(constructSinglePath(_agentName, curNode), true);
@@ -63,7 +62,6 @@ std::pair<Path::SinglePath, bool> AA_SIPP::Planner::find_partial_path(
             continue;
 
         auto parent = &close_.insert(close_.end(), std::make_pair(curNode, curNode))->second;
-
         std::vector<Position::Index> neighborIndexes = map_utility_->getNeighborIndex(parent->pose_);
         neighborIndexes = map_utility_->getValidIndexes(_agentName, neighborIndexes);
 
@@ -118,6 +116,7 @@ std::pair<Path::SinglePath, bool> AA_SIPP::Planner::find_partial_path(
         duration = std::chrono::system_clock::now() - search_startTime;
     }
 
+    std::cout << "No result" << std::endl;
     return std::make_pair(Path::SinglePath(), false);
 }
 
@@ -195,15 +194,16 @@ std::vector<AA_SIPP::Node> AA_SIPP::Planner::getSuccessors(
             childNode.arrival_time_ = safe_interval.startTime_;
 
         double delay = computeTotalDelays(
-            _agentName, _parentNode.pose_, childNode.pose_, _parentNode.arrival_time_);
+            _agentName, _parentNode.pose_, childNode.pose_,
+            _parentNode.arrival_time_, safe_interval.endTime_ - _parentNode.arrival_time_);
 
-        if (_parentNode.arrival_time_ + Time::TimePoint(delay) + std::numeric_limits<Time::TimePoint>::epsilon() >= _parentNode.safe_interval_.endTime_)
+        if (childNode.arrival_time_ - moveTime + Time::TimePoint(delay) + std::numeric_limits<Time::TimePoint>::epsilon() >= _parentNode.safe_interval_.endTime_)
             continue;
 
-        if (_parentNode.arrival_time_ + moveTime + Time::TimePoint(delay) + std::numeric_limits<Time::TimePoint>::epsilon() >= childNode.safe_interval_.endTime_)
+        if (childNode.arrival_time_ + Time::TimePoint(delay) + std::numeric_limits<Time::TimePoint>::epsilon() >= childNode.safe_interval_.endTime_)
             continue;
 
-        childNode.arrival_time_ = _parentNode.arrival_time_ + moveTime + Time::TimePoint(delay);
+        childNode.arrival_time_ = childNode.arrival_time_ + Time::TimePoint(delay);
         childNode.gVal_ = childNode.arrival_time_.count();
         childNode.updateHeuristic(agents_[_agentName].goal_, agents_[_agentName].max_linVel_);
 
@@ -260,7 +260,7 @@ Path::SinglePath AA_SIPP::Planner::constructSinglePath(
 double AA_SIPP::Planner::computeTotalDelays(
     const std::string &_agentName,
     const Position::Pose &_startPose, const Position::Pose &_goalPose,
-    const Time::TimePoint &_departure_time)
+    const Time::TimePoint &_departure_time, const Time::TimePoint &_max_delay_limit)
 {
     Path::SinglePath::Node start, goal;
 
@@ -283,22 +283,33 @@ double AA_SIPP::Planner::computeTotalDelays(
         lower_path.nodes_.front().first.departure_time_ += Time::TimePoint(delay);
         lower_path.nodes_.front().second.arrival_time_ += Time::TimePoint(delay);
 
-        std::vector<std::future<double>> delayTimeThreads;
-        delayTimeThreads.clear();
-
-        for (const auto &higher_path : higher_paths_)
-        {
-            delayTimeThreads.push_back(
-                std::async(std::launch::async, [this, higher_path, lower_path]() -> double
-                           { return this->conflict_checker_->getDelayTime(higher_path, lower_path); }));
-        }
-
         delay = 0.0;
-        for (auto &delayTimeThread : delayTimeThreads)
-        {
-            delay = std::max(delay, delayTimeThread.get());
-        }
-        total_delay += delay;
+        for (const auto &higher_path : higher_paths_)
+            delay = std::max(delay, conflict_checker_->getDelayTime(higher_path, lower_path));
+        total_delay = total_delay + delay;
+
+        if (total_delay > _max_delay_limit.count() + 1e-8)
+            break;
+        
+        if (std::fabs(total_delay - std::numeric_limits<double>::max()) < 1e-3)
+            break;
+
+        // std::vector<std::future<double>> delayTimeThreads;
+        // delayTimeThreads.clear();
+
+        // for (const auto &higher_path : higher_paths_)
+        // {
+        //     delayTimeThreads.push_back(
+        //         std::async(std::launch::async, [this, higher_path, lower_path]() -> double
+        //                    { return this->conflict_checker_->getDelayTime(higher_path, lower_path); }));
+        // }
+
+        // delay = 0.0;
+        // for (auto &delayTimeThread : delayTimeThreads)
+        // {
+        //     delay = std::max(delay, delayTimeThread.get());
+        // }
+        // total_delay += delay;
     } while (delay > 1e-3);
 
     return total_delay;

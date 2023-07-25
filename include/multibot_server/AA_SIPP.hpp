@@ -50,7 +50,7 @@ namespace Low_Level_Engine
             double computeTotalDelays(
                 const std::string &_agentName,
                 const Position::Pose &_startPose, const Position::Pose &_goalPose,
-                const Time::TimePoint &_departure_time);
+                const Time::TimePoint &_departure_time, const Time::TimePoint &_max_delay_limit);
 
         public:
             void update(const InstanceMsg &_msg)
