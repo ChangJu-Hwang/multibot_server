@@ -43,6 +43,8 @@ void MultibotServer::plan_multibots()
 
         for (const auto singlePath : paths_)
             std::cout << singlePath.second << std::endl;
+        
+        instance_manager_->exportResult(paths_);
     }
 }
 

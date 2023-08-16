@@ -16,6 +16,10 @@ namespace Instance
     public:
         void saveAgents(const std::unordered_map<std::string, AgentInstance::Agent> &_agents);
         void saveMap(const MapInstance::BinaryOccupancyMap &_map);
+        void exportResult(
+            const Path::PathSet &_paths,
+            const std::string &_output_fName = "CPBS_Log",
+            const std::string &_directory = "Results") const;
 
     public:
         void attach(Observer::ObserverInterface<InstanceMsg> &_observer) override;
