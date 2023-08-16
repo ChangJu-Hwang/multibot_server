@@ -259,30 +259,30 @@ void MultibotServer::loadTasks()
         AgentInstance::Agent agent;
 
         agent.name_ = task["name"].as<std::string>();
-        std::string type = task["type"].as<std::string>();
+        agent.type_ = task["type"].as<std::string>();
 
-        if (std::find(robotTypes.begin(), robotTypes.end(), type) == robotTypes.end())
+        if (std::find(robotTypes.begin(), robotTypes.end(), agent.type_) == robotTypes.end())
         {
-            this->declare_parameter(type + ".size");
-            this->declare_parameter(type + ".wheels.separation");
-            this->declare_parameter(type + ".wheels.radius");
+            this->declare_parameter(agent.type_ + ".size");
+            this->declare_parameter(agent.type_ + ".wheels.separation");
+            this->declare_parameter(agent.type_ + ".wheels.radius");
 
-            this->declare_parameter(type + ".linear.velocity");
-            this->declare_parameter(type + ".linear.acceleration");
-            this->declare_parameter(type + ".angular.velocity");
-            this->declare_parameter(type + ".angular.acceleration");
+            this->declare_parameter(agent.type_ + ".linear.velocity");
+            this->declare_parameter(agent.type_ + ".linear.acceleration");
+            this->declare_parameter(agent.type_ + ".angular.velocity");
+            this->declare_parameter(agent.type_ + ".angular.acceleration");
 
-            robotTypes.push_back(type);
+            robotTypes.push_back(agent.type_);
         }
 
-        this->get_parameter_or(type + ".size", agent.size_, 0.0);
-        this->get_parameter_or(type + ".wheels.separation", agent.wheel_seperation_, 0.0);
-        this->get_parameter_or(type + ".wheels.radius", agent.wheel_radius_, 0.0);
+        this->get_parameter_or(agent.type_ + ".size", agent.size_, 0.0);
+        this->get_parameter_or(agent.type_ + ".wheels.separation", agent.wheel_seperation_, 0.0);
+        this->get_parameter_or(agent.type_ + ".wheels.radius", agent.wheel_radius_, 0.0);
 
-        this->get_parameter_or(type + ".linear.velocity", agent.max_linVel_, 0.0);
-        this->get_parameter_or(type + ".linear.acceleration", agent.max_linAcc_, 0.0);
-        this->get_parameter_or(type + ".angular.velocity", agent.max_angVel_, 0.0);
-        this->get_parameter_or(type + ".angular.acceleration", agent.max_angAcc_, 0.0);
+        this->get_parameter_or(agent.type_ + ".linear.velocity", agent.max_linVel_, 0.0);
+        this->get_parameter_or(agent.type_ + ".linear.acceleration", agent.max_linAcc_, 0.0);
+        this->get_parameter_or(agent.type_ + ".angular.velocity", agent.max_angVel_, 0.0);
+        this->get_parameter_or(agent.type_ + ".angular.acceleration", agent.max_angAcc_, 0.0);
 
         geometry_msgs::msg::Pose2D startPose;
         startPose.x = task["start"]["x"].as<double>();

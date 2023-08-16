@@ -1,5 +1,6 @@
 Log:
   - name: Agent1
+    type: ISR_M2
     cost: 18.10065054859372
     path:
       - Start: [10.2, 6.3, 0]
@@ -12,6 +13,7 @@ Log:
         Goal: [14.6, 6.3, 0]
         Time Interval: [16.53497487351634, 18.10065054859372]
   - name: Agent2
+    type: ISR_M2
     cost: 19.44133793338286
     path:
       - Start: [14.5, 8, 0]

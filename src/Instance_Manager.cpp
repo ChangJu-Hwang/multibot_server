@@ -35,6 +35,7 @@ void Instance_Manager::exportResult(
     {
         YAML::Node agent;
         agent["name"] = singleAgent.second.agentName_;
+        agent["type"] = agents_.find(singleAgent.second.agentName_)->second.type_;
         agent["cost"] = singleAgent.second.cost_;
 
         for (const auto &nodePair : singleAgent.second.nodes_)
