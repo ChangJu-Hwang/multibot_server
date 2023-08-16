@@ -6,8 +6,8 @@
         separation: 0.5
         radius: 0.32
       linear:
-        velocity: 1.00
-        acceleration: 0.60
+        velocity: 0.4
+        acceleration: 0.5
       angular:
-        velocity: 0.50
-        acceleration: 0.30
+        velocity: 0.4
+        acceleration: 0.5

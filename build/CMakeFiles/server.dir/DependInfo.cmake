@@ -30,9 +30,9 @@ set(CMAKE_TARGET_DEFINITIONS_CXX
 # The include file search paths:
 set(CMAKE_CXX_TARGET_INCLUDE_PATH
   "../include"
-  "/opt/ros/foxy/include"
-  "/home/changju/multibot_ws/install/multibot_ros2_interface/include"
   "/home/changju/multibot_ws/install/multibot_util/include"
+  "/home/changju/multibot_ws/install/multibot_ros2_interface/include"
+  "/opt/ros/foxy/include"
   )
 
 # Targets to which this target links.

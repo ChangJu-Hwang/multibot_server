@@ -37,7 +37,7 @@ std::pair<Path::PathSet, bool> CPBS::Solver::solve()
         }
 
         curNode->conflict_ = curNode->conflicts_.back();
-
+        
         auto firstChildResult = generateChild(
             curNode, curNode->conflict_.first, curNode->conflict_.second);
 
@@ -159,6 +159,7 @@ bool CPBS::Solver::generateRoot()
         root->conflicts_.push_back(std::make_pair(
             std::get<0>(conflictResult), std::get<1>(conflictResult)));
     }
+    delayTimeThreads.clear();
 
     open_.push(root);
 
@@ -276,6 +277,7 @@ std::pair<CPBS::Node *, bool> CPBS::Solver::generateChild(
             else
                 lookup_table.emplace(std::make_pair(conflictResult.first, true));
         }
+        delayTimeThreads.clear();
     }
 
     return std::make_pair(childNode, true);
@@ -340,6 +342,7 @@ bool CPBS::Solver::validateResult()
                   << std::get<0>(conflictResult) << " & " << std::get<1>(conflictResult)
                   << std::endl;
     }
+    delayTimeThreads.clear();
 
     return validationFlag;
 }

@@ -85,8 +85,7 @@ bool AA_SIPP::ReservationTable::applySinglePath(
                     nextRouteArea = map_utility_->getRouteComponents(
                         nextNodePairIter->first.pose_, nextNodePairIter->second.pose_);
                     conflict_endIndex = conflict_checker_->getConflictScope(
-                                                             index, nextRouteArea, inflation_radius)
-                                            .second;
+                                                             index, nextRouteArea, inflation_radius).second;
                 }
 
                 if (conflict_endIndex != nextRouteArea.back())

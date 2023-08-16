@@ -17,15 +17,20 @@ double AA_SIPP::ConflictChecker::getDelayTime(
         {
             bool isConflict = false;
             double max_delay = -1e-8;
-            while (checkPartialConflict(
-                _higherPath.agentName_, higher_PartialPath,
-                _lowerPath.agentName_, lower_PartialPath,
-                max_delay))
+
+            while (true)
             {
+                if (checkPartialConflict(
+                        _higherPath.agentName_, higher_PartialPath,
+                        _lowerPath.agentName_, lower_PartialPath,
+                        max_delay) == false)
+                {
+                    break;
+                }
+
                 isConflict = true;
-                if (max_delay > 1e-8)
-                    ++higher_PartialPath;
-                
+                ++higher_PartialPath;
+
                 if (higher_PartialPath == _higherPath.nodes_.end())
                     return (std::numeric_limits<double>::max() - 1e-8);
 
@@ -37,6 +42,9 @@ double AA_SIPP::ConflictChecker::getDelayTime(
 
             if (isConflict)
             {
+                if (max_delay > std::numeric_limits<double>::max() - 1e-3)
+                    return std::numeric_limits<double>::max();
+
                 double delay = max_delay / 2;
                 while (checkPartialConflict(
                     _higherPath.agentName_, higher_PartialPath,
@@ -45,6 +53,9 @@ double AA_SIPP::ConflictChecker::getDelayTime(
                 {
                     // Suboptimal Delay Time
                     delay = (delay + max_delay) / 2;
+
+                    if (std::fabs(max_delay - delay) < 1e-3)
+                        break;
                 }
 
                 return delay;
@@ -80,7 +91,6 @@ double AA_SIPP::ConflictChecker::getDelayTime(
     return 0;
 }
 
-
 std::pair<Position::Index, Position::Index> AA_SIPP::ConflictChecker::getConflictScope(
     const Position::Index &_target,
     const std::vector<Position::Index> &_indexGroup,
@@ -95,28 +105,28 @@ std::pair<Position::Index, Position::Index> AA_SIPP::ConflictChecker::getConflic
     {
         Position::Coordinates routeComponent = map_.mapData_[index.x_][index.y_].coord_;
         double distance = Position::getDistance(target, routeComponent);
-    
-        if (not(conflictFlag) and _safe_distance > distance + std::sqrt(2) * map_.property_.resolution_ + 1e-8)
+
+        if (not(conflictFlag) and _safe_distance + std::sqrt(2) * map_.property_.resolution_ + 1e-8 > distance)
         {
             conflictFlag = true, resultFlag = true;
             conflict_start = index;
         }
 
-        if (conflictFlag and distance + std::sqrt(2) * map_.property_.resolution_ > _safe_distance + 1e-8)
+        if (conflictFlag and distance + 1e-8 > _safe_distance + std::sqrt(2) * map_.property_.resolution_)
         {
             conflictFlag = false;
             auto index_iter = std::find(_indexGroup.begin(), _indexGroup.end(), index);
-            conflict_end = *std::prev(index_iter,1);
+            conflict_end = *std::prev(index_iter, 1);
             break;
         }
     }
 
     if (not(resultFlag))
         return std::pair(Position::Index(), Position::Index());
-    
+
     if (conflictFlag)
         conflict_end = _indexGroup.back();
-    
+
     return std::pair(conflict_start, conflict_end);
 }
 
@@ -140,6 +150,9 @@ double AA_SIPP::ConflictChecker::getDelayScope(
     const std::string &_lowerName, std::vector<PartialPath>::const_iterator _lower_PartialPath,
     double _safe_distance)
 {
+    if (_lower_PartialPath->first.departure_time_.count() > std::numeric_limits<double>::max() - 1e-3)
+        return std::numeric_limits<double>::max() - 1e-8;
+
     Position::Coordinates higher_start(
         _higher_PartialPath->first.pose_.component_.x,
         _higher_PartialPath->first.pose_.component_.y);
@@ -221,13 +234,18 @@ double AA_SIPP::ConflictChecker::getDelayScope(
 
     double higher_height = std::fabs(Position::crossProduct(higher_p - lower_start, lower_unit_vector));
     Position::Coordinates higher_escape_coord = higher_p + (_safe_distance - higher_height) / std::fabs(sinTheta) * higher_unit_vector;
-    if (Position::getDistance(higher_escape_coord, higher_start) > higher_vector.norm() + 1e-8)
+
+    if (Position::getDistance(higher_escape_coord, higher_end) > higher_vector.norm() + 1e-8)
+        higher_escape_coord = higher_start;
+    else if (Position::getDistance(higher_escape_coord, higher_start) > higher_vector.norm() + 1e-8)
         higher_escape_coord = higher_end;
 
     double lower_height = std::fabs(Position::crossProduct(lower_p - higher_start, higher_unit_vector));
     Position::Coordinates lower_enter_coord = lower_p - (_safe_distance - lower_height) / std::fabs(sinTheta) * lower_unit_vector;
     if (Position::getDistance(lower_enter_coord, lower_end) > lower_vector.norm() + 1e-8)
         lower_enter_coord = lower_start;
+    else if (Position::getDistance(lower_enter_coord, lower_start) > lower_vector.norm() + 1e-8)
+        lower_enter_coord = lower_end;
 
     Time::TimePoint reference_timePoint = _lower_PartialPath->first.departure_time_ + motion_manager_->getPartialMoveTime(
                                                                                           _lowerName, Position::Pose(lower_enter_coord.x_, lower_enter_coord.y_, _lower_PartialPath->second.pose_.component_.theta),

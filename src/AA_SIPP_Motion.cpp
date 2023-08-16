@@ -149,7 +149,7 @@ double AA_SIPP::Motion::DisplacementComputer(
         else if (_key.count() < _max_s / _max_v)
             return (_max_v * _key.count() - 0.5 * _max_v * _max_v / _max_a);
         else
-            return (_max_s - 0.5 * _max_a * std::pow(_max_s / _max_v - _max_v / _max_a - _key.count(),2));
+            return (_max_s - 0.5 * _max_a * std::pow(_max_s / _max_v + _max_v / _max_a - _key.count(),2));
     }
     // Triangular Velocity Profile
     else
