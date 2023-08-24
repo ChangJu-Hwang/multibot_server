@@ -7,31 +7,6 @@
 using namespace Server;
 using namespace Instance;
 
-void MultibotServer::loadInstances()
-{
-    loadMap();
-    loadTasks();
-
-    instance_manager_->notify();
-}
-
-void MultibotServer::request_registrations()
-{
-    for (auto single_request : registration_request_)
-    {
-        while (!single_request.second->wait_for_service(1s))
-        {
-            if (!rclcpp::ok())
-            {
-                RCLCPP_ERROR(this->get_logger(), "Interrupted while waiting for the service.");
-                return;
-            }
-            RCLCPP_ERROR(this->get_logger(), "Robot registration not available, waiting again...");
-        }
-        request_registration(single_request.first, single_request.second);
-    }
-}
-
 void MultibotServer::plan_multibots()
 {
     paths_.clear();
@@ -43,7 +18,7 @@ void MultibotServer::plan_multibots()
 
         for (const auto singlePath : paths_)
             std::cout << singlePath.second << std::endl;
-        
+
         instance_manager_->exportResult(paths_);
     }
 }
@@ -97,30 +72,70 @@ void MultibotServer::robotState_callback(const RobotState::SharedPtr _state_msg)
     robotList_[_state_msg->name].robotInfo_.pose_.component_ = _state_msg->pose;
 }
 
-void MultibotServer::request_registration(
-    const std::string &_robotName,
-    std::shared_ptr<rclcpp::Client<MultibotServer::RobotInfo>> _service)
+void MultibotServer::register_robot(
+    const std::shared_ptr<Connection::Request> _request,
+    std::shared_ptr<Connection::Response> _response)
 {
-    auto request = std::make_shared<RobotInfo::Request>();
-
-    request->config.name = _robotName;
-    request->config.size = robotList_[_robotName].robotInfo_.size_;
-    request->config.wheel_radius = robotList_[_robotName].robotInfo_.wheel_radius_;
-    request->config.wheel_seperation = robotList_[_robotName].robotInfo_.wheel_seperation_;
-
-    request->config.max_linvel = robotList_[_robotName].robotInfo_.max_linVel_;
-    request->config.max_linacc = robotList_[_robotName].robotInfo_.max_linAcc_;
-    request->config.max_angvel = robotList_[_robotName].robotInfo_.max_angVel_;
-    request->config.max_angacc = robotList_[_robotName].robotInfo_.max_angAcc_;
-
-    auto response_received_callback = [this](rclcpp::Client<RobotInfo>::SharedFuture _future)
+    if (robotList_.contains(_request->config.name))
     {
-        auto response = _future.get();
+        _response->is_connected = true;
         return;
-    };
+    }
 
-    auto future_result =
-        _service->async_send_request(request, response_received_callback);
+    AgentInstance::Agent robotInfo;
+
+    robotInfo.name_ = _request->config.name;
+
+    robotInfo.type_ = _request->config.type;
+    robotInfo.size_ = _request->config.size;
+    robotInfo.wheel_radius_ = _request->config.wheel_radius;
+    robotInfo.wheel_seperation_ = _request->config.wheel_seperation;
+
+    robotInfo.max_linVel_ = _request->config.max_linvel;
+    robotInfo.max_linAcc_ = _request->config.max_linacc;
+    robotInfo.max_angVel_ = _request->config.max_angvel;
+    robotInfo.max_angAcc_ = _request->config.max_angacc;
+
+    robotInfo.goal_.component_ = _request->goal;
+
+    instance_manager_->insertAgent(std::make_pair(robotInfo.name_, robotInfo));
+
+    Robot robot;
+    {
+        robot.robotInfo_ = robotInfo;
+        robot.id_ = robot_id_;
+        robot_id_++;
+
+        robot.prior_update_time_ = this->now();
+        robot.last_update_time_ = this->now();
+
+        robot.state_sub_ = this->create_subscription<RobotState>(
+            "/" + robotInfo.name_ + "/state", qos_,
+            std::bind(&MultibotServer::robotState_callback, this, std::placeholders::_1));
+        robot.control_cmd_ = this->create_client<Path>("/" + robotInfo.name_ + "/path");
+    }
+    robotList_.insert(std::make_pair(robot.robotInfo_.name_, robot));
+
+    RCLCPP_INFO(this->get_logger(), "New Robot " + robot.robotInfo_.name_ + " is registered.");
+    RCLCPP_INFO(this->get_logger(), "Total Robots: " + std::to_string(robotList_.size()) + "EA");
+    std::cout << robot.robotInfo_ << std::endl;
+
+    _response->is_connected = true;
+}
+
+void MultibotServer::delete_robot(
+    const std::shared_ptr<Disconnection::Request> _request,
+    std::shared_ptr<Disconnection::Response> _response)
+{
+    instance_manager_->deleteAgent(_request->name);
+
+    if (robotList_.contains(_request->name))
+        robotList_.erase(_request->name);
+
+    RCLCPP_INFO(this->get_logger(), "Robot " + _request->name + " is deleted.");
+    RCLCPP_INFO(this->get_logger(), "Total Robots: " + std::to_string(robotList_.size()) + "EA\n");
+
+    _response->is_disconnected = true;
 }
 
 void MultibotServer::request_control(
@@ -241,83 +256,6 @@ void MultibotServer::loadMap()
     }
 }
 
-void MultibotServer::loadTasks()
-{
-    nodeStartTime_ = this->now();
-    std::list<std::string> robotTypes;
-    robotTypes.clear();
-    std::unordered_map<std::string, AgentInstance::Agent> agentList;
-    std::string task_fPath;
-
-    this->declare_parameter("task_fPath");
-    this->get_parameter("task_fPath", task_fPath);
-
-    std::vector<YAML::Node> tasks = YAML::LoadAllFromFile(task_fPath);
-
-    for (const auto &task : tasks)
-    {
-        AgentInstance::Agent agent;
-
-        agent.name_ = task["name"].as<std::string>();
-        agent.type_ = task["type"].as<std::string>();
-
-        if (std::find(robotTypes.begin(), robotTypes.end(), agent.type_) == robotTypes.end())
-        {
-            this->declare_parameter(agent.type_ + ".size");
-            this->declare_parameter(agent.type_ + ".wheels.separation");
-            this->declare_parameter(agent.type_ + ".wheels.radius");
-
-            this->declare_parameter(agent.type_ + ".linear.velocity");
-            this->declare_parameter(agent.type_ + ".linear.acceleration");
-            this->declare_parameter(agent.type_ + ".angular.velocity");
-            this->declare_parameter(agent.type_ + ".angular.acceleration");
-
-            robotTypes.push_back(agent.type_);
-        }
-
-        this->get_parameter_or(agent.type_ + ".size", agent.size_, 0.0);
-        this->get_parameter_or(agent.type_ + ".wheels.separation", agent.wheel_seperation_, 0.0);
-        this->get_parameter_or(agent.type_ + ".wheels.radius", agent.wheel_radius_, 0.0);
-
-        this->get_parameter_or(agent.type_ + ".linear.velocity", agent.max_linVel_, 0.0);
-        this->get_parameter_or(agent.type_ + ".linear.acceleration", agent.max_linAcc_, 0.0);
-        this->get_parameter_or(agent.type_ + ".angular.velocity", agent.max_angVel_, 0.0);
-        this->get_parameter_or(agent.type_ + ".angular.acceleration", agent.max_angAcc_, 0.0);
-
-        geometry_msgs::msg::Pose2D startPose;
-        startPose.x = task["start"]["x"].as<double>();
-        startPose.y = task["start"]["y"].as<double>();
-        startPose.theta = task["start"]["theta"].as<double>();
-        agent.start_.component_ = startPose;
-
-        geometry_msgs::msg::Pose2D goalPose;
-        goalPose.x = task["goal"]["x"].as<double>();
-        goalPose.y = task["goal"]["y"].as<double>();
-        goalPose.theta = task["goal"]["theta"].as<double>();
-        agent.goal_.component_ = goalPose;
-
-        agentList.insert(std::make_pair(agent.name_, agent));
-
-        auto singleRobot_registration = this->create_client<RobotInfo>("/" + agent.name_ + "/info");
-        registration_request_.push_back(std::make_pair(agent.name_, singleRobot_registration));
-
-        Robot robot;
-        robot.robotInfo_ = agent;
-        robot.id_ = robotList_.size();
-
-        robot.prior_update_time_ = this->now();
-        robot.last_update_time_ = this->now();
-
-        robot.state_sub_ = this->create_subscription<RobotState>(
-            "/" + agent.name_ + "/state", qos_,
-            std::bind(&MultibotServer::robotState_callback, this, std::placeholders::_1));
-        robot.control_cmd_ = this->create_client<Path>("/" + agent.name_ + "/path");
-
-        robotList_.insert(std::make_pair(robot.robotInfo_.name_, robot));
-    }
-    instance_manager_->saveAgents(agentList);
-}
-
 MultibotServer::MultibotServer()
     : Node("server")
 {
@@ -325,13 +263,22 @@ MultibotServer::MultibotServer()
 
     rviz_poses_pub_ = this->create_publisher<visualization_msgs::msg::MarkerArray>("robot_list", qos_);
 
-    registration_request_.clear();
+    connection_ = this->create_service<Connection>(
+        "/connection",
+        std::bind(&MultibotServer::register_robot, this, std::placeholders::_1, std::placeholders::_2));
+
+    disconnection_ = this->create_service<Disconnection>(
+        "/disconnection",
+        std::bind(&MultibotServer::delete_robot, this, std::placeholders::_1, std::placeholders::_2));
 
     update_timer_ = this->create_wall_timer(
         10ms, std::bind(&MultibotServer::update_callback, this));
 
     instance_manager_ = std::make_shared<Instance_Manager>();
     solver_ = std::make_shared<CPBS::Solver>(instance_manager_);
+
+    loadMap();
+    instance_manager_->notify();
 
     RCLCPP_INFO(this->get_logger(), "MultibotServer has been initialized");
 }

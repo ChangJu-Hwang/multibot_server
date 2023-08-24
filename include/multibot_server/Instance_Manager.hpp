@@ -15,6 +15,8 @@ namespace Instance
     {
     public:
         void saveAgents(const std::unordered_map<std::string, AgentInstance::Agent> &_agents);
+        void insertAgent(const std::pair<std::string, AgentInstance::Agent> &_agent);
+        void deleteAgent(const std::string _agentName);
         void saveMap(const MapInstance::BinaryOccupancyMap &_map);
         void exportResult(
             const Path::PathSet &_paths,
@@ -33,7 +35,7 @@ namespace Instance
         std::list<Observer::ObserverInterface<InstanceMsg> *> list_observer_;
 
     public:
-        Instance_Manager() {}
+        Instance_Manager() { agents_.clear(); }
         ~Instance_Manager() {}
     }; // class Instance_Manager
 

@@ -10,7 +10,8 @@
 #include <visualization_msgs/msg/marker_array.hpp>
 
 #include "multibot_ros2_interface/msg/robot_state.hpp"
-#include "multibot_ros2_interface/srv/robot_info.hpp"
+#include "multibot_ros2_interface/srv/connection.hpp"
+#include "multibot_ros2_interface/srv/disconnection.hpp"
 #include "multibot_ros2_interface/msg/local_path.hpp"
 #include "multibot_ros2_interface/srv/path.hpp"
 
@@ -28,7 +29,8 @@ namespace Server
     {
     private:
         using RobotState        = multibot_ros2_interface::msg::RobotState;
-        using RobotInfo         = multibot_ros2_interface::srv::RobotInfo;
+        using Connection        = multibot_ros2_interface::srv::Connection;
+        using Disconnection     = multibot_ros2_interface::srv::Disconnection;
         using Path              = multibot_ros2_interface::srv::Path;
         using LocalPath         = multibot_ros2_interface::msg::LocalPath;
 
@@ -46,8 +48,6 @@ namespace Server
         };
 
     public:
-        void loadInstances();
-        void request_registrations();
         void plan_multibots();
         void request_controls();
 
@@ -55,9 +55,13 @@ namespace Server
         void update_callback();
         void robotState_callback(const RobotState::SharedPtr _state_msg);
         
-        void request_registration(
-            const std::string &_robotName,
-            std::shared_ptr<rclcpp::Client<RobotInfo>> _service);
+        void register_robot(
+            const std::shared_ptr<Connection::Request> _request,
+            std::shared_ptr<Connection::Response> _response);
+
+        void delete_robot(
+            const std::shared_ptr<Disconnection::Request> _request,
+            std::shared_ptr<Disconnection::Response> _response);
         
         void request_control(
             const std::string &_robotName,
@@ -66,15 +70,14 @@ namespace Server
     private:
         rclcpp::QoS qos_ = rclcpp::QoS(rclcpp::KeepLast(10));
 
-        std::vector<std::pair<std::string, rclcpp::Client<RobotInfo>::SharedPtr>> registration_request_;
+        rclcpp::Service<Connection>::SharedPtr connection_;
+        rclcpp::Service<Disconnection>::SharedPtr disconnection_;
 
         rclcpp::Client<nav_msgs::srv::GetMap>::SharedPtr mapLoading_;
         rclcpp::Publisher<visualization_msgs::msg::MarkerArray>::SharedPtr rviz_poses_pub_;
 
     private:
         void loadMap();
-        void loadTasks();
-
         visualization_msgs::msg::Marker update_Rviz_SinglePose(const Robot &_robot);
 
     private:
@@ -86,6 +89,8 @@ namespace Server
 
         std::shared_ptr<CPBS::Solver> solver_;
         std::shared_ptr<Instance_Manager> instance_manager_;
+
+        int32_t robot_id_ = 0;
 
     public:
         MultibotServer();

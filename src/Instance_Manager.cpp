@@ -13,6 +13,21 @@ void Instance_Manager::saveAgents(const std::unordered_map<std::string, AgentIns
     agents_ = _agents;
 }
 
+void Instance_Manager::insertAgent(const std::pair<std::string, AgentInstance::Agent> &_agent)
+{
+    agents_.insert(_agent);
+    notify();
+}
+
+void Instance_Manager::deleteAgent(const std::string _agentName)
+{
+    if (agents_.contains(_agentName))
+    {
+        agents_.erase(_agentName);
+        notify();
+    }
+}
+
 void Instance_Manager::saveMap(const MapInstance::BinaryOccupancyMap &_map)
 {
     map_ = _map;

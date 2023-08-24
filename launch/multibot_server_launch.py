@@ -38,11 +38,6 @@ def generate_launch_description():
         description='Whether to execute gzclient'
     )
 
-    # declare_world_cmd = DeclareLaunchArgument(
-    #     'world',
-    #     default_value=os.path.join(multibot_server_dir, 'worlds', 'testbed.world'),
-    #     description='Full path to world model file to load'
-    # )
     declare_world_cmd = DeclareLaunchArgument(
         'world',
         default_value=os.path.join(multibot_server_dir, 'worlds', 'modified_testbed.world'),
@@ -128,40 +123,12 @@ def generate_launch_description():
 		cwd=[multibot_server_dir], output='screen'
     )
 
-    spawn_robots_cmds = []
-    with open(os.path.join(multibot_server_dir, 'task', 'multibot_task.yaml')) as multibot_task:
-        agents = yaml.load_all(multibot_task, Loader=yaml.FullLoader)
-    
-        for agent in agents:
-            spawn_robots_cmds.append(
-                IncludeLaunchDescription(
-                    PythonLaunchDescriptionSource(os.path.join(multibot_robot_dir, 'launch',
-                                                            'multibot_robot_simul_launch.py')),
-                    launch_arguments={
-                        'robot_namespace': agent['name'],
-                        'robot_name': agent['name'],
-                        'sdf_file': os.path.join(multibot_robot_dir, 'models',
-                                                 agent['type'], 'model.sdf'),
-                        'x': str(agent['start']['x']),
-                        'y': str(agent['start']['y']),
-                        'Y': str(agent['start']['theta']),
-                        'linear_tolerance': '0.10',
-                        'angular_tolerance': '0.018',
-                        'Kx': '0.25',
-                        'Ky': '1.00',
-                        'Ktheta': '1.27'
-                    }.items()
-                )
-            )
-
     # Server Node
     multibot_server_cmd = Node(
         package='multibot_server',
         executable='server',
         name='server',
-        output='screen',
-        parameters=[os.path.join(multibot_server_dir, 'agents', 'agentConfig.yaml'),
-                    {'task_fPath': os.path.join(multibot_server_dir, 'task', 'multibot_task.yaml')}]
+        output='screen'
     )
 
     # Create the launch description and populate
@@ -180,9 +147,6 @@ def generate_launch_description():
 
     ld.add_action(start_gazebo_server_cmd)
     ld.add_action(start_gazebo_client_cmd)
-
-    for spawn_robot_cmd in spawn_robots_cmds:
-        ld.add_action(spawn_robot_cmd)
 
     ld.add_action(multibot_server_cmd)
 
