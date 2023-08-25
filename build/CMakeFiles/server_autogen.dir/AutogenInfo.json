@@ -1,0 +1,121 @@
+{
+	"BUILD_DIR" : "/home/changju/multibot_ws/src/multibot_server/build/server_autogen",
+	"CMAKE_BINARY_DIR" : "/home/changju/multibot_ws/src/multibot_server/build",
+	"CMAKE_CURRENT_BINARY_DIR" : "/home/changju/multibot_ws/src/multibot_server/build",
+	"CMAKE_CURRENT_SOURCE_DIR" : "/home/changju/multibot_ws/src/multibot_server",
+	"CMAKE_EXECUTABLE" : "/usr/bin/cmake",
+	"CMAKE_SOURCE_DIR" : "/home/changju/multibot_ws/src/multibot_server",
+	"HEADERS" : 
+	[
+		[
+			"/home/changju/multibot_ws/src/multibot_server/include/multibot_server/server_panel.hpp",
+			"MU",
+			"CU573YL64G/moc_server_panel.cpp"
+		]
+	],
+	"HEADER_EXTENSIONS" : [ "h", "hh", "h++", "hm", "hpp", "hxx", "in", "txx" ],
+	"INCLUDE_DIR" : "/home/changju/multibot_ws/src/multibot_server/build/server_autogen/include",
+	"MOC_COMPILATION_FILE" : "/home/changju/multibot_ws/src/multibot_server/build/server_autogen/mocs_compilation.cpp",
+	"MOC_DEFINITIONS" : 
+	[
+		"BOOST_TEST_DYN_LINK",
+		"DEFAULT_RMW_IMPLEMENTATION=rmw_fastrtps_cpp",
+		"LIBBULLET_VERSION=2.88",
+		"LIBBULLET_VERSION_GT_282",
+		"QT_CORE_LIB",
+		"QT_GUI_LIB",
+		"QT_WIDGETS_LIB",
+		"RCUTILS_ENABLE_FAULT_INJECTION",
+		"SPDLOG_COMPILED_LIB"
+	],
+	"MOC_DEPEND_FILTERS" : 
+	[
+		[
+			"Q_PLUGIN_METADATA",
+			"[\n][ \t]*Q_PLUGIN_METADATA[ \t]*\\([^\\)]*FILE[ \t]*\"([^\"]+)\""
+		]
+	],
+	"MOC_INCLUDES" : 
+	[
+		"/home/changju/multibot_ws/src/multibot_server/build",
+		"/home/changju/multibot_ws/src/multibot_server",
+		"/home/changju/multibot_ws/src/multibot_server/include",
+		"/usr/include/OGRE",
+		"/home/changju/multibot_ws/install/multibot_util/include",
+		"/home/changju/multibot_ws/install/multibot_ros2_interface/include",
+		"/opt/ros/foxy/include",
+		"/usr/include/x86_64-linux-gnu/qt5",
+		"/usr/include/x86_64-linux-gnu/qt5/QtCore",
+		"/usr/lib/x86_64-linux-gnu/qt5/mkspecs/linux-g++",
+		"/usr/include/x86_64-linux-gnu/qt5/QtWidgets",
+		"/usr/include/x86_64-linux-gnu/qt5/QtGui",
+		"/usr/include",
+		"/usr/include/c++/9",
+		"/usr/include/x86_64-linux-gnu/c++/9",
+		"/usr/include/c++/9/backward",
+		"/usr/lib/gcc/x86_64-linux-gnu/9/include",
+		"/usr/local/include",
+		"/usr/include/x86_64-linux-gnu"
+	],
+	"MOC_MACRO_NAMES" : [ "Q_OBJECT", "Q_GADGET", "Q_NAMESPACE" ],
+	"MOC_OPTIONS" : [],
+	"MOC_PATH_PREFIX" : true,
+	"MOC_PREDEFS_CMD" : 
+	[
+		"/usr/bin/c++",
+		"-dM",
+		"-E",
+		"-c",
+		"/usr/share/cmake-3.16/Modules/CMakeCXXCompilerABI.cpp"
+	],
+	"MOC_PREDEFS_FILE" : "/home/changju/multibot_ws/src/multibot_server/build/server_autogen/moc_predefs.h",
+	"MOC_RELAXED_MODE" : false,
+	"MOC_SKIP" : [],
+	"MULTI_CONFIG" : false,
+	"PARALLEL" : 4,
+	"PARSE_CACHE_FILE" : "/home/changju/multibot_ws/src/multibot_server/build/CMakeFiles/server_autogen.dir/ParseCache.txt",
+	"QT_MOC_EXECUTABLE" : "/usr/lib/qt5/bin/moc",
+	"QT_UIC_EXECUTABLE" : "/usr/lib/qt5/bin/uic",
+	"QT_VERSION_MAJOR" : 5,
+	"SETTINGS_FILE" : "/home/changju/multibot_ws/src/multibot_server/build/CMakeFiles/server_autogen.dir/AutogenUsed.txt",
+	"SOURCES" : 
+	[
+		[ "/home/changju/multibot_ws/src/multibot_server/src/AA_SIPP.cpp", "MU" ],
+		[
+			"/home/changju/multibot_ws/src/multibot_server/src/AA_SIPP_Conflict_Checker.cpp",
+			"MU"
+		],
+		[
+			"/home/changju/multibot_ws/src/multibot_server/src/AA_SIPP_Map_Utility.cpp",
+			"MU"
+		],
+		[
+			"/home/changju/multibot_ws/src/multibot_server/src/AA_SIPP_Motion.cpp",
+			"MU"
+		],
+		[
+			"/home/changju/multibot_ws/src/multibot_server/src/AA_SIPP_Node.cpp",
+			"MU"
+		],
+		[
+			"/home/changju/multibot_ws/src/multibot_server/src/AA_SIPP_ReservationTable.cpp",
+			"MU"
+		],
+		[ "/home/changju/multibot_ws/src/multibot_server/src/CPBS.cpp", "MU" ],
+		[
+			"/home/changju/multibot_ws/src/multibot_server/src/Instance_Manager.cpp",
+			"MU"
+		],
+		[ "/home/changju/multibot_ws/src/multibot_server/src/main.cpp", "MU" ],
+		[ "/home/changju/multibot_ws/src/multibot_server/src/server.cpp", "MU" ],
+		[
+			"/home/changju/multibot_ws/src/multibot_server/src/server_panel.cpp",
+			"MU"
+		]
+	],
+	"UIC_OPTIONS" : [],
+	"UIC_SEARCH_PATHS" : [ "/home/changju/multibot_ws/src/multibot_server/ui" ],
+	"UIC_SKIP" : [],
+	"UIC_UI_FILES" : [],
+	"VERBOSITY" : 0
+}

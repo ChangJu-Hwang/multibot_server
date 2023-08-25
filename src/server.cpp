@@ -1,11 +1,23 @@
 #include "multibot_server/server.hpp"
 
-#include <yaml-cpp/yaml.h> // Need to install libyaml-cpp-dev
-
 #include <tf2/LinearMath/Quaternion.h>
+
+#include <QApplication>
 
 using namespace Server;
 using namespace Instance;
+
+void MultibotServer::execServerPanel(int argc, char *argv[])
+{
+    QApplication app(argc, argv);
+
+    serverPanel_ = std::make_shared<Panel>();
+    serverPanel_->show();
+
+    is_pannel_running_ = true;
+
+    app.exec();
+}
 
 void MultibotServer::plan_multibots()
 {
@@ -115,6 +127,7 @@ void MultibotServer::register_robot(
         robot.control_cmd_ = this->create_client<Path>("/" + robotInfo.name_ + "/path");
     }
     robotList_.insert(std::make_pair(robot.robotInfo_.name_, robot));
+    serverPanel_->addRobot(robot.robotInfo_.name_);
 
     RCLCPP_INFO(this->get_logger(), "New Robot " + robot.robotInfo_.name_ + " is registered.");
     RCLCPP_INFO(this->get_logger(), "Total Robots: " + std::to_string(robotList_.size()) + "EA");
@@ -130,10 +143,12 @@ void MultibotServer::delete_robot(
     instance_manager_->deleteAgent(_request->name);
 
     if (robotList_.contains(_request->name))
+    {
         robotList_.erase(_request->name);
-
-    RCLCPP_INFO(this->get_logger(), "Robot " + _request->name + " is deleted.");
-    RCLCPP_INFO(this->get_logger(), "Total Robots: " + std::to_string(robotList_.size()) + "EA\n");
+        serverPanel_->deleteRobot(_request->name);
+        RCLCPP_INFO(this->get_logger(), "Robot " + _request->name + " is deleted.");
+        RCLCPP_INFO(this->get_logger(), "Total Robots: " + std::to_string(robotList_.size()) + "EA\n");
+    }
 
     _response->is_disconnected = true;
 }

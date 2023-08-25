@@ -8,3 +8,4 @@
 /home/changju/multibot_ws/src/multibot_server/build/CMakeFiles/server.dir
 /home/changju/multibot_ws/src/multibot_server/build/CMakeFiles/multibot_server_uninstall.dir
 /home/changju/multibot_ws/src/multibot_server/build/CMakeFiles/uninstall.dir
+/home/changju/multibot_ws/src/multibot_server/build/CMakeFiles/server_autogen.dir

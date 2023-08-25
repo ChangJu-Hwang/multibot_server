@@ -63,6 +63,7 @@ if("x${CMAKE_INSTALL_COMPONENT}x" STREQUAL "xUnspecifiedx" OR NOT CMAKE_INSTALL_
     "/home/changju/multibot_ws/src/multibot_server/launch"
     "/home/changju/multibot_ws/src/multibot_server/models"
     "/home/changju/multibot_ws/src/multibot_server/rviz"
+    "/home/changju/multibot_ws/src/multibot_server/ui"
     "/home/changju/multibot_ws/src/multibot_server/worlds"
     )
 endif()

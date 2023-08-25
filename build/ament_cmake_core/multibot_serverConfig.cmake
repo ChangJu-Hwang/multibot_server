@@ -16,7 +16,7 @@ set(_multibot_server_CONFIG_INCLUDED TRUE)
 
 # output package information
 if(NOT multibot_server_FIND_QUIETLY)
-  message(STATUS "Found multibot_server: 0.3.0 (${multibot_server_DIR})")
+  message(STATUS "Found multibot_server: 0.4.0 (${multibot_server_DIR})")
 endif()
 
 # warn when using a deprecated package

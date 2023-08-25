@@ -17,6 +17,7 @@
 
 #include "multibot_server/CPBS.hpp"
 #include "multibot_server/Instance_Manager.hpp"
+#include "multibot_server/server_panel.hpp"
 
 using namespace High_Level_Engine;
 using namespace Instance;
@@ -48,6 +49,8 @@ namespace Server
         };
 
     public:
+        void execServerPanel(int argc, char *argv[]);
+
         void plan_multibots();
         void request_controls();
 
@@ -91,6 +94,9 @@ namespace Server
         std::shared_ptr<Instance_Manager> instance_manager_;
 
         int32_t robot_id_ = 0;
+
+        std::shared_ptr<Panel> serverPanel_;
+        bool is_pannel_running_;
 
     public:
         MultibotServer();

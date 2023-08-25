@@ -206,6 +206,46 @@ uninstall/fast:
 	$(MAKE) -f CMakeFiles/uninstall.dir/build.make CMakeFiles/uninstall.dir/build
 .PHONY : uninstall/fast
 
+#=============================================================================
+# Target rules for targets named server_autogen
+
+# Build rule for target.
+server_autogen: cmake_check_build_system
+	$(MAKE) -f CMakeFiles/Makefile2 server_autogen
+.PHONY : server_autogen
+
+# fast build rule for target.
+server_autogen/fast:
+	$(MAKE) -f CMakeFiles/server_autogen.dir/build.make CMakeFiles/server_autogen.dir/build
+.PHONY : server_autogen/fast
+
+server_autogen/mocs_compilation.o: server_autogen/mocs_compilation.cpp.o
+
+.PHONY : server_autogen/mocs_compilation.o
+
+# target to build an object file
+server_autogen/mocs_compilation.cpp.o:
+	$(MAKE) -f CMakeFiles/server.dir/build.make CMakeFiles/server.dir/server_autogen/mocs_compilation.cpp.o
+.PHONY : server_autogen/mocs_compilation.cpp.o
+
+server_autogen/mocs_compilation.i: server_autogen/mocs_compilation.cpp.i
+
+.PHONY : server_autogen/mocs_compilation.i
+
+# target to preprocess a source file
+server_autogen/mocs_compilation.cpp.i:
+	$(MAKE) -f CMakeFiles/server.dir/build.make CMakeFiles/server.dir/server_autogen/mocs_compilation.cpp.i
+.PHONY : server_autogen/mocs_compilation.cpp.i
+
+server_autogen/mocs_compilation.s: server_autogen/mocs_compilation.cpp.s
+
+.PHONY : server_autogen/mocs_compilation.s
+
+# target to generate assembly for a file
+server_autogen/mocs_compilation.cpp.s:
+	$(MAKE) -f CMakeFiles/server.dir/build.make CMakeFiles/server.dir/server_autogen/mocs_compilation.cpp.s
+.PHONY : server_autogen/mocs_compilation.cpp.s
+
 src/AA_SIPP.o: src/AA_SIPP.cpp.o
 
 .PHONY : src/AA_SIPP.o
@@ -476,6 +516,33 @@ src/server.cpp.s:
 	$(MAKE) -f CMakeFiles/server.dir/build.make CMakeFiles/server.dir/src/server.cpp.s
 .PHONY : src/server.cpp.s
 
+src/server_panel.o: src/server_panel.cpp.o
+
+.PHONY : src/server_panel.o
+
+# target to build an object file
+src/server_panel.cpp.o:
+	$(MAKE) -f CMakeFiles/server.dir/build.make CMakeFiles/server.dir/src/server_panel.cpp.o
+.PHONY : src/server_panel.cpp.o
+
+src/server_panel.i: src/server_panel.cpp.i
+
+.PHONY : src/server_panel.i
+
+# target to preprocess a source file
+src/server_panel.cpp.i:
+	$(MAKE) -f CMakeFiles/server.dir/build.make CMakeFiles/server.dir/src/server_panel.cpp.i
+.PHONY : src/server_panel.cpp.i
+
+src/server_panel.s: src/server_panel.cpp.s
+
+.PHONY : src/server_panel.s
+
+# target to generate assembly for a file
+src/server_panel.cpp.s:
+	$(MAKE) -f CMakeFiles/server.dir/build.make CMakeFiles/server.dir/src/server_panel.cpp.s
+.PHONY : src/server_panel.cpp.s
+
 # Help Target
 help:
 	@echo "The following are some of the valid targets for this Makefile:"
@@ -492,6 +559,10 @@ help:
 	@echo "... server"
 	@echo "... multibot_server_uninstall"
 	@echo "... uninstall"
+	@echo "... server_autogen"
+	@echo "... server_autogen/mocs_compilation.o"
+	@echo "... server_autogen/mocs_compilation.i"
+	@echo "... server_autogen/mocs_compilation.s"
 	@echo "... src/AA_SIPP.o"
 	@echo "... src/AA_SIPP.i"
 	@echo "... src/AA_SIPP.s"
@@ -522,6 +593,9 @@ help:
 	@echo "... src/server.o"
 	@echo "... src/server.i"
 	@echo "... src/server.s"
+	@echo "... src/server_panel.o"
+	@echo "... src/server_panel.i"
+	@echo "... src/server_panel.s"
 .PHONY : help
 
 
