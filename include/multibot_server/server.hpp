@@ -59,9 +59,6 @@ namespace Server
     public:
         void execServerPanel(int argc, char *argv[]);
 
-        void plan_multibots();
-        void request_controls();
-
     private:
         void update_callback();
         void robotState_callback(const RobotState::SharedPtr _state_msg);
@@ -92,6 +89,7 @@ namespace Server
         rclcpp::Service<Connection>::SharedPtr connection_;
         rclcpp::Service<Disconnection>::SharedPtr disconnection_;
         rclcpp::Publisher<std_msgs::msg::Bool>::SharedPtr serverScan_;
+        rclcpp::Publisher<std_msgs::msg::Bool>::SharedPtr emergencyStop_;
 
         rclcpp::Client<nav_msgs::srv::GetMap>::SharedPtr mapLoading_;
         rclcpp::Publisher<visualization_msgs::msg::MarkerArray>::SharedPtr rviz_poses_pub_;

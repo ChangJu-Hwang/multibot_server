@@ -283,33 +283,29 @@ double AA_SIPP::Planner::computeTotalDelays(
         lower_path.nodes_.front().first.departure_time_ += Time::TimePoint(delay);
         lower_path.nodes_.front().second.arrival_time_ += Time::TimePoint(delay);
 
-        delay = 0.0;
+        std::vector<std::future<double>> delayTimeThreads;
+        delayTimeThreads.clear();
+
         for (const auto &higher_path : higher_paths_)
-            delay = std::max(delay, conflict_checker_->getDelayTime(higher_path, lower_path));
-        total_delay = total_delay + delay;
+        {
+            delayTimeThreads.push_back(
+                std::async(std::launch::async, [this, higher_path, lower_path]() -> double
+                           { return this->conflict_checker_->getDelayTime(higher_path, lower_path); }));
+        }
+
+        delay = 0.0;
+        for (auto &delayTimeThread : delayTimeThreads)
+        {
+            delay = std::max(delay, delayTimeThread.get());
+        }
+        total_delay += delay;
 
         if (total_delay > _max_delay_limit.count() + 1e-8)
             break;
-        
+
         if (std::fabs(total_delay - std::numeric_limits<double>::max()) < 1e-3)
             break;
 
-        // std::vector<std::future<double>> delayTimeThreads;
-        // delayTimeThreads.clear();
-
-        // for (const auto &higher_path : higher_paths_)
-        // {
-        //     delayTimeThreads.push_back(
-        //         std::async(std::launch::async, [this, higher_path, lower_path]() -> double
-        //                    { return this->conflict_checker_->getDelayTime(higher_path, lower_path); }));
-        // }
-
-        // delay = 0.0;
-        // for (auto &delayTimeThread : delayTimeThreads)
-        // {
-        //     delay = std::max(delay, delayTimeThread.get());
-        // }
-        // total_delay += delay;
     } while (delay > 1e-3);
 
     return total_delay;

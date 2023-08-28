@@ -106,15 +106,6 @@ void Server::Panel::on_ServerTab_currentChanged(int _tabIndex)
     case PanelUtil::Tab::DASHBOARD:
     {
         ui_->ServerTab->tabBar()->setTabTextColor(PanelUtil::Tab::DASHBOARD, QColor(0, 255, 255));
-        ui_->ServerTab->tabBar()->setTabTextColor(PanelUtil::Tab::TASKS, Qt::white);
-        ui_->ServerTab->tabBar()->setTabTextColor(PanelUtil::Tab::ROBOT, Qt::white);
-        break;
-    }
-
-    case PanelUtil::Tab::TASKS:
-    {
-        ui_->ServerTab->tabBar()->setTabTextColor(PanelUtil::Tab::DASHBOARD, Qt::white);
-        ui_->ServerTab->tabBar()->setTabTextColor(PanelUtil::Tab::TASKS, QColor(0, 255, 255));
         ui_->ServerTab->tabBar()->setTabTextColor(PanelUtil::Tab::ROBOT, Qt::white);
         break;
     }
@@ -122,7 +113,6 @@ void Server::Panel::on_ServerTab_currentChanged(int _tabIndex)
     case PanelUtil::Tab::ROBOT:
     {
         ui_->ServerTab->tabBar()->setTabTextColor(PanelUtil::Tab::DASHBOARD, Qt::white);
-        ui_->ServerTab->tabBar()->setTabTextColor(PanelUtil::Tab::TASKS, Qt::white);
         ui_->ServerTab->tabBar()->setTabTextColor(PanelUtil::Tab::ROBOT, QColor(0, 255, 255));
         break;
     }
@@ -134,18 +124,58 @@ void Server::Panel::on_ServerTab_currentChanged(int _tabIndex)
 
 void Server::Panel::on_Start_clicked()
 {
-    std::cout << "Button: Start clicked" << std::endl;
+    if (not(planState_ == PanelUtil::PlanState::SUCCESS))
+        return;
+    
+    planState_ = PanelUtil::PlanState::READY;
+
+    std::get<0>(msg_) = PanelUtil::Request::START_REQUEST;
+    notify();
 }
 
 void Server::Panel::on_Stop_clicked()
 {
-    std::cout << "Button: Stop clicked" << std::endl;
+    std::get<0>(msg_) = PanelUtil::Request::STOP_REQUEST;
+    notify();
 }
 
 void Server::Panel::on_Scan_clicked()
 {
-    std::get<0>(msg_) = PanelUtil::Request::SCAN;
+    std::get<0>(msg_) = PanelUtil::Request::SCAN_REQUEST;
     notify();
+}
+
+void Server::Panel::on_Plan_clicked()
+{
+    if (buttons_.size() == 0)
+        return;
+
+    switch (planState_)
+    {
+    case PanelUtil::PlanState::READY:
+    {
+        planState_ = PanelUtil::PlanState::PLANNING;
+
+        std::get<0>(msg_) = PanelUtil::Request::PLAN_REQUEST;
+        notify();
+        break;
+    }
+
+    case PanelUtil::PlanState::SUCCESS:
+    {
+        planState_ = PanelUtil::PlanState::READY;
+        break;
+    }
+
+    case PanelUtil::PlanState::FAIL:
+    {
+        planState_ = PanelUtil::PlanState::READY;
+        break;
+    }
+
+    default:
+        break;
+    }
 }
 
 void Server::Panel::on_pushButton_Mode_clicked()
@@ -168,7 +198,7 @@ void Server::Panel::on_pushButton_Mode_clicked()
 
 void Server::Panel::on_pushButton_Kill_clicked()
 {
-    std::get<0>(msg_) = PanelUtil::Request::KILL;
+    std::get<0>(msg_) = PanelUtil::Request::KILL_REQUEST;
     std::get<1>(msg_) = activatedRobot_;
 
     notify();
@@ -210,7 +240,6 @@ void Server::Panel::keyPressEvent(QKeyEvent *_event)
         case Qt::Key_Left:
             activatedRobotAngVel_ = activatedRobotAngVel_ + 0.1;
             break;
-
 
         case Qt::Key_Right:
             activatedRobotAngVel_ = activatedRobotAngVel_ - 0.1;
@@ -267,17 +296,67 @@ void Server::Panel::modeButtonDisp()
     if (not(ui_->ServerTab->currentIndex() == PanelUtil::Tab::ROBOT))
         return;
 
-    if (activatedRobotModeState_ == PanelUtil::Mode::REMOTE)
+    switch (activatedRobotModeState_)
     {
-        ui_->pushButton_Mode->setText(QString::fromStdString("Remote"));
-        ui_->pushButton_Mode->setStyleSheet(
-            "color: rgb(0,213,255);\nborder: 2px solid rgb(0,213,255);\nborder-radius: 15px");
-    }
-    else
+    case PanelUtil::Mode::MANUAL:
     {
         ui_->pushButton_Mode->setText(QString::fromStdString("Manual"));
         ui_->pushButton_Mode->setStyleSheet(
             "color: rgb(255,190,11);\nborder: 2px solid rgb(255,190,11);\nborder-radius: 15px");
+        break;
+    }
+
+    case PanelUtil::Mode::REMOTE:
+    {
+        ui_->pushButton_Mode->setText(QString::fromStdString("Remote"));
+        ui_->pushButton_Mode->setStyleSheet(
+            "color: rgb(0,213,255);\nborder: 2px solid rgb(0,213,255);\nborder-radius: 15px");
+        break;
+    }
+
+    case PanelUtil::Mode::AUTO:
+    {
+        ui_->pushButton_Mode->setText(QString::fromStdString("Auto"));
+        ui_->pushButton_Mode->setStyleSheet(
+            "color: rgb(230, 19, 237);\nborder: 2px solid rgb(230, 19, 237);\nborder-radius: 15px");
+        break;
+    }
+
+    default:
+        break;
+    }
+}
+
+void Server::Panel::planButtonDisp()
+{
+    switch (planState_)
+    {
+    case PanelUtil::PlanState::READY:
+        ui_->Plan->setText("Plan");
+        ui_->Plan->setStyleSheet(
+            "color: rgb(58, 134, 255);\nborder: 2px solid rgb(58, 134, 255);\nborder-radius: 15px;");
+        break;
+
+    case PanelUtil::PlanState::PLANNING:
+        ui_->Plan->setText("Planning");
+        ui_->Plan->setStyleSheet(
+            "color: rgb(52, 235, 235);\nborder: 2px solid rgb(52, 235, 235);\nborder-radius: 15px;");
+        break;
+
+    case PanelUtil::PlanState::SUCCESS:
+        ui_->Plan->setText("Success");
+        ui_->Plan->setStyleSheet(
+            "color: rgb(0, 200, 0);\nborder: 2px solid rgb(0, 200, 0);\nborder-radius: 15px;");
+        break;
+
+    case PanelUtil::PlanState::FAIL:
+        ui_->Plan->setText("Fail");
+        ui_->Plan->setStyleSheet(
+            "color: rgb(200, 0, 0);\nborder: 2px solid rgb(200, 0, 0);\nborder-radius: 15px;");
+        break;
+
+    default:
+        break;
     }
 }
 
@@ -298,7 +377,6 @@ void Server::Panel::addRobotButton(QString _robotName)
     connect(button, SIGNAL(clicked()), this, SLOT(handleButton()));
 
     ui_->scrollArea_Robot_List->widget()->layout()->addWidget(button);
-    ui_->ServerTab->setTabEnabled(PanelUtil::Tab::TASKS, true);
 }
 
 void Server::Panel::deleteRobotButton(QString _robotName)
@@ -317,11 +395,6 @@ void Server::Panel::deleteRobotButton(QString _robotName)
 
         if (ui_->ServerTab->currentIndex() == PanelUtil::Tab::ROBOT)
             ui_->ServerTab->setCurrentIndex(PanelUtil::Tab::DASHBOARD);
-    }
-
-    if (buttons_.size() == 0)
-    {
-        ui_->ServerTab->setTabEnabled(PanelUtil::Tab::TASKS, false);
     }
 
     delete button;
@@ -351,6 +424,18 @@ void Server::Panel::setVelocity(double _linVel, double _angVel)
 void Server::Panel::setModeState(PanelUtil::Mode _mode)
 {
     activatedRobotModeState_ = _mode;
+}
+
+void Server::Panel::setPlanState(PanelUtil::PlanState _planState)
+{
+    if (not(planState_ == PanelUtil::PlanState::PLANNING))
+        return;
+
+    if (not(_planState == PanelUtil::PlanState::SUCCESS or
+            _planState == PanelUtil::PlanState::FAIL))
+        return;
+
+    planState_ = _planState;
 }
 
 int Server::Panel::getCurrentTabIndex()
@@ -446,6 +531,30 @@ std::string Server::Panel::getIPAddress()
     return ipaddress_human_readable_form;
 }
 
+void Server::Panel::lockUi()
+{
+    ui_->ServerTab->setTabEnabled(PanelUtil::Tab::ROBOT, false);
+
+    ui_->Start->setEnabled(false);
+    ui_->Plan->setEnabled(false);
+    ui_->Start->setEnabled(false);
+    ui_->Stop->setEnabled(false);
+    ui_->pushButton_Mode->setEnabled(false);
+    ui_->pushButton_Kill->setEnabled(false);
+}
+
+void Server::Panel::unlockUi()
+{
+    ui_->ServerTab->setTabEnabled(PanelUtil::Tab::ROBOT, true);
+
+    ui_->Start->setEnabled(true);
+    ui_->Plan->setEnabled(true);
+    ui_->Start->setEnabled(true);
+    ui_->Stop->setEnabled(true);
+    ui_->pushButton_Mode->setEnabled(true);
+    ui_->pushButton_Kill->setEnabled(true);
+}
+
 Server::Panel::Panel(QWidget *_parent)
     : QWidget(_parent), ui_(new Ui::ServerPanel)
 {
@@ -465,6 +574,7 @@ Server::Panel::Panel(QWidget *_parent)
     std::get<2>(msg_) = geometry_msgs::msg::Pose2D();
 
     ui_->label_IPAddress->setText(QString::fromStdString(getIPAddress()));
+    planState_ = PanelUtil::PlanState::READY;
 
     buttons_.clear();
     ui_->scrollAreaWidgetContents->setFixedHeight(0);
@@ -473,7 +583,6 @@ Server::Panel::Panel(QWidget *_parent)
     ui_->scrollArea_Robot_List->setWidgetResizable(true);
 
     ui_->ServerTab->currentChanged(PanelUtil::Tab::DASHBOARD);
-    ui_->ServerTab->setTabEnabled(PanelUtil::Tab::TASKS, false);
     ui_->ServerTab->setTabEnabled(PanelUtil::Tab::ROBOT, false);
 
     displayTimer_ = new QTimer(this);
@@ -481,6 +590,7 @@ Server::Panel::Panel(QWidget *_parent)
     connect(displayTimer_, SIGNAL(timeout()), this, SLOT(robotNumDisp()));
     connect(displayTimer_, SIGNAL(timeout()), this, SLOT(robotTabDisp()));
     connect(displayTimer_, SIGNAL(timeout()), this, SLOT(modeButtonDisp()));
+    connect(displayTimer_, SIGNAL(timeout()), this, SLOT(planButtonDisp()));
 
     connect(this, SIGNAL(addRobotSignal(QString)), this, SLOT(addRobotButton(QString)));
     connect(this, SIGNAL(deleteRobotSignal(QString)), this, SLOT(deleteRobotButton(QString)));

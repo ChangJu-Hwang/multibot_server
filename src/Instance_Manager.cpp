@@ -23,6 +23,16 @@ void Instance_Manager::deleteAgent(const std::string _agentName)
     }
 }
 
+void Instance_Manager::setStart(
+    const std::string _agentName, const geometry_msgs::msg::Pose2D _start)
+{
+    if (agents_.contains(_agentName))
+    {
+        agents_[_agentName].start_.component_ = _start;
+        notify();
+    }
+}
+
 void Instance_Manager::setGoal(
     const std::string _agentName, const geometry_msgs::msg::Pose2D _goal)
 {

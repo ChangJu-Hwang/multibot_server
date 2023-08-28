@@ -14,7 +14,6 @@ namespace PanelUtil
     enum Tab
     {
         DASHBOARD,
-        TASKS,
         ROBOT
     }; // enum Tab
 
@@ -23,8 +22,11 @@ namespace PanelUtil
         NO_REQUEST,
         SET_GOAL,
         SET_TARGET,
-        SCAN,
-        KILL,
+        SCAN_REQUEST,
+        PLAN_REQUEST,
+        START_REQUEST,
+        STOP_REQUEST,
+        KILL_REQUEST,
         REMOTE_REQUEST,
         MANUAL_REQUEST
     }; // enum Request
@@ -35,6 +37,14 @@ namespace PanelUtil
         MANUAL,
         AUTO
     }; // enum Mode
+
+    enum PlanState
+    {
+        READY,
+        PLANNING,
+        SUCCESS,
+        FAIL
+    }; // enum PlanState
 
     typedef std::tuple<Request, std::string, geometry_msgs::msg::Pose2D> Msg;
 } // namespace PanelUtil;
@@ -66,6 +76,7 @@ namespace Server
         void on_Start_clicked();
         void on_Stop_clicked();
         void on_Scan_clicked();
+        void on_Plan_clicked();
         void on_pushButton_Mode_clicked();
         void on_pushButton_Kill_clicked();
 
@@ -76,6 +87,7 @@ namespace Server
         void robotNumDisp();
         void robotTabDisp();
         void modeButtonDisp();
+        void planButtonDisp();
 
     private slots:
         void addRobotButton(QString _robotName);
@@ -87,6 +99,7 @@ namespace Server
         void storeGoal(geometry_msgs::msg::Pose2D _goal);
         void setVelocity(double _linVel, double _angVel);
         void setModeState(PanelUtil::Mode _mode);
+        void setPlanState(PanelUtil::PlanState _planState);
         
         PanelUtil::Mode getModeState() { return activatedRobotModeState_; }
         int getCurrentTabIndex();
@@ -94,6 +107,8 @@ namespace Server
 
     private:
         std::string getIPAddress();
+        void lockUi();
+        void unlockUi();
 
     private:
         Ui::ServerPanel *ui_;
@@ -108,6 +123,7 @@ namespace Server
         double activatedRobotAngVel_;
         geometry_msgs::msg::Pose2D activatedRobotGoal_;
         PanelUtil::Mode activatedRobotModeState_;
+        PanelUtil::PlanState planState_;
 
         static constexpr int scrollSpacing_ = 20;
         static constexpr int buttonHeight_ = 50;

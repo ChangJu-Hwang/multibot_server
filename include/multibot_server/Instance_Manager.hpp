@@ -16,6 +16,7 @@ namespace Instance
     public:
         void insertAgent(const std::pair<std::string, AgentInstance::Agent> &_agent);
         void deleteAgent(const std::string _agentName);
+        void setStart(const std::string _agentName, const geometry_msgs::msg::Pose2D _start);
         void setGoal(const std::string _agentName, const geometry_msgs::msg::Pose2D _goal);
         void saveMap(const MapInstance::BinaryOccupancyMap &_map);
         void exportResult(

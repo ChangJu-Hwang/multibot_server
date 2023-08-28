@@ -20,42 +20,6 @@ void MultibotServer::execServerPanel(int argc, char *argv[])
     app.exec();
 }
 
-void MultibotServer::plan_multibots()
-{
-    paths_.clear();
-    auto plans = solver_->solve();
-
-    if (plans.second == true)
-    {
-        paths_ = plans.first;
-
-        for (const auto singlePath : paths_)
-            std::cout << singlePath.second << std::endl;
-
-        instance_manager_->exportResult(paths_);
-    }
-}
-
-void MultibotServer::request_controls()
-{
-    if (paths_.empty())
-        return;
-
-    for (auto robot : robotList_)
-    {
-        while (!robot.second.control_cmd_->wait_for_service(1s))
-        {
-            if (!rclcpp::ok())
-            {
-                RCLCPP_ERROR(this->get_logger(), "Interrupted while waiting for the service.");
-                return;
-            }
-            RCLCPP_ERROR(this->get_logger(), "Send path not availiable, waiting again...");
-        }
-        request_control(robot.second.robotInfo_.name_, robot.second.control_cmd_);
-    }
-}
-
 void MultibotServer::update_callback()
 {
     if (robotList_.empty())
@@ -248,7 +212,7 @@ void MultibotServer::request_control(
 
         request->path.push_back(localPath);
     }
-    request->start_time = 10.0;
+    request->start_time = 0.0;
 
     auto response_received_callback = [this](rclcpp::Client<Path>::SharedFuture _future)
     {
@@ -393,7 +357,7 @@ void MultibotServer::update(const PanelUtil::Msg &_msg)
         break;
     }
 
-    case PanelUtil::Request::SCAN:
+    case PanelUtil::Request::SCAN_REQUEST:
     {
         std_msgs::msg::Bool scanActivated;
         scanActivated.data = true;
@@ -402,7 +366,71 @@ void MultibotServer::update(const PanelUtil::Msg &_msg)
         break;
     }
 
-    case PanelUtil::Request::KILL:
+    case PanelUtil::Request::PLAN_REQUEST:
+    {
+        paths_.clear();
+
+        for (const auto &robot : robotList_)
+        {
+            instance_manager_->setStart(
+                robot.second.robotInfo_.name_, robot.second.robotInfo_.pose_.component_);
+        }
+
+        auto plans = solver_->solve();
+
+        if (plans.second == true)
+        {
+            serverPanel_->setPlanState(PanelUtil::PlanState::SUCCESS);
+
+            paths_ = plans.first;
+
+            for (const auto singlePath : paths_)
+                std::cout << singlePath.second << std::endl;
+
+            instance_manager_->exportResult(paths_);
+        }
+        else
+        {
+            serverPanel_->setPlanState(PanelUtil::PlanState::FAIL);
+        }
+
+        break;
+    }
+
+    case PanelUtil::Request::START_REQUEST:
+    {
+        if (paths_.empty())
+            break;
+
+        for (auto& robot : robotList_)
+        {
+            while (!robot.second.control_cmd_->wait_for_service(1s))
+            {
+                if (!rclcpp::ok())
+                {
+                    RCLCPP_ERROR(this->get_logger(), "Interrupted while waiting for the service.");
+                    return;
+                }
+                RCLCPP_ERROR(this->get_logger(), "Send path not availiable, waiting again...");
+            }
+            request_control(robot.second.robotInfo_.name_, robot.second.control_cmd_);
+            robot.second.mode_ = PanelUtil::Mode::AUTO;
+        }
+
+        break;
+    }
+
+    case PanelUtil::Request::STOP_REQUEST:
+    {
+        std_msgs::msg::Bool stopActivated;
+        stopActivated.data = true;
+
+
+        emergencyStop_->publish(stopActivated);
+        break;
+    }
+
+    case PanelUtil::Request::KILL_REQUEST:
     {
         if (std::get<1>(_msg) != panelActivatedRobot_)
             std::abort();
@@ -467,6 +495,7 @@ MultibotServer::MultibotServer()
         std::bind(&MultibotServer::delete_robot, this, std::placeholders::_1, std::placeholders::_2));
 
     serverScan_ = this->create_publisher<std_msgs::msg::Bool>("/server_scan", qos_);
+    emergencyStop_ = this->create_publisher<std_msgs::msg::Bool>("/emergency_stop", qos_);
 
     update_timer_ = this->create_wall_timer(
         10ms, std::bind(&MultibotServer::update_callback, this));
