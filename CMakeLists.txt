@@ -53,6 +53,7 @@ include_directories(
 set(SERVER_DEPENDENCIES
   "rclcpp"
   "nav_msgs"
+  "std_msgs"
   "visualization_msgs"
   "multibot_ros2_interface"
   "multibot_util"

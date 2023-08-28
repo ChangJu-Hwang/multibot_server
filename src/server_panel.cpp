@@ -1,6 +1,7 @@
 #include "multibot_server/server_panel.hpp"
 
 #include <iostream>
+#include <cmath>
 
 #include <arpa/inet.h>
 #include <cerrno>
@@ -13,8 +14,35 @@
 #include <QString>
 #include <QVBoxLayout>
 #include <QTabBar>
+#include <QKeyEvent>
 
 #include "multibot_server/ui_server_panel.h"
+
+void Server::Panel::attach(Observer::ObserverInterface<PanelUtil::Msg> &_observer)
+{
+    std::scoped_lock<std::mutex> lock(mtx_);
+
+    if (std::find(list_observer_.begin(), list_observer_.end(), &_observer) == list_observer_.end())
+        list_observer_.push_back(&_observer);
+}
+
+void Server::Panel::detach(Observer::ObserverInterface<PanelUtil::Msg> &_observer)
+{
+    std::scoped_lock<std::mutex> lock(mtx_);
+
+    auto observer_iter = std::find(list_observer_.begin(), list_observer_.end(), &_observer);
+    while (observer_iter != list_observer_.end())
+    {
+        list_observer_.remove(&_observer);
+        observer_iter = std::find(list_observer_.begin(), list_observer_.end(), &_observer);
+    }
+}
+
+void Server::Panel::notify()
+{
+    for (auto &observer : list_observer_)
+        observer->update(msg_);
+}
 
 void Server::Panel::handleButton()
 {
@@ -23,7 +51,50 @@ void Server::Panel::handleButton()
     inactivatedRobot_ = activatedRobot_;
     activatedRobot_ = button->objectName().toStdString();
 
+    std::get<0>(msg_) = PanelUtil::Request::SET_TARGET;
+    std::get<1>(msg_) = activatedRobot_;
+    notify();
+
+    ui_->ServerTab->setTabEnabled(PanelUtil::Tab::ROBOT, true);
     ui_->ServerTab->currentChanged(PanelUtil::Tab::ROBOT);
+
+    ui_->doubleSpinBox_goalX->setValue(activatedRobotGoal_.x);
+    ui_->doubleSpinBox_goalY->setValue(activatedRobotGoal_.y);
+    ui_->doubleSpinBox_goalYaw->setValue(activatedRobotGoal_.theta);
+
+    switch (activatedRobotModeState_)
+    {
+    case PanelUtil::Mode::MANUAL:
+    {
+        ui_->pushButton_Mode->setText(QString::fromStdString("Manual"));
+        ui_->pushButton_Mode->setStyleSheet(
+            "color: rgb(255,190,11);\nborder: 2px solid rgb(255,190,11);\nborder-radius: 15px");
+        break;
+    }
+
+    case PanelUtil::Mode::REMOTE:
+    {
+        ui_->pushButton_Mode->setText(QString::fromStdString("Remote"));
+        ui_->pushButton_Mode->setStyleSheet(
+            "color: rgb(0,213,255);\nborder: 2px solid rgb(0,213,255);\nborder-radius: 15px");
+
+        activatedRobotLinVel_ = 0.0;
+        activatedRobotAngVel_ = 0.0;
+
+        break;
+    }
+
+    case PanelUtil::Mode::AUTO:
+    {
+        ui_->pushButton_Mode->setText(QString::fromStdString("Auto"));
+        ui_->pushButton_Mode->setStyleSheet(
+            "color: rgb(230, 19, 237);\nborder: 2px solid rgb(230, 19, 237);\nborder-radius: 15px");
+        break;
+    }
+
+    default:
+        break;
+    }
 }
 
 void Server::Panel::on_ServerTab_currentChanged(int _tabIndex)
@@ -73,12 +144,92 @@ void Server::Panel::on_Stop_clicked()
 
 void Server::Panel::on_Scan_clicked()
 {
-    std::cout << "Button: Scan clicked" << std::endl;
+    std::get<0>(msg_) = PanelUtil::Request::SCAN;
+    notify();
 }
 
 void Server::Panel::on_Reset_clicked()
 {
     std::cout << "Button: Reset clicked" << std::endl;
+}
+
+void Server::Panel::on_pushButton_Mode_clicked()
+{
+    if (activatedRobotModeState_ == PanelUtil::Mode::MANUAL)
+    {
+        std::get<0>(msg_) = PanelUtil::Request::REMOTE_REQUEST;
+        std::get<1>(msg_) = activatedRobot_;
+
+        notify();
+    }
+    else
+    {
+        std::get<0>(msg_) = PanelUtil::Request::MANUAL_REQUEST;
+        std::get<1>(msg_) = activatedRobot_;
+
+        notify();
+    }
+}
+
+void Server::Panel::on_pushButton_Kill_clicked()
+{
+    std::get<0>(msg_) = PanelUtil::Request::KILL;
+    std::get<1>(msg_) = activatedRobot_;
+
+    notify();
+}
+
+void Server::Panel::keyPressEvent(QKeyEvent *_event)
+{
+    if (not(ui_->ServerTab->currentIndex() == PanelUtil::ROBOT))
+        return;
+
+    if (_event->key() == Qt::Key_Return)
+    {
+        std::get<0>(msg_) = PanelUtil::SET_GOAL;
+        std::get<1>(msg_) = activatedRobot_;
+
+        geometry_msgs::msg::Pose2D goal;
+        {
+            goal.x = ui_->doubleSpinBox_goalX->value();
+            goal.y = ui_->doubleSpinBox_goalY->value();
+            goal.theta = ui_->doubleSpinBox_goalYaw->value();
+        }
+        std::get<2>(msg_) = goal;
+
+        notify();
+    }
+
+    if (activatedRobotModeState_ == PanelUtil::Mode::REMOTE)
+    {
+        switch (_event->key())
+        {
+        case Qt::Key_Up:
+            activatedRobotLinVel_ = activatedRobotLinVel_ + 0.1;
+            break;
+
+        case Qt::Key_Down:
+            activatedRobotLinVel_ = activatedRobotLinVel_ - 0.1;
+            break;
+
+        case Qt::Key_Left:
+            activatedRobotAngVel_ = activatedRobotAngVel_ + 0.1;
+            break;
+
+
+        case Qt::Key_Right:
+            activatedRobotAngVel_ = activatedRobotAngVel_ - 0.1;
+            break;
+
+        case Qt::Key_Space:
+            activatedRobotLinVel_ = 0.0;
+            activatedRobotAngVel_ = 0.0;
+            break;
+
+        default:
+            break;
+        }
+    }
 }
 
 void Server::Panel::robotListDisp()
@@ -98,7 +249,41 @@ void Server::Panel::robotListDisp()
 
 void Server::Panel::robotNumDisp()
 {
-    ui_->label_RobotNum->setText(QString::number(buttons_.size()));
+    if (ui_->ServerTab->currentIndex() == PanelUtil::Tab::DASHBOARD)
+        ui_->label_RobotNum->setText(QString::number(buttons_.size()));
+}
+
+void Server::Panel::robotTabDisp()
+{
+    if (ui_->ServerTab->currentIndex() == PanelUtil::Tab::ROBOT)
+    {
+        ui_->label_activated_robotName->setText(QString::fromStdString(activatedRobot_));
+
+        QString lin_vel_qstring = QString::number(std::round(activatedRobotLinVel_ * 100.0) / 100.0);
+        QString ang_vel_qstring = QString::number(std::round(activatedRobotAngVel_ * 100.0) / 100.0);
+
+        ui_->label_Linear_Velocity->setText(lin_vel_qstring);
+        ui_->label_Angular_Velocity->setText(ang_vel_qstring);
+    }
+}
+
+void Server::Panel::modeButtonDisp()
+{
+    if (not(ui_->ServerTab->currentIndex() == PanelUtil::Tab::ROBOT))
+        return;
+
+    if (activatedRobotModeState_ == PanelUtil::Mode::REMOTE)
+    {
+        ui_->pushButton_Mode->setText(QString::fromStdString("Remote"));
+        ui_->pushButton_Mode->setStyleSheet(
+            "color: rgb(0,213,255);\nborder: 2px solid rgb(0,213,255);\nborder-radius: 15px");
+    }
+    else
+    {
+        ui_->pushButton_Mode->setText(QString::fromStdString("Manual"));
+        ui_->pushButton_Mode->setStyleSheet(
+            "color: rgb(255,190,11);\nborder: 2px solid rgb(255,190,11);\nborder-radius: 15px");
+    }
 }
 
 void Server::Panel::addRobotButton(QString _robotName)
@@ -118,6 +303,7 @@ void Server::Panel::addRobotButton(QString _robotName)
     connect(button, SIGNAL(clicked()), this, SLOT(handleButton()));
 
     ui_->scrollArea_Robot_List->widget()->layout()->addWidget(button);
+    ui_->ServerTab->setTabEnabled(PanelUtil::Tab::TASKS, true);
 }
 
 void Server::Panel::deleteRobotButton(QString _robotName)
@@ -128,6 +314,20 @@ void Server::Panel::deleteRobotButton(QString _robotName)
 
     ui_->scrollAreaWidgetContents->setFixedHeight(
         ui_->scrollAreaWidgetContents->height() - deltaScrollHeight_);
+
+    if (_robotName.toStdString() == activatedRobot_)
+    {
+        activatedRobot_ = std::string();
+        ui_->ServerTab->setTabEnabled(PanelUtil::Tab::ROBOT, false);
+
+        if (ui_->ServerTab->currentIndex() == PanelUtil::Tab::ROBOT)
+            ui_->ServerTab->setCurrentIndex(PanelUtil::Tab::DASHBOARD);
+    }
+
+    if (buttons_.size() == 0)
+    {
+        ui_->ServerTab->setTabEnabled(PanelUtil::Tab::TASKS, false);
+    }
 
     delete button;
 }
@@ -140,6 +340,37 @@ void Server::Panel::addRobot(std::string _robotName)
 void Server::Panel::deleteRobot(std::string _robotName)
 {
     emit deleteRobotSignal(QString::fromStdString(_robotName));
+}
+
+void Server::Panel::storeGoal(geometry_msgs::msg::Pose2D _goal)
+{
+    activatedRobotGoal_ = _goal;
+}
+
+void Server::Panel::setVelocity(double _linVel, double _angVel)
+{
+    activatedRobotLinVel_ = _linVel;
+    activatedRobotAngVel_ = _angVel;
+}
+
+void Server::Panel::setModeState(PanelUtil::Mode _mode)
+{
+    activatedRobotModeState_ = _mode;
+}
+
+int Server::Panel::getCurrentTabIndex()
+{
+    return (ui_->ServerTab->currentIndex());
+}
+
+geometry_msgs::msg::Twist Server::Panel::get_cmd_vel()
+{
+    geometry_msgs::msg::Twist cmd_vel;
+
+    cmd_vel.linear.x = activatedRobotLinVel_;
+    cmd_vel.angular.z = activatedRobotAngVel_;
+
+    return cmd_vel;
 }
 
 // See: https://dev.to/fmtweisszwerg/cc-how-to-get-all-interface-addresses-on-the-local-device-3pki
@@ -173,7 +404,9 @@ std::string Server::Panel::getIPAddress()
             // So it is need to check these fields before dereferencing.
             if (ptr_entry->ifa_addr != nullptr)
             {
-                char buffer[INET_ADDRSTRLEN] = {0,};
+                char buffer[INET_ADDRSTRLEN] = {
+                    0,
+                };
                 inet_ntop(
                     address_family,
                     &((struct sockaddr_in *)(ptr_entry->ifa_addr))->sin_addr,
@@ -185,14 +418,15 @@ std::string Server::Panel::getIPAddress()
 
             if (interface_name != "lo")
                 break;
-
         }
         else if (address_family == AF_INET6)
         {
             // IPv6
             if (ptr_entry->ifa_addr != nullptr)
             {
-                char buffer[INET6_ADDRSTRLEN] = {0,};
+                char buffer[INET6_ADDRSTRLEN] = {
+                    0,
+                };
                 inet_ntop(
                     address_family,
                     &((struct sockaddr_in6 *)(ptr_entry->ifa_addr))->sin6_addr,
@@ -222,12 +456,18 @@ Server::Panel::Panel(QWidget *_parent)
 {
     ui_->setupUi(this);
 
+    setFocusPolicy(Qt::StrongFocus);
+
     setWindowFlags(
         Qt::WindowStaysOnTopHint |
         Qt::Window |
         Qt::WindowTitleHint |
         Qt::CustomizeWindowHint |
         Qt::WindowMinimizeButtonHint);
+
+    std::get<0>(msg_) = PanelUtil::Request::NO_REQUEST;
+    std::get<1>(msg_) = std::string();
+    std::get<2>(msg_) = geometry_msgs::msg::Pose2D();
 
     ui_->label_IPAddress->setText(QString::fromStdString(getIPAddress()));
 
@@ -238,10 +478,15 @@ Server::Panel::Panel(QWidget *_parent)
     ui_->scrollArea_Robot_List->setWidgetResizable(true);
 
     ui_->ServerTab->currentChanged(PanelUtil::Tab::DASHBOARD);
+    ui_->ServerTab->setTabEnabled(PanelUtil::Tab::TASKS, false);
+    ui_->ServerTab->setTabEnabled(PanelUtil::Tab::ROBOT, false);
 
     displayTimer_ = new QTimer(this);
     connect(displayTimer_, SIGNAL(timeout()), this, SLOT(robotListDisp()));
     connect(displayTimer_, SIGNAL(timeout()), this, SLOT(robotNumDisp()));
+    connect(displayTimer_, SIGNAL(timeout()), this, SLOT(robotTabDisp()));
+    connect(displayTimer_, SIGNAL(timeout()), this, SLOT(modeButtonDisp()));
+
     connect(this, SIGNAL(addRobotSignal(QString)), this, SLOT(addRobotButton(QString)));
     connect(this, SIGNAL(deleteRobotSignal(QString)), this, SLOT(deleteRobotButton(QString)));
 

@@ -12,9 +12,10 @@ void MultibotServer::execServerPanel(int argc, char *argv[])
     QApplication app(argc, argv);
 
     serverPanel_ = std::make_shared<Panel>();
+    serverPanel_->attach(*this);
     serverPanel_->show();
 
-    is_pannel_running_ = true;
+    pannel_is_running_ = true;
 
     app.exec();
 }
@@ -75,6 +76,22 @@ void MultibotServer::update_callback()
     }
 
     rviz_poses_pub_->publish(arrowArray);
+
+    if (pannel_is_running_ and
+        robotList_.contains(panelActivatedRobot_) and
+        robotList_[panelActivatedRobot_].mode_ == PanelUtil::Mode::REMOTE)
+    {
+        geometry_msgs::msg::Twist cmd_vel;
+        {
+            cmd_vel.linear.x = 0.0;
+            cmd_vel.angular.z = 0.0;
+        }
+
+        if (serverPanel_->getCurrentTabIndex() == PanelUtil::Tab::ROBOT)
+            cmd_vel = serverPanel_->get_cmd_vel();
+
+        robotList_[panelActivatedRobot_].cmd_vel_pub_->publish(cmd_vel);
+    }
 }
 
 void MultibotServer::robotState_callback(const RobotState::SharedPtr _state_msg)
@@ -82,6 +99,20 @@ void MultibotServer::robotState_callback(const RobotState::SharedPtr _state_msg)
     robotList_[_state_msg->name].prior_update_time_ = robotList_[_state_msg->name].last_update_time_;
     robotList_[_state_msg->name].last_update_time_ = this->now();
     robotList_[_state_msg->name].robotInfo_.pose_.component_ = _state_msg->pose;
+    robotList_[_state_msg->name].robotInfo_.linVel_ = _state_msg->lin_vel;
+    robotList_[_state_msg->name].robotInfo_.angVel_ = _state_msg->ang_vel;
+
+    if (_state_msg->name == panelActivatedRobot_)
+    {
+        serverPanel_->setModeState(
+            robotList_[_state_msg->name].mode_);
+
+        if (not(serverPanel_->getModeState() == PanelUtil::Mode::REMOTE))
+        {
+            serverPanel_->setVelocity(
+                _state_msg->lin_vel, _state_msg->ang_vel);
+        }
+    }
 }
 
 void MultibotServer::register_robot(
@@ -117,6 +148,7 @@ void MultibotServer::register_robot(
         robot.robotInfo_ = robotInfo;
         robot.id_ = robot_id_;
         robot_id_++;
+        robot.mode_ = PanelUtil::Mode::MANUAL;
 
         robot.prior_update_time_ = this->now();
         robot.last_update_time_ = this->now();
@@ -125,6 +157,14 @@ void MultibotServer::register_robot(
             "/" + robotInfo.name_ + "/state", qos_,
             std::bind(&MultibotServer::robotState_callback, this, std::placeholders::_1));
         robot.control_cmd_ = this->create_client<Path>("/" + robotInfo.name_ + "/path");
+        robot.cmd_vel_pub_ = this->create_publisher<geometry_msgs::msg::Twist>(
+            "/" + robotInfo.name_ + "/cmd_vel", qos_);
+        robot.kill_robot_cmd_ = this->create_publisher<std_msgs::msg::Bool>(
+            "/" + robotInfo.name_ + "/kill", qos_);
+        robot.modeFromRobot_ = this->create_service<ModeSelection>(
+            "/" + robotInfo.name_ + "/modeFromRobot",
+            std::bind(&MultibotServer::change_robot_mode, this, std::placeholders::_1, std::placeholders::_2));
+        robot.modeFromServer_ = this->create_client<ModeSelection>("/" + robotInfo.name_ + "/modeFromServer");
     }
     robotList_.insert(std::make_pair(robot.robotInfo_.name_, robot));
     serverPanel_->addRobot(robot.robotInfo_.name_);
@@ -151,6 +191,52 @@ void MultibotServer::delete_robot(
     }
 
     _response->is_disconnected = true;
+}
+
+void MultibotServer::change_robot_mode(
+    const std::shared_ptr<ModeSelection::Request> _request,
+    std::shared_ptr<ModeSelection::Response> _reponse)
+{
+    if (_request->is_remote == true)
+    {
+        robotList_[_request->name].mode_ = PanelUtil::Mode::REMOTE;
+        serverPanel_->setVelocity(0.0, 0.0);
+    }
+    else
+        robotList_[_request->name].mode_ = PanelUtil::Mode::MANUAL;
+
+    _reponse->is_complete = true;
+}
+
+bool MultibotServer::request_modeChange(
+    const std::string _robotName,
+    bool _is_remote)
+{
+    while (!robotList_[_robotName].modeFromServer_->wait_for_service(1s))
+    {
+        if (!rclcpp::ok())
+        {
+            RCLCPP_ERROR(this->get_logger(), "Interrupted while waiting for the service.");
+            return false;
+        }
+        RCLCPP_ERROR(this->get_logger(), "ModeChange not available, waiting again...");
+    }
+
+    auto request = std::make_shared<ModeSelection::Request>();
+
+    request->name = _robotName;
+    request->is_remote = _is_remote;
+
+    auto response_received_callback = [this](rclcpp::Client<ModeSelection>::SharedFuture _future)
+    {
+        auto response = _future.get();
+        return;
+    };
+
+    auto future_result =
+        robotList_[_robotName].modeFromServer_->async_send_request(request, response_received_callback);
+
+    return future_result.get()->is_complete;
 }
 
 void MultibotServer::request_control(
@@ -271,6 +357,104 @@ void MultibotServer::loadMap()
     }
 }
 
+void MultibotServer::update(const PanelUtil::Msg &_msg)
+{
+    if (not(pannel_is_running_))
+        return;
+
+    switch (std::get<0>(_msg))
+    {
+    case PanelUtil::Request::SET_GOAL:
+    {
+        std::string robotName = std::get<1>(_msg);
+        geometry_msgs::msg::Pose2D goal = std::get<2>(_msg);
+        if (robotList_.contains(robotName))
+        {
+            robotList_[robotName].robotInfo_.goal_.component_ = goal;
+            instance_manager_->setGoal(robotName, goal);
+
+            std::cout << "Changing the Goal of " << robotName << ": "
+                      << robotList_[robotName].robotInfo_.goal_ << std::endl;
+        }
+        break;
+    }
+
+    case PanelUtil::Request::SET_TARGET:
+    {
+        panelActivatedRobot_ = std::get<1>(_msg);
+        serverPanel_->storeGoal(
+            robotList_[panelActivatedRobot_].robotInfo_.goal_.component_);
+        break;
+    }
+
+    case PanelUtil::Request::SCAN:
+    {
+        std_msgs::msg::Bool scanActivated;
+        scanActivated.data = true;
+
+        serverScan_->publish(scanActivated);
+        break;
+    }
+
+    case PanelUtil::Request::KILL:
+    {
+        if (std::get<1>(_msg) != panelActivatedRobot_)
+            std::abort();
+
+        instance_manager_->deleteAgent(panelActivatedRobot_);
+
+        if (robotList_.contains(panelActivatedRobot_))
+        {
+            std_msgs::msg::Bool killActivated;
+            killActivated.data = true;
+            robotList_[panelActivatedRobot_].kill_robot_cmd_->publish(killActivated);
+
+            robotList_.erase(panelActivatedRobot_);
+            serverPanel_->deleteRobot(panelActivatedRobot_);
+
+            panelActivatedRobot_ = std::string();
+
+            RCLCPP_INFO(this->get_logger(), "Robot " + std::get<1>(_msg) + " is deleted.");
+            RCLCPP_INFO(this->get_logger(), "Total Robots: " + std::to_string(robotList_.size()) + "EA\n");
+        }
+
+        break;
+    }
+
+    case PanelUtil::Request::REMOTE_REQUEST:
+    {
+        if (std::get<1>(_msg) != panelActivatedRobot_)
+            std::abort();
+
+        bool is_complete = request_modeChange(panelActivatedRobot_, true);
+
+        if (is_complete)
+        {
+            robotList_[panelActivatedRobot_].mode_ = PanelUtil::Mode::REMOTE;
+            serverPanel_->setVelocity(0.0, 0.0);
+        }
+
+        break;
+    }
+
+    case PanelUtil::Request::MANUAL_REQUEST:
+    {
+        if (std::get<1>(_msg) != panelActivatedRobot_)
+            std::abort();
+
+        bool is_complete = request_modeChange(panelActivatedRobot_, false);
+
+        if (is_complete)
+            robotList_[panelActivatedRobot_].mode_ = PanelUtil::Mode::MANUAL;
+
+        break;
+    }
+
+    default:
+        break;
+    }
+}
+
 MultibotServer::MultibotServer()
     : Node("server")
 {
@@ -285,6 +469,8 @@ MultibotServer::MultibotServer()
     disconnection_ = this->create_service<Disconnection>(
         "/disconnection",
         std::bind(&MultibotServer::delete_robot, this, std::placeholders::_1, std::placeholders::_2));
+
+    serverScan_ = this->create_publisher<std_msgs::msg::Bool>("/server_scan", qos_);
 
     update_timer_ = this->create_wall_timer(
         10ms, std::bind(&MultibotServer::update_callback, this));

@@ -5,6 +5,7 @@
 #include <utility>
 
 #include <rclcpp/rclcpp.hpp>
+#include <std_msgs/msg/bool.hpp>
 #include <nav_msgs/srv/get_map.hpp>
 #include <nav_msgs/msg/occupancy_grid.hpp>
 #include <visualization_msgs/msg/marker_array.hpp>
@@ -13,6 +14,7 @@
 #include "multibot_ros2_interface/srv/connection.hpp"
 #include "multibot_ros2_interface/srv/disconnection.hpp"
 #include "multibot_ros2_interface/msg/local_path.hpp"
+#include "multibot_ros2_interface/srv/mode_selection.hpp"
 #include "multibot_ros2_interface/srv/path.hpp"
 
 #include "multibot_server/CPBS.hpp"
@@ -26,7 +28,7 @@ namespace Server
 {
     using namespace std::chrono_literals;
 
-    class MultibotServer : public rclcpp::Node
+    class MultibotServer : public rclcpp::Node, public Observer::ObserverInterface<PanelUtil::Msg>
     {
     private:
         using RobotState        = multibot_ros2_interface::msg::RobotState;
@@ -34,15 +36,21 @@ namespace Server
         using Disconnection     = multibot_ros2_interface::srv::Disconnection;
         using Path              = multibot_ros2_interface::srv::Path;
         using LocalPath         = multibot_ros2_interface::msg::LocalPath;
+        using ModeSelection     = multibot_ros2_interface::srv::ModeSelection;
 
     private:
         struct Robot
         {
             AgentInstance::Agent robotInfo_;
             int32_t id_;
+            PanelUtil::Mode mode_;
 
             rclcpp::Subscription<RobotState>::SharedPtr state_sub_;
             rclcpp::Client<Path>::SharedPtr control_cmd_;
+            rclcpp::Publisher<geometry_msgs::msg::Twist>::SharedPtr cmd_vel_pub_;
+            rclcpp::Publisher<std_msgs::msg::Bool>::SharedPtr kill_robot_cmd_;
+            rclcpp::Client<ModeSelection>::SharedPtr modeFromServer_;
+            rclcpp::Service<ModeSelection>::SharedPtr modeFromRobot_;
 
             rclcpp::Time last_update_time_;
             rclcpp::Time prior_update_time_;
@@ -65,7 +73,15 @@ namespace Server
         void delete_robot(
             const std::shared_ptr<Disconnection::Request> _request,
             std::shared_ptr<Disconnection::Response> _response);
-        
+
+        void change_robot_mode(
+            const std::shared_ptr<ModeSelection::Request> _request,
+            std::shared_ptr<ModeSelection::Response> _response);
+
+        bool request_modeChange(
+            const std::string _robotName,
+            bool _is_remote);
+
         void request_control(
             const std::string &_robotName,
             std::shared_ptr<rclcpp::Client<Path>> _service);
@@ -75,6 +91,7 @@ namespace Server
 
         rclcpp::Service<Connection>::SharedPtr connection_;
         rclcpp::Service<Disconnection>::SharedPtr disconnection_;
+        rclcpp::Publisher<std_msgs::msg::Bool>::SharedPtr serverScan_;
 
         rclcpp::Client<nav_msgs::srv::GetMap>::SharedPtr mapLoading_;
         rclcpp::Publisher<visualization_msgs::msg::MarkerArray>::SharedPtr rviz_poses_pub_;
@@ -82,6 +99,9 @@ namespace Server
     private:
         void loadMap();
         visualization_msgs::msg::Marker update_Rviz_SinglePose(const Robot &_robot);
+
+    public:
+        void update(const PanelUtil::Msg &_msg) override;
 
     private:
         rclcpp::TimerBase::SharedPtr update_timer_;
@@ -96,7 +116,8 @@ namespace Server
         int32_t robot_id_ = 0;
 
         std::shared_ptr<Panel> serverPanel_;
-        bool is_pannel_running_;
+        bool pannel_is_running_;
+        std::string panelActivatedRobot_;
 
     public:
         MultibotServer();

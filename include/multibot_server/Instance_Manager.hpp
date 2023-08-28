@@ -14,9 +14,9 @@ namespace Instance
     class Instance_Manager : public Observer::SubjectInterface<InstanceMsg>
     {
     public:
-        void saveAgents(const std::unordered_map<std::string, AgentInstance::Agent> &_agents);
         void insertAgent(const std::pair<std::string, AgentInstance::Agent> &_agent);
         void deleteAgent(const std::string _agentName);
+        void setGoal(const std::string _agentName, const geometry_msgs::msg::Pose2D _goal);
         void saveMap(const MapInstance::BinaryOccupancyMap &_map);
         void exportResult(
             const Path::PathSet &_paths,

@@ -8,11 +8,6 @@
 
 using namespace Instance;
 
-void Instance_Manager::saveAgents(const std::unordered_map<std::string, AgentInstance::Agent> &_agents)
-{
-    agents_ = _agents;
-}
-
 void Instance_Manager::insertAgent(const std::pair<std::string, AgentInstance::Agent> &_agent)
 {
     agents_.insert(_agent);
@@ -24,6 +19,16 @@ void Instance_Manager::deleteAgent(const std::string _agentName)
     if (agents_.contains(_agentName))
     {
         agents_.erase(_agentName);
+        notify();
+    }
+}
+
+void Instance_Manager::setGoal(
+    const std::string _agentName, const geometry_msgs::msg::Pose2D _goal)
+{
+    if (agents_.contains(_agentName))
+    {
+        agents_[_agentName].goal_.component_ = _goal;
         notify();
     }
 }
