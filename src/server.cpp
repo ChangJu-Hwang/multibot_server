@@ -1,69 +1,23 @@
 #include "multibot_server/server.hpp"
 
-#include <yaml-cpp/yaml.h> // Need to install libyaml-cpp-dev
-
 #include <tf2/LinearMath/Quaternion.h>
+
+#include <QApplication>
 
 using namespace Server;
 using namespace Instance;
 
-void MultibotServer::loadInstances()
+void MultibotServer::execServerPanel(int argc, char *argv[])
 {
-    loadMap();
-    loadTasks();
+    QApplication app(argc, argv);
 
-    instance_manager_->notify();
-}
+    serverPanel_ = std::make_shared<Panel>();
+    serverPanel_->attach(*this);
+    serverPanel_->show();
 
-void MultibotServer::request_registrations()
-{
-    for (auto single_request : registration_request_)
-    {
-        while (!single_request.second->wait_for_service(1s))
-        {
-            if (!rclcpp::ok())
-            {
-                RCLCPP_ERROR(this->get_logger(), "Interrupted while waiting for the service.");
-                return;
-            }
-            RCLCPP_ERROR(this->get_logger(), "Robot registration not available, waiting again...");
-        }
-        request_registration(single_request.first, single_request.second);
-    }
-}
+    pannel_is_running_ = true;
 
-void MultibotServer::plan_multibots()
-{
-    paths_.clear();
-    auto plans = solver_->solve();
-
-    if (plans.second == true)
-    {
-        paths_ = plans.first;
-
-        for (const auto singlePath : paths_)
-            std::cout << singlePath.second << std::endl;
-    }
-}
-
-void MultibotServer::request_controls()
-{
-    if (paths_.empty())
-        return;
-
-    for (auto robot : robotList_)
-    {
-        while (!robot.second.control_cmd_->wait_for_service(1s))
-        {
-            if (!rclcpp::ok())
-            {
-                RCLCPP_ERROR(this->get_logger(), "Interrupted while waiting for the service.");
-                return;
-            }
-            RCLCPP_ERROR(this->get_logger(), "Send path not availiable, waiting again...");
-        }
-        request_control(robot.second.robotInfo_.name_, robot.second.control_cmd_);
-    }
+    app.exec();
 }
 
 void MultibotServer::update_callback()
@@ -86,6 +40,22 @@ void MultibotServer::update_callback()
     }
 
     rviz_poses_pub_->publish(arrowArray);
+
+    if (pannel_is_running_ and
+        robotList_.contains(panelActivatedRobot_) and
+        robotList_[panelActivatedRobot_].mode_ == PanelUtil::Mode::REMOTE)
+    {
+        geometry_msgs::msg::Twist cmd_vel;
+        {
+            cmd_vel.linear.x = 0.0;
+            cmd_vel.angular.z = 0.0;
+        }
+
+        if (serverPanel_->getCurrentTabIndex() == PanelUtil::Tab::ROBOT)
+            cmd_vel = serverPanel_->get_cmd_vel();
+
+        robotList_[panelActivatedRobot_].cmd_vel_pub_->publish(cmd_vel);
+    }
 }
 
 void MultibotServer::robotState_callback(const RobotState::SharedPtr _state_msg)
@@ -93,32 +63,136 @@ void MultibotServer::robotState_callback(const RobotState::SharedPtr _state_msg)
     robotList_[_state_msg->name].prior_update_time_ = robotList_[_state_msg->name].last_update_time_;
     robotList_[_state_msg->name].last_update_time_ = this->now();
     robotList_[_state_msg->name].robotInfo_.pose_.component_ = _state_msg->pose;
+    robotList_[_state_msg->name].robotInfo_.linVel_ = _state_msg->lin_vel;
+    robotList_[_state_msg->name].robotInfo_.angVel_ = _state_msg->ang_vel;
+
+    if (_state_msg->name == panelActivatedRobot_)
+    {
+        serverPanel_->setModeState(
+            robotList_[_state_msg->name].mode_);
+
+        if (not(serverPanel_->getModeState() == PanelUtil::Mode::REMOTE))
+        {
+            serverPanel_->setVelocity(
+                _state_msg->lin_vel, _state_msg->ang_vel);
+        }
+    }
 }
 
-void MultibotServer::request_registration(
-    const std::string &_robotName,
-    std::shared_ptr<rclcpp::Client<MultibotServer::RobotInfo>> _service)
+void MultibotServer::register_robot(
+    const std::shared_ptr<Connection::Request> _request,
+    std::shared_ptr<Connection::Response> _response)
 {
-    auto request = std::make_shared<RobotInfo::Request>();
+    if (robotList_.contains(_request->config.name))
+    {
+        _response->is_connected = true;
+        return;
+    }
 
-    request->config.name = _robotName;
-    request->config.size = robotList_[_robotName].robotInfo_.size_;
-    request->config.wheel_radius = robotList_[_robotName].robotInfo_.wheel_radius_;
-    request->config.wheel_seperation = robotList_[_robotName].robotInfo_.wheel_seperation_;
+    AgentInstance::Agent robotInfo;
 
-    request->config.max_linvel = robotList_[_robotName].robotInfo_.max_linVel_;
-    request->config.max_linacc = robotList_[_robotName].robotInfo_.max_linAcc_;
-    request->config.max_angvel = robotList_[_robotName].robotInfo_.max_angVel_;
-    request->config.max_angacc = robotList_[_robotName].robotInfo_.max_angAcc_;
+    robotInfo.name_ = _request->config.name;
 
-    auto response_received_callback = [this](rclcpp::Client<RobotInfo>::SharedFuture _future)
+    robotInfo.type_ = _request->config.type;
+    robotInfo.size_ = _request->config.size;
+    robotInfo.wheel_radius_ = _request->config.wheel_radius;
+    robotInfo.wheel_seperation_ = _request->config.wheel_seperation;
+
+    robotInfo.max_linVel_ = _request->config.max_linvel;
+    robotInfo.max_linAcc_ = _request->config.max_linacc;
+    robotInfo.max_angVel_ = _request->config.max_angvel;
+    robotInfo.max_angAcc_ = _request->config.max_angacc;
+
+    robotInfo.goal_.component_ = _request->goal;
+
+    instance_manager_->insertAgent(std::make_pair(robotInfo.name_, robotInfo));
+
+    Robot robot;
+    {
+        robot.robotInfo_ = robotInfo;
+        robot.id_ = robot_id_;
+        robot_id_++;
+        robot.mode_ = PanelUtil::Mode::MANUAL;
+
+        robot.prior_update_time_ = this->now();
+        robot.last_update_time_ = this->now();
+
+        robot.state_sub_ = this->create_subscription<RobotState>(
+            "/" + robotInfo.name_ + "/state", qos_,
+            std::bind(&MultibotServer::robotState_callback, this, std::placeholders::_1));
+        robot.control_cmd_ = this->create_client<Path>("/" + robotInfo.name_ + "/path");
+        robot.cmd_vel_pub_ = this->create_publisher<geometry_msgs::msg::Twist>(
+            "/" + robotInfo.name_ + "/cmd_vel", qos_);
+        robot.kill_robot_cmd_ = this->create_publisher<std_msgs::msg::Bool>(
+            "/" + robotInfo.name_ + "/kill", qos_);
+        robot.modeFromRobot_ = this->create_service<ModeSelection>(
+            "/" + robotInfo.name_ + "/modeFromRobot",
+            std::bind(&MultibotServer::change_robot_mode, this, std::placeholders::_1, std::placeholders::_2));
+        robot.modeFromServer_ = this->create_client<ModeSelection>("/" + robotInfo.name_ + "/modeFromServer");
+    }
+    robotList_.insert(std::make_pair(robot.robotInfo_.name_, robot));
+    serverPanel_->addRobot(robot.robotInfo_.name_);
+
+    RCLCPP_INFO(this->get_logger(), "New Robot " + robot.robotInfo_.name_ + " is registered.");
+    RCLCPP_INFO(this->get_logger(), "Total Robots: " + std::to_string(robotList_.size()) + "EA");
+    std::cout << robot.robotInfo_ << std::endl;
+
+    _response->is_connected = true;
+}
+
+void MultibotServer::delete_robot(
+    const std::shared_ptr<Disconnection::Request> _request,
+    std::shared_ptr<Disconnection::Response> _response)
+{
+    expireRobot(_request->name);
+
+    _response->is_disconnected = true;
+}
+
+void MultibotServer::change_robot_mode(
+    const std::shared_ptr<ModeSelection::Request> _request,
+    std::shared_ptr<ModeSelection::Response> _reponse)
+{
+    if (_request->is_remote == true)
+    {
+        robotList_[_request->name].mode_ = PanelUtil::Mode::REMOTE;
+        serverPanel_->setVelocity(0.0, 0.0);
+    }
+    else
+        robotList_[_request->name].mode_ = PanelUtil::Mode::MANUAL;
+
+    _reponse->is_complete = true;
+}
+
+bool MultibotServer::request_modeChange(
+    const std::string _robotName,
+    bool _is_remote)
+{
+    while (!robotList_[_robotName].modeFromServer_->wait_for_service(1s))
+    {
+        if (!rclcpp::ok())
+        {
+            RCLCPP_ERROR(this->get_logger(), "Interrupted while waiting for the service.");
+            return false;
+        }
+        RCLCPP_ERROR(this->get_logger(), "ModeChange not available, waiting again...");
+    }
+
+    auto request = std::make_shared<ModeSelection::Request>();
+
+    request->name = _robotName;
+    request->is_remote = _is_remote;
+
+    auto response_received_callback = [this](rclcpp::Client<ModeSelection>::SharedFuture _future)
     {
         auto response = _future.get();
         return;
     };
 
     auto future_result =
-        _service->async_send_request(request, response_received_callback);
+        robotList_[_robotName].modeFromServer_->async_send_request(request, response_received_callback);
+
+    return future_result.get()->is_complete;
 }
 
 void MultibotServer::request_control(
@@ -138,7 +212,7 @@ void MultibotServer::request_control(
 
         request->path.push_back(localPath);
     }
-    request->start_time = 10.0;
+    request->start_time = 0.0;
 
     auto response_received_callback = [this](rclcpp::Client<Path>::SharedFuture _future)
     {
@@ -184,6 +258,20 @@ visualization_msgs::msg::Marker MultibotServer::update_Rviz_SinglePose(const Rob
     robotMarker.pose.orientation.w = q.w();
 
     return robotMarker;
+}
+
+void MultibotServer::expireRobot(const std::string _robotName)
+{
+    instance_manager_->deleteAgent(_robotName);
+
+    if (robotList_.contains(_robotName))
+    {
+        robotList_.erase(_robotName);
+        serverPanel_->deleteRobot(_robotName);
+
+        RCLCPP_INFO(this->get_logger(), "Robot " + _robotName + " is deleted.");
+        RCLCPP_INFO(this->get_logger(), "Total Robots: " + std::to_string(robotList_.size()) + "EA\n");
+    }
 }
 
 void MultibotServer::loadMap()
@@ -239,81 +327,156 @@ void MultibotServer::loadMap()
     }
 }
 
-void MultibotServer::loadTasks()
+void MultibotServer::update(const PanelUtil::Msg &_msg)
 {
-    nodeStartTime_ = this->now();
-    std::list<std::string> robotTypes;
-    robotTypes.clear();
-    std::unordered_map<std::string, AgentInstance::Agent> agentList;
-    std::string task_fPath;
+    if (not(pannel_is_running_))
+        return;
 
-    this->declare_parameter("task_fPath");
-    this->get_parameter("task_fPath", task_fPath);
-
-    std::vector<YAML::Node> tasks = YAML::LoadAllFromFile(task_fPath);
-
-    for (const auto &task : tasks)
+    switch (std::get<0>(_msg))
     {
-        AgentInstance::Agent agent;
-
-        agent.name_ = task["name"].as<std::string>();
-        std::string type = task["type"].as<std::string>();
-
-        if (std::find(robotTypes.begin(), robotTypes.end(), type) == robotTypes.end())
+    case PanelUtil::Request::SET_GOAL:
+    {
+        std::string robotName = std::get<1>(_msg);
+        geometry_msgs::msg::Pose2D goal = std::get<2>(_msg);
+        if (robotList_.contains(robotName))
         {
-            this->declare_parameter(type + ".size");
-            this->declare_parameter(type + ".wheels.separation");
-            this->declare_parameter(type + ".wheels.radius");
+            robotList_[robotName].robotInfo_.goal_.component_ = goal;
+            instance_manager_->setGoal(robotName, goal);
 
-            this->declare_parameter(type + ".linear.velocity");
-            this->declare_parameter(type + ".linear.acceleration");
-            this->declare_parameter(type + ".angular.velocity");
-            this->declare_parameter(type + ".angular.acceleration");
+            std::cout << "Changing the Goal of " << robotName << ": "
+                      << robotList_[robotName].robotInfo_.goal_ << std::endl;
+        }
+        break;
+    }
 
-            robotTypes.push_back(type);
+    case PanelUtil::Request::SET_TARGET:
+    {
+        panelActivatedRobot_ = std::get<1>(_msg);
+        serverPanel_->storeGoal(
+            robotList_[panelActivatedRobot_].robotInfo_.goal_.component_);
+        break;
+    }
+
+    case PanelUtil::Request::SCAN_REQUEST:
+    {
+        std_msgs::msg::Bool scanActivated;
+        scanActivated.data = true;
+
+        serverScan_->publish(scanActivated);
+        break;
+    }
+
+    case PanelUtil::Request::PLAN_REQUEST:
+    {
+        paths_.clear();
+
+        for (const auto &robot : robotList_)
+        {
+            instance_manager_->setStart(
+                robot.second.robotInfo_.name_, robot.second.robotInfo_.pose_.component_);
         }
 
-        this->get_parameter_or(type + ".size", agent.size_, 0.0);
-        this->get_parameter_or(type + ".wheels.separation", agent.wheel_seperation_, 0.0);
-        this->get_parameter_or(type + ".wheels.radius", agent.wheel_radius_, 0.0);
+        auto plans = solver_->solve();
 
-        this->get_parameter_or(type + ".linear.velocity", agent.max_linVel_, 0.0);
-        this->get_parameter_or(type + ".linear.acceleration", agent.max_linAcc_, 0.0);
-        this->get_parameter_or(type + ".angular.velocity", agent.max_angVel_, 0.0);
-        this->get_parameter_or(type + ".angular.acceleration", agent.max_angAcc_, 0.0);
+        if (plans.second == true)
+        {
+            serverPanel_->setPlanState(PanelUtil::PlanState::SUCCESS);
 
-        geometry_msgs::msg::Pose2D startPose;
-        startPose.x = task["start"]["x"].as<double>();
-        startPose.y = task["start"]["y"].as<double>();
-        startPose.theta = task["start"]["theta"].as<double>();
-        agent.start_.component_ = startPose;
+            paths_ = plans.first;
 
-        geometry_msgs::msg::Pose2D goalPose;
-        goalPose.x = task["goal"]["x"].as<double>();
-        goalPose.y = task["goal"]["y"].as<double>();
-        goalPose.theta = task["goal"]["theta"].as<double>();
-        agent.goal_.component_ = goalPose;
+            for (const auto singlePath : paths_)
+                std::cout << singlePath.second << std::endl;
 
-        agentList.insert(std::make_pair(agent.name_, agent));
+            instance_manager_->exportResult(paths_);
+        }
+        else
+        {
+            serverPanel_->setPlanState(PanelUtil::PlanState::FAIL);
+        }
 
-        auto singleRobot_registration = this->create_client<RobotInfo>("/" + agent.name_ + "/info");
-        registration_request_.push_back(std::make_pair(agent.name_, singleRobot_registration));
-
-        Robot robot;
-        robot.robotInfo_ = agent;
-        robot.id_ = robotList_.size();
-
-        robot.prior_update_time_ = this->now();
-        robot.last_update_time_ = this->now();
-
-        robot.state_sub_ = this->create_subscription<RobotState>(
-            "/" + agent.name_ + "/state", qos_,
-            std::bind(&MultibotServer::robotState_callback, this, std::placeholders::_1));
-        robot.control_cmd_ = this->create_client<Path>("/" + agent.name_ + "/path");
-
-        robotList_.insert(std::make_pair(robot.robotInfo_.name_, robot));
+        break;
     }
-    instance_manager_->saveAgents(agentList);
+
+    case PanelUtil::Request::START_REQUEST:
+    {
+        if (paths_.empty())
+            break;
+
+        for (auto& robot : robotList_)
+        {
+            while (!robot.second.control_cmd_->wait_for_service(1s))
+            {
+                if (!rclcpp::ok())
+                {
+                    RCLCPP_ERROR(this->get_logger(), "Interrupted while waiting for the service.");
+                    return;
+                }
+                RCLCPP_ERROR(this->get_logger(), "Send path not availiable, waiting again...");
+            }
+            request_control(robot.second.robotInfo_.name_, robot.second.control_cmd_);
+            robot.second.mode_ = PanelUtil::Mode::AUTO;
+        }
+
+        break;
+    }
+
+    case PanelUtil::Request::STOP_REQUEST:
+    {
+        std_msgs::msg::Bool stopActivated;
+        stopActivated.data = true;
+
+
+        emergencyStop_->publish(stopActivated);
+        break;
+    }
+
+    case PanelUtil::Request::KILL_REQUEST:
+    {
+        if (std::get<1>(_msg) != panelActivatedRobot_)
+            std::abort();
+
+        std_msgs::msg::Bool killActivated;
+        killActivated.data = true;
+        robotList_[panelActivatedRobot_].kill_robot_cmd_->publish(killActivated);
+
+        expireRobot(panelActivatedRobot_);
+        panelActivatedRobot_ = std::string();
+
+        break;
+    }
+
+    case PanelUtil::Request::REMOTE_REQUEST:
+    {
+        if (std::get<1>(_msg) != panelActivatedRobot_)
+            std::abort();
+
+        bool is_complete = request_modeChange(panelActivatedRobot_, true);
+
+        if (is_complete)
+        {
+            robotList_[panelActivatedRobot_].mode_ = PanelUtil::Mode::REMOTE;
+            serverPanel_->setVelocity(0.0, 0.0);
+        }
+
+        break;
+    }
+
+    case PanelUtil::Request::MANUAL_REQUEST:
+    {
+        if (std::get<1>(_msg) != panelActivatedRobot_)
+            std::abort();
+
+        bool is_complete = request_modeChange(panelActivatedRobot_, false);
+
+        if (is_complete)
+            robotList_[panelActivatedRobot_].mode_ = PanelUtil::Mode::MANUAL;
+
+        break;
+    }
+
+    default:
+        break;
+    }
 }
 
 MultibotServer::MultibotServer()
@@ -323,13 +486,25 @@ MultibotServer::MultibotServer()
 
     rviz_poses_pub_ = this->create_publisher<visualization_msgs::msg::MarkerArray>("robot_list", qos_);
 
-    registration_request_.clear();
+    connection_ = this->create_service<Connection>(
+        "/connection",
+        std::bind(&MultibotServer::register_robot, this, std::placeholders::_1, std::placeholders::_2));
+
+    disconnection_ = this->create_service<Disconnection>(
+        "/disconnection",
+        std::bind(&MultibotServer::delete_robot, this, std::placeholders::_1, std::placeholders::_2));
+
+    serverScan_ = this->create_publisher<std_msgs::msg::Bool>("/server_scan", qos_);
+    emergencyStop_ = this->create_publisher<std_msgs::msg::Bool>("/emergency_stop", qos_);
 
     update_timer_ = this->create_wall_timer(
         10ms, std::bind(&MultibotServer::update_callback, this));
 
     instance_manager_ = std::make_shared<Instance_Manager>();
     solver_ = std::make_shared<CPBS::Solver>(instance_manager_);
+
+    loadMap();
+    instance_manager_->notify();
 
     RCLCPP_INFO(this->get_logger(), "MultibotServer has been initialized");
 }

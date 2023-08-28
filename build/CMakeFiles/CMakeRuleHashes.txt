@@ -1,2 +1,3 @@
 # Hashes of file build rules.
 db9db8c9052735b15a51cc341c63b6db CMakeFiles/multibot_server_uninstall
+ab919fe20f19fa1d5083e4bda34c6aba CMakeFiles/server_autogen

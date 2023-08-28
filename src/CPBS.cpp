@@ -127,6 +127,8 @@ bool CPBS::Solver::generateRoot()
 
     for (const auto &agent : agents_)
     {
+        std::cout << "[" << agent.second.name_ << "] "
+                  << agent.second.start_ << " -> " << agent.second.goal_ << std::endl;
         auto pathResult = planner_->search(
             agent.second.name_, std::vector<std::string>(), Path::PathSet());
 
