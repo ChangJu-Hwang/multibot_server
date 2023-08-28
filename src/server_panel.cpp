@@ -148,11 +148,6 @@ void Server::Panel::on_Scan_clicked()
     notify();
 }
 
-void Server::Panel::on_Reset_clicked()
-{
-    std::cout << "Button: Reset clicked" << std::endl;
-}
-
 void Server::Panel::on_pushButton_Mode_clicked()
 {
     if (activatedRobotModeState_ == PanelUtil::Mode::MANUAL)

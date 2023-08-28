@@ -66,7 +66,6 @@ namespace Server
         void on_Start_clicked();
         void on_Stop_clicked();
         void on_Scan_clicked();
-        void on_Reset_clicked();
         void on_pushButton_Mode_clicked();
         void on_pushButton_Kill_clicked();
 

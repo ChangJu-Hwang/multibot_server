@@ -180,15 +180,7 @@ void MultibotServer::delete_robot(
     const std::shared_ptr<Disconnection::Request> _request,
     std::shared_ptr<Disconnection::Response> _response)
 {
-    instance_manager_->deleteAgent(_request->name);
-
-    if (robotList_.contains(_request->name))
-    {
-        robotList_.erase(_request->name);
-        serverPanel_->deleteRobot(_request->name);
-        RCLCPP_INFO(this->get_logger(), "Robot " + _request->name + " is deleted.");
-        RCLCPP_INFO(this->get_logger(), "Total Robots: " + std::to_string(robotList_.size()) + "EA\n");
-    }
+    expireRobot(_request->name);
 
     _response->is_disconnected = true;
 }
@@ -304,6 +296,20 @@ visualization_msgs::msg::Marker MultibotServer::update_Rviz_SinglePose(const Rob
     return robotMarker;
 }
 
+void MultibotServer::expireRobot(const std::string _robotName)
+{
+    instance_manager_->deleteAgent(_robotName);
+
+    if (robotList_.contains(_robotName))
+    {
+        robotList_.erase(_robotName);
+        serverPanel_->deleteRobot(_robotName);
+
+        RCLCPP_INFO(this->get_logger(), "Robot " + _robotName + " is deleted.");
+        RCLCPP_INFO(this->get_logger(), "Total Robots: " + std::to_string(robotList_.size()) + "EA\n");
+    }
+}
+
 void MultibotServer::loadMap()
 {
     while (!this->mapLoading_->wait_for_service(1s))
@@ -401,22 +407,12 @@ void MultibotServer::update(const PanelUtil::Msg &_msg)
         if (std::get<1>(_msg) != panelActivatedRobot_)
             std::abort();
 
-        instance_manager_->deleteAgent(panelActivatedRobot_);
+        std_msgs::msg::Bool killActivated;
+        killActivated.data = true;
+        robotList_[panelActivatedRobot_].kill_robot_cmd_->publish(killActivated);
 
-        if (robotList_.contains(panelActivatedRobot_))
-        {
-            std_msgs::msg::Bool killActivated;
-            killActivated.data = true;
-            robotList_[panelActivatedRobot_].kill_robot_cmd_->publish(killActivated);
-
-            robotList_.erase(panelActivatedRobot_);
-            serverPanel_->deleteRobot(panelActivatedRobot_);
-
-            panelActivatedRobot_ = std::string();
-
-            RCLCPP_INFO(this->get_logger(), "Robot " + std::get<1>(_msg) + " is deleted.");
-            RCLCPP_INFO(this->get_logger(), "Total Robots: " + std::to_string(robotList_.size()) + "EA\n");
-        }
+        expireRobot(panelActivatedRobot_);
+        panelActivatedRobot_ = std::string();
 
         break;
     }

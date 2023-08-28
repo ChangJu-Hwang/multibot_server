@@ -99,6 +99,7 @@ namespace Server
     private:
         void loadMap();
         visualization_msgs::msg::Marker update_Rviz_SinglePose(const Robot &_robot);
+        void expireRobot(const std::string _robotName);
 
     public:
         void update(const PanelUtil::Msg &_msg) override;
