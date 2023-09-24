@@ -10,7 +10,7 @@ std::pair<Path::PathSet, bool> CPBS::Solver::solve()
     {
         std::cerr << "[Error] "
                   << "Generate Root Failed" << std::endl;
-        std::abort();
+        return std::make_pair(Path::PathSet(), false);
     }
 
     while (not(open_.empty()))

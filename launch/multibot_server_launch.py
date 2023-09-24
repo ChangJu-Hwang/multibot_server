@@ -17,7 +17,6 @@ import yaml
 def generate_launch_description():
     # Get the launch directory
     multibot_server_dir = get_package_share_directory('multibot_server')
-    multibot_robot_dir  = get_package_share_directory('multibot_robot')
 
     # Launch argument setting
     lifecycle_nodes = ['map_server']
@@ -80,8 +79,9 @@ def generate_launch_description():
         output='screen',
         # parameters=[{'yaml_filename': map_server_config_path}])
         parameters=[configured_params,
-                    {'autostart': autostart},
-                    ]
+                    {'autostart': autostart}],
+        remappings=[('/tf', 'tf'),
+                    ('/tf_static', 'tf_static')]
     )
 
     with open(os.path.join(multibot_server_dir, 'maps', 'map_server_params.yaml')) as map_server_params:

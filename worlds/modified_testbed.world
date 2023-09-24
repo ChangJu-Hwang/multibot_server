@@ -228,6 +228,160 @@
             <pose frame="">10.3 9.27 0 0 0 3.14</pose>
         </model>
 
+        <model name="PalletJackB_4">
+            <include>
+                <uri>model://aws_robomaker_warehouse_PalletJackB_01</uri>
+            </include>
+            <pose frame="">8.2 9.7 0 0 0 1.57</pose>
+        </model>
+
+        <model name="PalletJackB_5">
+            <include>
+                <uri>model://aws_robomaker_warehouse_PalletJackB_01</uri>
+            </include>
+            <pose frame="">11.4 9.7 0 0 0 1.57</pose>
+        </model>
+
+        <model name="cardboard_boxes_1">
+            <include>
+                <uri>model://cardboard_box_group</uri>
+            </include>
+            <pose frame="">16.45 12.5 0 0 0 0</pose>
+        </model>
+
+        <model name="cardboard_boxes_2">
+            <include>
+                <uri>model://cardboard_box_group</uri>
+            </include>
+            <pose frame="">16.45 12.5 0.3 0 0 0</pose>
+        </model>
+
+        <model name="cardboard_boxes_3">
+            <include>
+                <uri>model://cardboard_box_group</uri>
+            </include>
+            <pose frame="">16.45 10.6 0 0 0 0</pose>
+        </model>
+
+        <model name="cardboard_boxes_4">
+            <include>
+                <uri>model://cardboard_box_group</uri>
+            </include>
+            <pose frame="">16.45 10.6 0.3 0 0 0</pose>
+        </model>
+
+        <model name="cardboard_boxes_5">
+            <include>
+                <uri>model://cardboard_box_group</uri>
+            </include>
+            <pose frame="">19.45 12.5 0 0 0 0</pose>
+        </model>
+
+        <model name="cardboard_boxes_6">
+            <include>
+                <uri>model://cardboard_box_group</uri>
+            </include>
+            <pose frame="">19.45 12.5 0.3 0 0 0</pose>
+        </model>
+
+        <model name="cardboard_boxes_7">
+            <include>
+                <uri>model://cardboard_box_group</uri>
+            </include>
+            <pose frame="">19.45 10.6 0 0 0 0</pose>
+        </model>
+
+        <model name="cardboard_boxes_8">
+            <include>
+                <uri>model://cardboard_box_group</uri>
+            </include>
+            <pose frame="">19.45 10.6 0.3 0 0 0</pose>
+        </model>
+
+        <model name="cardboard_boxes_9">
+            <include>
+                <uri>model://cardboard_box_group</uri>
+            </include>
+            <pose frame="">7.35 12.0 0 0 0 0</pose>
+        </model>
+
+        <model name="cardboard_boxes_10">
+            <include>
+                <uri>model://cardboard_box_group</uri>
+            </include>
+            <pose frame="">7.35 12.0 0.3 0 0 0</pose>
+        </model>
+
+        <model name="cardboard_boxes_11">
+            <include>
+                <uri>model://cardboard_box_group</uri>
+            </include>
+            <pose frame="">7.35 10.1 0 0 0 0</pose>
+        </model>
+
+        <model name="cardboard_boxes_12">
+            <include>
+                <uri>model://cardboard_box_group</uri>
+            </include>
+            <pose frame="">7.35 10.1 0.3 0 0 0</pose>
+        </model>
+
+        <model name="cardboard_boxes_13">
+            <include>
+                <uri>model://cardboard_box_group</uri>
+            </include>
+            <pose frame="">12.2 12.0 0 0 0 0</pose>
+        </model>
+
+        <model name="cardboard_boxes_14">
+            <include>
+                <uri>model://cardboard_box_group</uri>
+            </include>
+            <pose frame="">12.2 12.0 0.3 0 0 0</pose>
+        </model>
+
+        <model name="cardboard_boxes_15">
+            <include>
+                <uri>model://cardboard_box_group</uri>
+            </include>
+            <pose frame="">12.2 10.1 0 0 0 0</pose>
+        </model>
+
+        <model name="cardboard_boxes_16">
+            <include>
+                <uri>model://cardboard_box_group</uri>
+            </include>
+            <pose frame="">12.2 10.1 0.3 0 0 0</pose>
+        </model>
+
+        <model name="cardboard_boxes_17">
+            <include>
+                <uri>model://cardboard_box_group</uri>
+            </include>
+            <pose frame="">0.74 12.1 0 0 0 0</pose>
+        </model>
+
+        <model name="cardboard_boxes_18">
+            <include>
+                <uri>model://cardboard_box_group</uri>
+            </include>
+            <pose frame="">0.74 12.1 0.3 0 0 0</pose>
+        </model>
+
+        <model name="cardboard_boxes_19">
+            <include>
+                <uri>model://cardboard_box_group</uri>
+            </include>
+            <pose frame="">0.74 10.1 0 0 0 0</pose>
+        </model>
+
+        <model name="cardboard_boxes_20">
+            <include>
+                <uri>model://cardboard_box_group</uri>
+            </include>
+            <pose frame="">0.74 10.1 0.3 0 0 0</pose>
+        </model>
+
         <light name='sun' type='directional'>
             <cast_shadows>1</cast_shadows>
             <pose>10.0 6.75 100 0 -0 0</pose>

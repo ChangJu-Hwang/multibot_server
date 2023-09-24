@@ -1,6 +1,6 @@
 map_server:
     ros__parameters:
-        yaml_filename: "/home/changju/multibot_ws/src/multibot_server/Instances/maps/testbed/map.yaml"
+        yaml_filename: "/home/changju/multibot_ws/src/multibot_server/Instances/maps/new_testbed/map.yaml"
         topic_name: "map"
         frame_id: "map"
 
