@@ -1,54 +1,21 @@
 #pragma once
 
+#include <rclcpp/rclcpp.hpp>
 #include <geometry_msgs/msg/pose2_d.hpp>
 #include <geometry_msgs/msg/twist.hpp>
+#include <visualization_msgs/msg/marker_array.hpp>
 
 #include <QWidget>
 #include <QTimer>
 #include <QPushButton>
 
+#include "multibot_util/Panel_Util.hpp"
 #include "multibot_util/Interface/Observer_Interface.hpp"
 
-namespace PanelUtil
-{
-    enum Tab
-    {
-        DASHBOARD,
-        ROBOT
-    }; // enum Tab
+#include "multibot_server/Instance_Manager.hpp"
 
-    enum Request
-    {
-        NO_REQUEST,
-        SET_GOAL,
-        SET_TARGET,
-        SCAN_REQUEST,
-        PLAN_REQUEST,
-        START_REQUEST,
-        STOP_REQUEST,
-        KILL_REQUEST,
-        REMOTE_REQUEST,
-        MANUAL_REQUEST
-    }; // enum Request
 
-    enum Mode
-    {
-        REMOTE,
-        MANUAL,
-        AUTO
-    }; // enum Mode
-
-    enum PlanState
-    {
-        READY,
-        PLANNING,
-        SUCCESS,
-        FAIL
-    }; // enum PlanState
-
-    typedef std::tuple<Request, std::string, geometry_msgs::msg::Pose2D> Msg;
-} // namespace PanelUtil;
-
+using namespace Instance;
 namespace Ui
 {
     class ServerPanel;
@@ -63,7 +30,6 @@ namespace Server
 
     signals:
         void addRobotSignal(QString _robotName);
-        void deleteRobotSignal(QString _robotName);
 
     public:
         void attach(Observer::ObserverInterface<PanelUtil::Msg> &_observer) override;
@@ -94,26 +60,47 @@ namespace Server
         void deleteRobotButton(QString _robotName);
 
     public:
-        void addRobot(std::string _robotName);
-        void deleteRobot(std::string _robotName);
-        void storeGoal(geometry_msgs::msg::Pose2D _goal);
-        void setVelocity(double _linVel, double _angVel);
-        void setModeState(PanelUtil::Mode _mode);
         void setPlanState(PanelUtil::PlanState _planState);
-        
-        PanelUtil::Mode getModeState() { return activatedRobotModeState_; }
-        int getCurrentTabIndex();
-        geometry_msgs::msg::Twist get_cmd_vel();
 
     private:
         std::string getIPAddress();
-        void lockUi();
-        void unlockUi();
 
     private:
         Ui::ServerPanel *ui_;
         QTimer *displayTimer_;
 
+    private:
+        void register_robot(
+            const std::shared_ptr<PanelUtil::Connection::Request> _request,
+            std::shared_ptr<PanelUtil::Connection::Response> _response);
+
+        void expire_robot(
+            const std::shared_ptr<PanelUtil::Disconnection::Request> _request,
+            std::shared_ptr<PanelUtil::Disconnection::Response> _response);
+
+        void change_robot_mode(
+            const std::shared_ptr<PanelUtil::ModeSelection::Request> _request,
+            std::shared_ptr<PanelUtil::ModeSelection::Response> _response);
+
+        void update();
+        void update_robot_tab();
+        void update_rviz_poseArray();
+
+        visualization_msgs::msg::Marker make_robotPoseMarker(const AgentInstance::Robot &_robot);
+
+    private:
+        std::shared_ptr<rclcpp::Node> nh_;
+        rclcpp::TimerBase::SharedPtr update_timer_;
+
+        rclcpp::Service<PanelUtil::Connection>::SharedPtr connection_;
+        rclcpp::Service<PanelUtil::Disconnection>::SharedPtr disconnection_;
+
+        rclcpp::Publisher<std_msgs::msg::Bool>::SharedPtr serverScan_;
+        rclcpp::Publisher<std_msgs::msg::Bool>::SharedPtr emergencyStop_;
+
+        rclcpp::Publisher<visualization_msgs::msg::MarkerArray>::SharedPtr rviz_poses_pub_;
+
+    private:
         std::unordered_map<std::string, QPushButton *> buttons_;
 
         std::string activatedRobot_;
@@ -133,8 +120,13 @@ namespace Server
         PanelUtil::Msg msg_;
         std::list<Observer::ObserverInterface<PanelUtil::Msg> *> list_observer_;
 
+        std::shared_ptr<Instance_Manager> instance_manager_;
+
     public:
-        explicit Panel(QWidget *_parent = nullptr);
+        Panel(
+            std::shared_ptr<rclcpp::Node> &_nh,
+            std::shared_ptr<Instance_Manager> _instance_manager,
+            QWidget *_parent = nullptr);
         ~Panel();
     }; // class Panel
 } // namespace Server

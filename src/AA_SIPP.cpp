@@ -4,24 +4,24 @@
 
 using namespace Low_Level_Engine;
 
-std::pair<Path::SinglePath, bool> AA_SIPP::Planner::search(
+std::pair<Traj::SingleTraj, bool> AA_SIPP::Planner::search(
     const std::string &_agentName,
     const std::vector<std::string> &_higher_agents,
-    const Path::PathSet &_pathSet,
+    const Traj::TrajSet &_trajSet,
     const std::pair<Position::Coordinates, Position::Coordinates> &_searchSpace,
     const double _timeLimit)
 {
     map_utility_->restrictArea(_searchSpace);
     reservation_table_->init(agents_[_agentName].size_);
-    higher_paths_.clear();
+    higher_trajs_.clear();
 
-    for (const auto &singlePath : _pathSet)
+    for (const auto &singleTraj : _trajSet)
     {
-        if (std::find(_higher_agents.begin(), _higher_agents.end(), singlePath.second.agentName_) == _higher_agents.end())
+        if (std::find(_higher_agents.begin(), _higher_agents.end(), singleTraj.second.agentName_) == _higher_agents.end())
             continue;
 
-        reservation_table_->applySinglePath(_agentName, singlePath.second);
-        higher_paths_.push_back(singlePath.second);
+        reservation_table_->applySingleTraj(_agentName, singleTraj.second);
+        higher_trajs_.push_back(singleTraj.second);
     }
 
     std::list<Time::TimeInterval> starts = {
@@ -29,13 +29,13 @@ std::pair<Path::SinglePath, bool> AA_SIPP::Planner::search(
     std::list<Time::TimeInterval> goals = reservation_table_->getSafeIntervals(
         agents_[_agentName].goal_);
 
-    auto partialPath = find_partial_path(
+    auto partialTraj = find_partial_traj(
         _agentName, starts, goals, _timeLimit);
 
-    return partialPath;
+    return partialTraj;
 }
 
-std::pair<Path::SinglePath, bool> AA_SIPP::Planner::find_partial_path(
+std::pair<Traj::SingleTraj, bool> AA_SIPP::Planner::find_partial_traj(
     const std::string &_agentName,
     const std::list<Time::TimeInterval> &_starts,
     const std::list<Time::TimeInterval> &_goals,
@@ -53,10 +53,10 @@ std::pair<Path::SinglePath, bool> AA_SIPP::Planner::find_partial_path(
 
         if (curNode.idx_ == map_utility_->convertPoseToIndex(agents_[_agentName].goal_) and
             curNode.arrival_time_ + std::numeric_limits<Time::TimePoint>::epsilon() >= _goals.back().startTime_)
-            return std::make_pair(constructSinglePath(_agentName, curNode), true);
+            return std::make_pair(constructSingleTraj(_agentName, curNode), true);
 
         if (duration.count() > _timeLimit)
-            return std::make_pair(Path::SinglePath(), false);
+            return std::make_pair(Traj::SingleTraj(), false);
 
         if (close_.find(curNode) != close_.end())
             continue;
@@ -117,7 +117,7 @@ std::pair<Path::SinglePath, bool> AA_SIPP::Planner::find_partial_path(
     }
 
     std::cout << "No result" << std::endl;
-    return std::make_pair(Path::SinglePath(), false);
+    return std::make_pair(Traj::SingleTraj(), false);
 }
 
 void AA_SIPP::Planner::generateRoot(
@@ -213,16 +213,16 @@ std::vector<AA_SIPP::Node> AA_SIPP::Planner::getSuccessors(
     return successors;
 }
 
-Path::SinglePath AA_SIPP::Planner::constructSinglePath(
+Traj::SingleTraj AA_SIPP::Planner::constructSingleTraj(
     const std::string &_agentName, const AA_SIPP::Node &_goalNode)
 {
-    Path::SinglePath agentPath;
+    Traj::SingleTraj singleTraj;
 
-    agentPath.agentName_ = _agentName;
-    agentPath.nodes_.clear();
+    singleTraj.agentName_ = _agentName;
+    singleTraj.nodes_.clear();
 
     AA_SIPP::Node curNode = _goalNode;
-    Path::SinglePath::Node localGoalNode;
+    Traj::SingleTraj::Node localGoalNode;
 
     localGoalNode.pose_ = curNode.pose_;
     localGoalNode.arrival_time_ = curNode.arrival_time_;
@@ -230,31 +230,31 @@ Path::SinglePath AA_SIPP::Planner::constructSinglePath(
 
     while (curNode.parent_ != nullptr)
     {
-        Path::SinglePath::Node localStartNode;
+        Traj::SingleTraj::Node localStartNode;
 
         localStartNode.pose_ = curNode.parent_->pose_;
         localStartNode.arrival_time_ = curNode.parent_->arrival_time_;
         localStartNode.departure_time_ = localGoalNode.arrival_time_ - motion_manager_->getMoveTime(
                                                                            _agentName, localStartNode.pose_, localGoalNode.pose_);
 
-        agentPath.nodes_.push_back(std::make_pair(localStartNode, localGoalNode));
+        singleTraj.nodes_.push_back(std::make_pair(localStartNode, localGoalNode));
 
         curNode = *curNode.parent_;
         localGoalNode = localStartNode;
     }
-    std::reverse(agentPath.nodes_.begin(), agentPath.nodes_.end());
+    std::reverse(singleTraj.nodes_.begin(), singleTraj.nodes_.end());
 
-    Path::SinglePath::Node rotationNode;
+    Traj::SingleTraj::Node rotationNode;
 
     rotationNode.pose_ = agents_[_agentName].goal_;
-    rotationNode.arrival_time_ = agentPath.nodes_.back().second.departure_time_ + motion_manager_->getMoveTime(
-                                                                                      _agentName, agentPath.nodes_.back().second.pose_, rotationNode.pose_);
+    rotationNode.arrival_time_ = singleTraj.nodes_.back().second.departure_time_ + motion_manager_->getMoveTime(
+                                                                                      _agentName, singleTraj.nodes_.back().second.pose_, rotationNode.pose_);
     rotationNode.departure_time_ = Time::TimePoint::max();
 
-    agentPath.nodes_.push_back(std::make_pair(agentPath.nodes_.back().second, rotationNode));
-    agentPath.cost_ = rotationNode.arrival_time_.count();
+    singleTraj.nodes_.push_back(std::make_pair(singleTraj.nodes_.back().second, rotationNode));
+    singleTraj.cost_ = rotationNode.arrival_time_.count();
 
-    return agentPath;
+    return singleTraj;
 }
 
 double AA_SIPP::Planner::computeTotalDelays(
@@ -262,7 +262,7 @@ double AA_SIPP::Planner::computeTotalDelays(
     const Position::Pose &_startPose, const Position::Pose &_goalPose,
     const Time::TimePoint &_departure_time, const Time::TimePoint &_max_delay_limit)
 {
-    Path::SinglePath::Node start, goal;
+    Traj::SingleTraj::Node start, goal;
 
     start.pose_ = _startPose;
     start.departure_time_ = _departure_time;
@@ -271,26 +271,26 @@ double AA_SIPP::Planner::computeTotalDelays(
     goal.arrival_time_ = _departure_time + motion_manager_->getMoveTime(
                                                _agentName, _startPose, _goalPose);
 
-    Path::SinglePath lower_path;
-    lower_path.nodes_.clear();
+    Traj::SingleTraj lower_traj;
+    lower_traj.nodes_.clear();
 
-    lower_path.agentName_ = _agentName;
-    lower_path.nodes_.push_back({start, goal});
+    lower_traj.agentName_ = _agentName;
+    lower_traj.nodes_.push_back({start, goal});
 
     double total_delay = 0.0, delay = 0.0;
     do
     {
-        lower_path.nodes_.front().first.departure_time_ += Time::TimePoint(delay);
-        lower_path.nodes_.front().second.arrival_time_ += Time::TimePoint(delay);
+        lower_traj.nodes_.front().first.departure_time_ += Time::TimePoint(delay);
+        lower_traj.nodes_.front().second.arrival_time_ += Time::TimePoint(delay);
 
         std::vector<std::future<double>> delayTimeThreads;
         delayTimeThreads.clear();
 
-        for (const auto &higher_path : higher_paths_)
+        for (const auto &higher_traj : higher_trajs_)
         {
             delayTimeThreads.push_back(
-                std::async(std::launch::async, [this, higher_path, lower_path]() -> double
-                           { return this->conflict_checker_->getDelayTime(higher_path, lower_path); }));
+                std::async(std::launch::async, [this, higher_traj, lower_traj]() -> double
+                           { return this->conflict_checker_->getDelayTime(higher_traj, lower_traj); }));
         }
 
         delay = 0.0;

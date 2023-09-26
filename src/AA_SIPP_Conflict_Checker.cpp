@@ -3,17 +3,17 @@
 using namespace Low_Level_Engine;
 
 double AA_SIPP::ConflictChecker::getDelayTime(
-    const Path::SinglePath &_higherPath, const Path::SinglePath &_lowerPath)
+    const Traj::SingleTraj &_higherTraj, const Traj::SingleTraj &_lowerTraj)
 {
-    auto higher_PartialPath = _higherPath.nodes_.begin();
-    auto lower_PartialPath = _lowerPath.nodes_.begin();
+    auto higher_PartialTraj = _higherTraj.nodes_.begin();
+    auto lower_PartialTraj = _lowerTraj.nodes_.begin();
 
-    while (higher_PartialPath != _higherPath.nodes_.end() or lower_PartialPath != _lowerPath.nodes_.end())
+    while (higher_PartialTraj != _higherTraj.nodes_.end() or lower_PartialTraj != _lowerTraj.nodes_.end())
     {
-        if (Position::getDistance(higher_PartialPath->first.pose_, higher_PartialPath->second.pose_) +
-                Position::getDistance(lower_PartialPath->first.pose_, lower_PartialPath->second.pose_) >
-            Position::getDistance(higher_PartialPath->first.pose_, lower_PartialPath->first.pose_) -
-                (agentSizeDB_[_higherPath.agentName_] + agentSizeDB_[_lowerPath.agentName_] + 1e-8))
+        if (Position::getDistance(higher_PartialTraj->first.pose_, higher_PartialTraj->second.pose_) +
+                Position::getDistance(lower_PartialTraj->first.pose_, lower_PartialTraj->second.pose_) >
+            Position::getDistance(higher_PartialTraj->first.pose_, lower_PartialTraj->first.pose_) -
+                (agentSizeDB_[_higherTraj.agentName_] + agentSizeDB_[_lowerTraj.agentName_] + 1e-8))
         {
             bool isConflict = false;
             double max_delay = -1e-8;
@@ -21,23 +21,23 @@ double AA_SIPP::ConflictChecker::getDelayTime(
             while (true)
             {
                 if (checkPartialConflict(
-                        _higherPath.agentName_, higher_PartialPath,
-                        _lowerPath.agentName_, lower_PartialPath,
+                        _higherTraj.agentName_, higher_PartialTraj,
+                        _lowerTraj.agentName_, lower_PartialTraj,
                         max_delay) == false)
                 {
                     break;
                 }
 
                 isConflict = true;
-                ++higher_PartialPath;
+                ++higher_PartialTraj;
 
-                if (higher_PartialPath == _higherPath.nodes_.end())
+                if (higher_PartialTraj == _higherTraj.nodes_.end())
                     return (std::numeric_limits<double>::max() - 1e-8);
 
                 max_delay = getDelayScope(
-                    _higherPath.agentName_, higher_PartialPath,
-                    _lowerPath.agentName_, lower_PartialPath,
-                    agentSizeDB_[_higherPath.agentName_] + agentSizeDB_[_lowerPath.agentName_]);
+                    _higherTraj.agentName_, higher_PartialTraj,
+                    _lowerTraj.agentName_, lower_PartialTraj,
+                    agentSizeDB_[_higherTraj.agentName_] + agentSizeDB_[_lowerTraj.agentName_]);
             }
 
             if (isConflict)
@@ -47,8 +47,8 @@ double AA_SIPP::ConflictChecker::getDelayTime(
 
                 double delay = max_delay / 2;
                 while (checkPartialConflict(
-                    _higherPath.agentName_, higher_PartialPath,
-                    _lowerPath.agentName_, lower_PartialPath,
+                    _higherTraj.agentName_, higher_PartialTraj,
+                    _lowerTraj.agentName_, lower_PartialTraj,
                     delay))
                 {
                     // Suboptimal Delay Time
@@ -62,29 +62,29 @@ double AA_SIPP::ConflictChecker::getDelayTime(
             }
         }
 
-        if (higher_PartialPath == std::prev(_higherPath.nodes_.end(), 1) and
-            lower_PartialPath == std::prev(_lowerPath.nodes_.end(), 1))
+        if (higher_PartialTraj == std::prev(_higherTraj.nodes_.end(), 1) and
+            lower_PartialTraj == std::prev(_lowerTraj.nodes_.end(), 1))
         {
-            ++higher_PartialPath;
-            ++lower_PartialPath;
+            ++higher_PartialTraj;
+            ++lower_PartialTraj;
         }
-        else if (higher_PartialPath == std::prev(_higherPath.nodes_.end(), 1))
-            ++lower_PartialPath;
-        else if (lower_PartialPath == std::prev(_lowerPath.nodes_.end(), 1))
-            ++higher_PartialPath;
-        else if (std::fabs((higher_PartialPath->second.arrival_time_ - lower_PartialPath->second.arrival_time_).count()) < 1e-8)
+        else if (higher_PartialTraj == std::prev(_higherTraj.nodes_.end(), 1))
+            ++lower_PartialTraj;
+        else if (lower_PartialTraj == std::prev(_lowerTraj.nodes_.end(), 1))
+            ++higher_PartialTraj;
+        else if (std::fabs((higher_PartialTraj->second.arrival_time_ - lower_PartialTraj->second.arrival_time_).count()) < 1e-8)
         {
-            ++higher_PartialPath;
-            ++lower_PartialPath;
+            ++higher_PartialTraj;
+            ++lower_PartialTraj;
         }
-        else if (lower_PartialPath->second.arrival_time_ > higher_PartialPath->second.arrival_time_ + std::numeric_limits<Time::TimePoint>::epsilon())
-            ++higher_PartialPath;
-        else if (higher_PartialPath->second.arrival_time_ > lower_PartialPath->second.arrival_time_ + std::numeric_limits<Time::TimePoint>::epsilon())
-            ++lower_PartialPath;
+        else if (lower_PartialTraj->second.arrival_time_ > higher_PartialTraj->second.arrival_time_ + std::numeric_limits<Time::TimePoint>::epsilon())
+            ++higher_PartialTraj;
+        else if (higher_PartialTraj->second.arrival_time_ > lower_PartialTraj->second.arrival_time_ + std::numeric_limits<Time::TimePoint>::epsilon())
+            ++lower_PartialTraj;
         else
         {
-            ++higher_PartialPath;
-            ++lower_PartialPath;
+            ++higher_PartialTraj;
+            ++lower_PartialTraj;
         }
     }
 
@@ -131,43 +131,43 @@ std::pair<Position::Index, Position::Index> AA_SIPP::ConflictChecker::getConflic
 }
 
 bool AA_SIPP::ConflictChecker::checkPartialConflict(
-    const std::string &_higherName, std::vector<PartialPath>::const_iterator _higher_PartialPath,
-    const std::string &_lowerName, std::vector<PartialPath>::const_iterator _lower_PartialPath,
+    const std::string &_higherName, std::vector<PartialTraj>::const_iterator _higher_PartialTraj,
+    const std::string &_lowerName, std::vector<PartialTraj>::const_iterator _lower_PartialTraj,
     double _delay)
 {
-    Time::TimePoint lower_bound = std::max(_higher_PartialPath->first.departure_time_, _lower_PartialPath->first.departure_time_ + Time::TimePoint(_delay));
-    Time::TimePoint upper_bound = std::min(_higher_PartialPath->second.arrival_time_, _lower_PartialPath->second.arrival_time_ + Time::TimePoint(_delay));
+    Time::TimePoint lower_bound = std::max(_higher_PartialTraj->first.departure_time_, _lower_PartialTraj->first.departure_time_ + Time::TimePoint(_delay));
+    Time::TimePoint upper_bound = std::min(_higher_PartialTraj->second.arrival_time_, _lower_PartialTraj->second.arrival_time_ + Time::TimePoint(_delay));
 
     return conflictSearch(
-        _higherName, *_higher_PartialPath,
-        _lowerName, *_lower_PartialPath,
+        _higherName, *_higher_PartialTraj,
+        _lowerName, *_lower_PartialTraj,
         lower_bound, upper_bound,
         _delay);
 }
 
 double AA_SIPP::ConflictChecker::getDelayScope(
-    const std::string &_higherName, std::vector<PartialPath>::const_iterator _higher_PartialPath,
-    const std::string &_lowerName, std::vector<PartialPath>::const_iterator _lower_PartialPath,
+    const std::string &_higherName, std::vector<PartialTraj>::const_iterator _higher_PartialTraj,
+    const std::string &_lowerName, std::vector<PartialTraj>::const_iterator _lower_PartialTraj,
     double _safe_distance)
 {
-    if (_lower_PartialPath->first.departure_time_.count() > std::numeric_limits<double>::max() - 1e-3)
+    if (_lower_PartialTraj->first.departure_time_.count() > std::numeric_limits<double>::max() - 1e-3)
         return std::numeric_limits<double>::max() - 1e-8;
 
     Position::Coordinates higher_start(
-        _higher_PartialPath->first.pose_.component_.x,
-        _higher_PartialPath->first.pose_.component_.y);
+        _higher_PartialTraj->first.pose_.component_.x,
+        _higher_PartialTraj->first.pose_.component_.y);
 
     Position::Coordinates higher_end(
-        _higher_PartialPath->second.pose_.component_.x,
-        _higher_PartialPath->second.pose_.component_.y);
+        _higher_PartialTraj->second.pose_.component_.x,
+        _higher_PartialTraj->second.pose_.component_.y);
 
     Position::Coordinates lower_start(
-        _lower_PartialPath->first.pose_.component_.x,
-        _lower_PartialPath->first.pose_.component_.y);
+        _lower_PartialTraj->first.pose_.component_.x,
+        _lower_PartialTraj->first.pose_.component_.y);
 
     Position::Coordinates lower_end(
-        _lower_PartialPath->second.pose_.component_.x,
-        _lower_PartialPath->second.pose_.component_.y);
+        _lower_PartialTraj->second.pose_.component_.x,
+        _lower_PartialTraj->second.pose_.component_.y);
 
     Position::Coordinates higher_vector = higher_end - higher_start;
     Position::Coordinates lower_vector = lower_end - lower_start;
@@ -228,7 +228,7 @@ double AA_SIPP::ConflictChecker::getDelayScope(
     }
     else
     {
-        double entire_scope = _higher_PartialPath->second.arrival_time_.count() - _higher_PartialPath->first.departure_time_.count();
+        double entire_scope = _higher_PartialTraj->second.arrival_time_.count() - _higher_PartialTraj->first.departure_time_.count();
         return entire_scope;
     }
 
@@ -247,20 +247,20 @@ double AA_SIPP::ConflictChecker::getDelayScope(
     else if (Position::getDistance(lower_enter_coord, lower_start) > lower_vector.norm() + 1e-8)
         lower_enter_coord = lower_end;
 
-    Time::TimePoint reference_timePoint = _lower_PartialPath->first.departure_time_ + motion_manager_->getPartialMoveTime(
-                                                                                          _lowerName, Position::Pose(lower_enter_coord.x_, lower_enter_coord.y_, _lower_PartialPath->second.pose_.component_.theta),
-                                                                                          _lower_PartialPath->first.pose_, _lower_PartialPath->second.pose_);
+    Time::TimePoint reference_timePoint = _lower_PartialTraj->first.departure_time_ + motion_manager_->getPartialMoveTime(
+                                                                                          _lowerName, Position::Pose(lower_enter_coord.x_, lower_enter_coord.y_, _lower_PartialTraj->second.pose_.component_.theta),
+                                                                                          _lower_PartialTraj->first.pose_, _lower_PartialTraj->second.pose_);
 
-    Time::TimePoint escape_timePoint = _higher_PartialPath->first.departure_time_ + motion_manager_->getPartialMoveTime(
-                                                                                        _higherName, Position::Pose(higher_escape_coord.x_, higher_escape_coord.y_, _higher_PartialPath->second.pose_.component_.theta),
-                                                                                        _higher_PartialPath->first.pose_, _higher_PartialPath->second.pose_);
+    Time::TimePoint escape_timePoint = _higher_PartialTraj->first.departure_time_ + motion_manager_->getPartialMoveTime(
+                                                                                        _higherName, Position::Pose(higher_escape_coord.x_, higher_escape_coord.y_, _higher_PartialTraj->second.pose_.component_.theta),
+                                                                                        _higher_PartialTraj->first.pose_, _higher_PartialTraj->second.pose_);
 
     return (escape_timePoint - reference_timePoint).count();
 }
 
 bool AA_SIPP::ConflictChecker::conflictSearch(
-    const std::string &_higherName, const PartialPath &_higher_PartialPath,
-    const std::string &_lowerName, const PartialPath &_lower_PartialPath,
+    const std::string &_higherName, const PartialTraj &_higher_PartialTraj,
+    const std::string &_lowerName, const PartialTraj &_lower_PartialTraj,
     const Time::TimePoint &_lower_bound, const Time::TimePoint &_upper_bound,
     double _delay)
 {
@@ -270,24 +270,24 @@ bool AA_SIPP::ConflictChecker::conflictSearch(
     double key = (_lower_bound + _upper_bound).count() / 2;
 
     Position::Pose higher_pos = motion_manager_->getPosition(
-        _higherName, Time::TimePoint(key), _higher_PartialPath.first.departure_time_,
-        _higher_PartialPath.first.pose_, _higher_PartialPath.second.pose_);
+        _higherName, Time::TimePoint(key), _higher_PartialTraj.first.departure_time_,
+        _higher_PartialTraj.first.pose_, _higher_PartialTraj.second.pose_);
 
     Position::Pose lower_pos = motion_manager_->getPosition(
-        _lowerName, Time::TimePoint(key - _delay), _lower_PartialPath.first.departure_time_,
-        _lower_PartialPath.first.pose_, _lower_PartialPath.second.pose_);
+        _lowerName, Time::TimePoint(key - _delay), _lower_PartialTraj.first.departure_time_,
+        _lower_PartialTraj.first.pose_, _lower_PartialTraj.second.pose_);
 
     double relative_distance = Position::getDistance(higher_pos, lower_pos);
 
     if (relative_distance > agentSizeDB_[_higherName] + agentSizeDB_[_lowerName] + 1e-8)
     {
         Position::Pose next_higher_pos = motion_manager_->getPosition(
-            _higherName, Time::TimePoint(key + time_precision_), _higher_PartialPath.first.departure_time_,
-            _higher_PartialPath.first.pose_, _higher_PartialPath.second.pose_);
+            _higherName, Time::TimePoint(key + time_precision_), _higher_PartialTraj.first.departure_time_,
+            _higher_PartialTraj.first.pose_, _higher_PartialTraj.second.pose_);
 
         Position::Pose next_lower_pos = motion_manager_->getPosition(
-            _lowerName, Time::TimePoint(key + time_precision_ - _delay), _lower_PartialPath.first.departure_time_,
-            _lower_PartialPath.first.pose_, _lower_PartialPath.second.pose_);
+            _lowerName, Time::TimePoint(key + time_precision_ - _delay), _lower_PartialTraj.first.departure_time_,
+            _lower_PartialTraj.first.pose_, _lower_PartialTraj.second.pose_);
 
         double next_relative_distance = Position::getDistance(next_higher_pos, next_lower_pos);
 
@@ -300,8 +300,8 @@ bool AA_SIPP::ConflictChecker::conflictSearch(
             new_lower_bound = Time::TimePoint(key);
 
         return conflictSearch(
-            _higherName, _higher_PartialPath,
-            _lowerName, _lower_PartialPath,
+            _higherName, _higher_PartialTraj,
+            _lowerName, _lower_PartialTraj,
             new_lower_bound, new_upper_bound,
             _delay);
     }

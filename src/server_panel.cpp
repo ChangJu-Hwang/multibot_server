@@ -18,6 +18,10 @@
 
 #include "multibot_server/ui_server_panel.h"
 
+#include <tf2/LinearMath/Quaternion.h>
+
+using namespace std::chrono_literals;
+
 void Server::Panel::attach(Observer::ObserverInterface<PanelUtil::Msg> &_observer)
 {
     std::scoped_lock<std::mutex> lock(mtx_);
@@ -51,9 +55,9 @@ void Server::Panel::handleButton()
     inactivatedRobot_ = activatedRobot_;
     activatedRobot_ = button->objectName().toStdString();
 
-    std::get<0>(msg_) = PanelUtil::Request::SET_TARGET;
-    std::get<1>(msg_) = activatedRobot_;
-    notify();
+    const auto &robotDB = instance_manager_->getRobot(activatedRobot_);
+    activatedRobotGoal_ = robotDB.robotInfo_.goal_.component_;
+    activatedRobotModeState_ = robotDB.mode_;
 
     ui_->ServerTab->setTabEnabled(PanelUtil::Tab::ROBOT, true);
     ui_->ServerTab->currentChanged(PanelUtil::Tab::ROBOT);
@@ -126,23 +130,27 @@ void Server::Panel::on_Start_clicked()
 {
     if (not(planState_ == PanelUtil::PlanState::SUCCESS))
         return;
-    
+
     planState_ = PanelUtil::PlanState::READY;
 
-    std::get<0>(msg_) = PanelUtil::Request::START_REQUEST;
+    msg_ = PanelUtil::Request::START_REQUEST;
     notify();
 }
 
 void Server::Panel::on_Stop_clicked()
 {
-    std::get<0>(msg_) = PanelUtil::Request::STOP_REQUEST;
-    notify();
+    std_msgs::msg::Bool stopActivated;
+    stopActivated.data = true;
+
+    emergencyStop_->publish(stopActivated);
 }
 
 void Server::Panel::on_Scan_clicked()
 {
-    std::get<0>(msg_) = PanelUtil::Request::SCAN_REQUEST;
-    notify();
+    std_msgs::msg::Bool scanActivated;
+    scanActivated.data = true;
+
+    serverScan_->publish(scanActivated);
 }
 
 void Server::Panel::on_Plan_clicked()
@@ -156,7 +164,7 @@ void Server::Panel::on_Plan_clicked()
     {
         planState_ = PanelUtil::PlanState::PLANNING;
 
-        std::get<0>(msg_) = PanelUtil::Request::PLAN_REQUEST;
+        msg_ = PanelUtil::Request::PLAN_REQUEST;
         notify();
         break;
     }
@@ -181,27 +189,20 @@ void Server::Panel::on_Plan_clicked()
 void Server::Panel::on_pushButton_Mode_clicked()
 {
     if (activatedRobotModeState_ == PanelUtil::Mode::MANUAL)
-    {
-        std::get<0>(msg_) = PanelUtil::Request::REMOTE_REQUEST;
-        std::get<1>(msg_) = activatedRobot_;
-
-        notify();
-    }
+        instance_manager_->request_modeChange(activatedRobot_, PanelUtil::Mode::REMOTE);
     else
-    {
-        std::get<0>(msg_) = PanelUtil::Request::MANUAL_REQUEST;
-        std::get<1>(msg_) = activatedRobot_;
-
-        notify();
-    }
+        instance_manager_->request_modeChange(activatedRobot_, PanelUtil::Mode::MANUAL);
 }
 
 void Server::Panel::on_pushButton_Kill_clicked()
 {
-    std::get<0>(msg_) = PanelUtil::Request::KILL_REQUEST;
-    std::get<1>(msg_) = activatedRobot_;
+    instance_manager_->request_kill(activatedRobot_);
 
-    notify();
+    if (buttons_.contains(activatedRobot_))
+    {
+        instance_manager_->deleteRobot(activatedRobot_);
+        deleteRobotButton(QString::fromStdString(activatedRobot_));
+    }
 }
 
 void Server::Panel::keyPressEvent(QKeyEvent *_event)
@@ -211,18 +212,14 @@ void Server::Panel::keyPressEvent(QKeyEvent *_event)
 
     if (_event->key() == Qt::Key_Return)
     {
-        std::get<0>(msg_) = PanelUtil::SET_GOAL;
-        std::get<1>(msg_) = activatedRobot_;
-
         geometry_msgs::msg::Pose2D goal;
         {
             goal.x = ui_->doubleSpinBox_goalX->value();
             goal.y = ui_->doubleSpinBox_goalY->value();
             goal.theta = ui_->doubleSpinBox_goalYaw->value();
         }
-        std::get<2>(msg_) = goal;
 
-        notify();
+        instance_manager_->setGoal(activatedRobot_, goal);
     }
 
     if (activatedRobotModeState_ == PanelUtil::Mode::REMOTE)
@@ -400,57 +397,13 @@ void Server::Panel::deleteRobotButton(QString _robotName)
     delete button;
 }
 
-void Server::Panel::addRobot(std::string _robotName)
-{
-    emit addRobotSignal(QString::fromStdString(_robotName));
-}
-
-void Server::Panel::deleteRobot(std::string _robotName)
-{
-    emit deleteRobotSignal(QString::fromStdString(_robotName));
-}
-
-void Server::Panel::storeGoal(geometry_msgs::msg::Pose2D _goal)
-{
-    activatedRobotGoal_ = _goal;
-}
-
-void Server::Panel::setVelocity(double _linVel, double _angVel)
-{
-    activatedRobotLinVel_ = _linVel;
-    activatedRobotAngVel_ = _angVel;
-}
-
-void Server::Panel::setModeState(PanelUtil::Mode _mode)
-{
-    activatedRobotModeState_ = _mode;
-}
-
 void Server::Panel::setPlanState(PanelUtil::PlanState _planState)
 {
-    if (not(planState_ == PanelUtil::PlanState::PLANNING))
-        return;
-
     if (not(_planState == PanelUtil::PlanState::SUCCESS or
             _planState == PanelUtil::PlanState::FAIL))
         return;
 
     planState_ = _planState;
-}
-
-int Server::Panel::getCurrentTabIndex()
-{
-    return (ui_->ServerTab->currentIndex());
-}
-
-geometry_msgs::msg::Twist Server::Panel::get_cmd_vel()
-{
-    geometry_msgs::msg::Twist cmd_vel;
-
-    cmd_vel.linear.x = activatedRobotLinVel_;
-    cmd_vel.angular.z = activatedRobotAngVel_;
-
-    return cmd_vel;
 }
 
 // See: https://dev.to/fmtweisszwerg/cc-how-to-get-all-interface-addresses-on-the-local-device-3pki
@@ -531,32 +484,192 @@ std::string Server::Panel::getIPAddress()
     return ipaddress_human_readable_form;
 }
 
-void Server::Panel::lockUi()
+void Server::Panel::register_robot(
+    const std::shared_ptr<PanelUtil::Connection::Request> _request,
+    std::shared_ptr<PanelUtil::Connection::Response> _response)
 {
-    ui_->ServerTab->setTabEnabled(PanelUtil::Tab::ROBOT, false);
+    if (buttons_.contains(_request->config.name))
+    {
+        _response->is_connected = true;
+        return;
+    }
 
-    ui_->Start->setEnabled(false);
-    ui_->Plan->setEnabled(false);
-    ui_->Start->setEnabled(false);
-    ui_->Stop->setEnabled(false);
-    ui_->pushButton_Mode->setEnabled(false);
-    ui_->pushButton_Kill->setEnabled(false);
+    static int32_t robotID = 0;
+
+    AgentInstance::Agent robotInfo;
+    {
+        robotInfo.name_ = _request->config.name;
+
+        robotInfo.type_ = _request->config.type;
+        robotInfo.size_ = _request->config.size;
+        robotInfo.wheel_radius_ = _request->config.wheel_radius;
+        robotInfo.wheel_seperation_ = _request->config.wheel_seperation;
+
+        robotInfo.max_linVel_ = _request->config.max_linvel;
+        robotInfo.max_linAcc_ = _request->config.max_linacc;
+        robotInfo.max_angVel_ = _request->config.max_angvel;
+        robotInfo.max_angAcc_ = _request->config.max_angacc;
+
+        robotInfo.goal_.component_ = _request->goal;
+    }
+
+    AgentInstance::Robot robot;
+    {
+        robot.robotInfo_ = robotInfo;
+        robot.id_ = robotID;
+        robot.mode_ = PanelUtil::Mode::MANUAL;
+
+        robot.prior_update_time_ = nh_->now();
+        robot.last_update_time_ = nh_->now();
+
+        robot.modeFromRobot_ = nh_->create_service<PanelUtil::ModeSelection>(
+            "/" + robotInfo.name_ + "/modeFromRobot",
+            std::bind(&Server::Panel::change_robot_mode, this, std::placeholders::_1, std::placeholders::_2));
+        robot.modeFromServer_ = nh_->create_client<PanelUtil::ModeSelection>("/" + robotInfo.name_ + "/modeFromServer");
+    }
+
+    instance_manager_->insertRobot(robot);
+    emit addRobotSignal(QString::fromStdString(_request->config.name));
+
+    _response->is_connected = true;
 }
 
-void Server::Panel::unlockUi()
+void Server::Panel::expire_robot(
+    const std::shared_ptr<PanelUtil::Disconnection::Request> _request,
+    std::shared_ptr<PanelUtil::Disconnection::Response> _response)
 {
-    ui_->ServerTab->setTabEnabled(PanelUtil::Tab::ROBOT, true);
-
-    ui_->Start->setEnabled(true);
-    ui_->Plan->setEnabled(true);
-    ui_->Start->setEnabled(true);
-    ui_->Stop->setEnabled(true);
-    ui_->pushButton_Mode->setEnabled(true);
-    ui_->pushButton_Kill->setEnabled(true);
+    if (buttons_.contains(_request->name))
+    {
+        instance_manager_->deleteRobot(_request->name);
+        deleteRobotButton(QString::fromStdString(_request->name));
+    }
+    _response->is_disconnected = true;
 }
 
-Server::Panel::Panel(QWidget *_parent)
-    : QWidget(_parent), ui_(new Ui::ServerPanel)
+void Server::Panel::change_robot_mode(
+    const std::shared_ptr<PanelUtil::ModeSelection::Request> _request,
+    std::shared_ptr<PanelUtil::ModeSelection::Response> _response)
+{
+    if (_request->is_remote == true)
+        instance_manager_->setMode(_request->name, PanelUtil::Mode::REMOTE);
+    else
+        instance_manager_->setMode(_request->name, PanelUtil::Mode::MANUAL);
+
+    _response->is_complete = true;
+}
+
+void Server::Panel::update()
+{
+    update_robot_tab();
+    update_rviz_poseArray();
+}
+
+void Server::Panel::update_robot_tab()
+{
+    if (not(ui_->ServerTab->currentIndex() == PanelUtil::Tab::ROBOT))
+        return;
+
+    auto robot = instance_manager_->getRobot(activatedRobot_);
+
+    activatedRobotModeState_ = robot.mode_;
+    if (activatedRobotModeState_ == PanelUtil::Mode::REMOTE)
+    {
+        geometry_msgs::msg::Twist remote_cmd_vel;
+        {
+            remote_cmd_vel.linear.x = activatedRobotLinVel_;
+            remote_cmd_vel.angular.z = activatedRobotAngVel_;
+        }
+        instance_manager_->remote_control(activatedRobot_, remote_cmd_vel);
+    }
+    else
+    {
+        activatedRobotLinVel_ = robot.robotInfo_.linVel_;
+        activatedRobotAngVel_ = robot.robotInfo_.angVel_;
+    }
+}
+
+void Server::Panel::update_rviz_poseArray()
+{
+    if (buttons_.empty())
+        return;
+
+    visualization_msgs::msg::MarkerArray robotPoseMarkerArray;
+    {
+        robotPoseMarkerArray.markers.clear();
+
+        for (const auto &buttonPair : buttons_)
+        {
+            std::string robotName = buttonPair.first;
+
+            auto &robot = instance_manager_->getRobot(robotName);
+
+            if (robot.prior_update_time_.seconds() < 1e-8)
+                continue;
+
+            auto robotPoseMarker = make_robotPoseMarker(robot);
+
+            if (robotPoseMarker.ns == "")
+                continue;
+
+            robotPoseMarkerArray.markers.push_back(robotPoseMarker);
+        }
+    }
+
+    rviz_poses_pub_->publish(robotPoseMarkerArray);
+}
+
+visualization_msgs::msg::Marker Server::Panel::make_robotPoseMarker(const AgentInstance::Robot &_robot)
+{
+    auto robotPoseMarker = visualization_msgs::msg::Marker();
+
+    robotPoseMarker.header.frame_id = "map";
+    robotPoseMarker.header.stamp = _robot.last_update_time_;
+    robotPoseMarker.ns = _robot.robotInfo_.name_;
+    robotPoseMarker.id = _robot.id_;
+    robotPoseMarker.type = visualization_msgs::msg::Marker::ARROW;
+    robotPoseMarker.action = visualization_msgs::msg::Marker::ADD;
+
+    robotPoseMarker.scale.x = 0.5;
+    robotPoseMarker.scale.y = 0.125;
+    robotPoseMarker.scale.z = 0.125;
+
+    if (activatedRobot_ == _robot.robotInfo_.name_)
+    {
+        robotPoseMarker.color.r = 1.0;
+        robotPoseMarker.color.g = 0.5;
+        robotPoseMarker.color.b = 0.5;
+        robotPoseMarker.color.a = 1.0;
+    }
+    else
+    {
+        robotPoseMarker.color.r = 0.5;
+        robotPoseMarker.color.g = 0.5;
+        robotPoseMarker.color.b = 1.0;
+        robotPoseMarker.color.a = 1.0;
+    }
+
+    robotPoseMarker.lifetime = _robot.last_update_time_ - _robot.prior_update_time_;
+
+    robotPoseMarker.pose.position.x = _robot.robotInfo_.pose_.component_.x;
+    robotPoseMarker.pose.position.y = _robot.robotInfo_.pose_.component_.y;
+    robotPoseMarker.pose.position.z = 0.0;
+
+    tf2::Quaternion q;
+    q.setRPY(0.0, 0.0, _robot.robotInfo_.pose_.component_.theta);
+    robotPoseMarker.pose.orientation.x = q.x();
+    robotPoseMarker.pose.orientation.y = q.y();
+    robotPoseMarker.pose.orientation.z = q.z();
+    robotPoseMarker.pose.orientation.w = q.w();
+
+    return robotPoseMarker;
+}
+
+Server::Panel::Panel(
+    std::shared_ptr<rclcpp::Node> &_nh,
+    std::shared_ptr<Instance_Manager> _instance_manager,
+    QWidget *_parent)
+    : QWidget(_parent), ui_(new Ui::ServerPanel),
+      nh_(_nh), instance_manager_(_instance_manager)
 {
     ui_->setupUi(this);
 
@@ -569,9 +682,7 @@ Server::Panel::Panel(QWidget *_parent)
         Qt::CustomizeWindowHint |
         Qt::WindowMinimizeButtonHint);
 
-    std::get<0>(msg_) = PanelUtil::Request::NO_REQUEST;
-    std::get<1>(msg_) = std::string();
-    std::get<2>(msg_) = geometry_msgs::msg::Pose2D();
+    msg_ = PanelUtil::Request::NO_REQUEST;
 
     ui_->label_IPAddress->setText(QString::fromStdString(getIPAddress()));
     planState_ = PanelUtil::PlanState::READY;
@@ -593,9 +704,26 @@ Server::Panel::Panel(QWidget *_parent)
     connect(displayTimer_, SIGNAL(timeout()), this, SLOT(planButtonDisp()));
 
     connect(this, SIGNAL(addRobotSignal(QString)), this, SLOT(addRobotButton(QString)));
-    connect(this, SIGNAL(deleteRobotSignal(QString)), this, SLOT(deleteRobotButton(QString)));
 
     displayTimer_->start(10);
+
+    // init ROS2 Instances
+    auto qos = rclcpp::QoS(rclcpp::KeepLast(10));
+
+    connection_ = nh_->create_service<PanelUtil::Connection>(
+        "/connection",
+        std::bind(&Server::Panel::register_robot, this, std::placeholders::_1, std::placeholders::_2));
+    disconnection_ = nh_->create_service<PanelUtil::Disconnection>(
+        "/disconnection",
+        std::bind(&Server::Panel::expire_robot, this, std::placeholders::_1, std::placeholders::_2));
+
+    serverScan_ = nh_->create_publisher<std_msgs::msg::Bool>("/server_scan", qos);
+    emergencyStop_ = nh_->create_publisher<std_msgs::msg::Bool>("/emergency_stop", qos);
+
+    rviz_poses_pub_ = nh_->create_publisher<visualization_msgs::msg::MarkerArray>("robot_list", qos);
+
+    update_timer_ = nh_->create_wall_timer(
+        10ms, std::bind(&Server::Panel::update, this));
 }
 
 Server::Panel::~Panel()

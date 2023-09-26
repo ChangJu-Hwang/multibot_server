@@ -7,96 +7,268 @@
 #include <yaml-cpp/yaml.h> // Need to install libyaml-cpp-dev
 
 using namespace Instance;
+using namespace std::chrono_literals;
 
-void Instance_Manager::insertAgent(const std::pair<std::string, AgentInstance::Agent> &_agent)
+void Instance_Manager::robotState_callback(const AgentInstance::Robot::State::SharedPtr _state_msg)
 {
-    agents_.insert(_agent);
-    notify();
+    auto &robot = robots_[_state_msg->name];
+
+    robot.prior_update_time_ = robot.last_update_time_;
+    robot.last_update_time_ = nh_->now();
+
+    robot.robotInfo_.pose_.component_ = _state_msg->pose;
+    robot.robotInfo_.linVel_ = _state_msg->lin_vel;
+    robot.robotInfo_.angVel_ = _state_msg->ang_vel;
 }
 
-void Instance_Manager::deleteAgent(const std::string _agentName)
+void Instance_Manager::loadMap()
 {
-    if (agents_.contains(_agentName))
+    while (!this->mapLoader_->wait_for_service(1s))
     {
-        agents_.erase(_agentName);
+        if (!rclcpp::ok())
+        {
+            RCLCPP_ERROR(nh_->get_logger(), "Interrupted while waiting for the service.");
+            return;
+        }
+        RCLCPP_ERROR(nh_->get_logger(), "Map Loading from Map Server is not available, waiting again...");
+    }
+    // Todo: Let this member function to wait lifecycle node and map server node.(Wait dynamic time)
+    rclcpp::sleep_for(500ms);
+
+    auto request = std::make_shared<nav_msgs::srv::GetMap::Request>();
+
+    auto result = mapLoader_->async_send_request(request);
+
+    if (rclcpp::spin_until_future_complete(nh_->get_node_base_interface(), result) == rclcpp::FutureReturnCode::SUCCESS)
+    {
+        auto response = result.get();
+
+        MapInstance::BinaryOccupancyMap map;
+
+        map.property_.resolution_ = response->map.info.resolution;
+        map.property_.width_ = response->map.info.width;
+        map.property_.height_ = response->map.info.height;
+        map.property_.origin_.x_ = response->map.info.origin.position.x;
+        map.property_.origin_.y_ = response->map.info.origin.position.y;
+
+        map.mapData_.clear();
+        for (uint32_t x = 0; x < response->map.info.width; x++)
+        {
+            std::vector<MapInstance::Cell> mapColumnData;
+            mapColumnData.clear();
+            for (uint32_t y = 0; y < response->map.info.height; y++)
+            {
+                MapInstance::Cell cell;
+                cell.idx_.x_ = x;
+                cell.idx_.y_ = y;
+                cell.coord_.x_ = map.property_.origin_.x_ + x * map.property_.resolution_;
+                cell.coord_.y_ = map.property_.origin_.y_ + y * map.property_.resolution_;
+                cell.occupied_ = static_cast<bool>(response->map.data[x + y * map.property_.width_]);
+
+                mapColumnData.push_back(cell);
+            }
+            map.mapData_.push_back(mapColumnData);
+        }
+
+        map_ = map;
+
         notify();
     }
 }
 
-void Instance_Manager::setStart(
-    const std::string _agentName, const geometry_msgs::msg::Pose2D _start)
+void Instance_Manager::insertRobot(const AgentInstance::Robot &_robot)
 {
-    if (agents_.contains(_agentName))
+    if (robots_.contains(_robot.robotInfo_.name_))
     {
-        agents_[_agentName].start_.component_ = _start;
-        notify();
+        return;
+    }
+
+    std::string robotName = _robot.robotInfo_.name_;
+
+    AgentInstance::Robot robot = _robot;
+    {
+        robot.state_sub_ = nh_->create_subscription<AgentInstance::Robot::State>(
+            "/" + robotName + "/state", qos_,
+            std::bind(&Instance_Manager::robotState_callback, this, std::placeholders::_1));
+        robot.send_traj_ = nh_->create_client<AgentInstance::Robot::Path>("/" + robotName + "/path");
+        robot.cmd_vel_pub_ = nh_->create_publisher<geometry_msgs::msg::Twist>(
+            "/" + robotName + "/cmd_vel", qos_);
+        robot.kill_robot_cmd_ = nh_->create_publisher<std_msgs::msg::Bool>(
+            "/" + robotName + "/kill", qos_);
+    }
+    robots_.insert(std::make_pair(robot.robotInfo_.name_, robot));
+
+    RCLCPP_INFO(nh_->get_logger(), "Instance_Manager::insertRobot()");
+    RCLCPP_INFO(nh_->get_logger(), "New Robot " + robot.robotInfo_.name_ + " is registered.");
+    RCLCPP_INFO(nh_->get_logger(), "Total Robots: " + std::to_string(robots_.size()) + "EA");
+    std::cout << robot.robotInfo_ << std::endl;
+}
+
+void Instance_Manager::deleteRobot(
+    const std::string _robotName)
+{
+    if (robots_.contains(_robotName))
+    {
+        robots_.erase(_robotName);
+
+        RCLCPP_INFO(nh_->get_logger(), "Robot " + _robotName + " is deleted.");
+        RCLCPP_INFO(nh_->get_logger(), "Total Robots: " + std::to_string(robots_.size()) + "EA\n");
+    }
+}
+
+const AgentInstance::Robot &Instance_Manager::getRobot(const std::string _robotName) const
+{
+    const auto &robot = robots_.find(_robotName)->second;
+
+    return robot;
+}
+
+void Instance_Manager::fixStartPoses()
+{
+    for (auto &robotPair : robots_)
+        robotPair.second.robotInfo_.start_ = robotPair.second.robotInfo_.pose_;
+
+    notify();
+}
+
+void Instance_Manager::sendTrajectories(Traj::TrajSet &_trajSet)
+{
+    for (auto &robotPair : robots_)
+    {
+        auto &robot = robotPair.second;
+
+        while (!robot.send_traj_->wait_for_service(1s))
+        {
+            if (!rclcpp::ok())
+            {
+                RCLCPP_ERROR(nh_->get_logger(), "Interrupted while waiting for the service.");
+                return;
+            }
+            RCLCPP_ERROR(nh_->get_logger(), "Sending %s trajectory not availiable, waiting again...", robot.robotInfo_.name_);
+        }
+
+        auto request = std::make_shared<AgentInstance::Robot::Path::Request>();
+
+        request->path.clear();
+
+        for (const auto &nodePair : _trajSet[robot.robotInfo_.name_].nodes_)
+        {
+            LocalTraj LocalTraj;
+            LocalTraj.start = nodePair.first.pose_.component_;
+            LocalTraj.goal = nodePair.second.pose_.component_;
+            LocalTraj.departure_time = nodePair.first.departure_time_.count();
+            LocalTraj.arrival_time = nodePair.second.arrival_time_.count();
+
+            request->path.push_back(LocalTraj);
+        }
+        request->start_time = 0.0;
+
+        auto response_received_callback = [this](rclcpp::Client<Path>::SharedFuture _future)
+        {
+            auto response = _future.get();
+            return;
+        };
+
+        auto future_rusult =
+            robot.send_traj_->async_send_request(request, response_received_callback);
+
+        robot.mode_ = PanelUtil::Mode::AUTO;
     }
 }
 
 void Instance_Manager::setGoal(
-    const std::string _agentName, const geometry_msgs::msg::Pose2D _goal)
+    const std::string _robotName, const geometry_msgs::msg::Pose2D _goal)
 {
-    if (agents_.contains(_agentName))
+    if (robots_.contains(_robotName))
     {
-        agents_[_agentName].goal_.component_ = _goal;
+        robots_[_robotName].robotInfo_.goal_.component_ = _goal;
+
+        std::cout << "Changing the Goal of " << _robotName << ": "
+                  << robots_[_robotName].robotInfo_.goal_ << std::endl;
+
         notify();
     }
 }
 
-void Instance_Manager::saveMap(const MapInstance::BinaryOccupancyMap &_map)
+void Instance_Manager::setMode(
+    const std::string _robotName, const PanelUtil::Mode _mode)
 {
-    map_ = _map;
+    if (not(robots_.contains(_robotName)))
+        return;
+
+    robots_[_robotName].mode_ = _mode;
+
+    if (_mode == PanelUtil::Mode::REMOTE)
+    {
+        geometry_msgs::msg::Twist stop_cmd_vel;
+        {
+            stop_cmd_vel.linear.x = 0.0;
+            stop_cmd_vel.angular.z = 0.0;
+        }
+        robots_[_robotName].cmd_vel_pub_->publish(stop_cmd_vel);
+    }
 }
 
-void Instance_Manager::exportResult(
-    const Path::PathSet &_paths,
-    const std::string &_output_fName,
-    const std::string &_directory) const
+void Instance_Manager::request_modeChange(
+    const std::string _robotName, const PanelUtil::Mode _mode)
 {
-    std::filesystem::path resultDirectory("src/multibot_server/" + _directory);
-    bool directoryExist = std::filesystem::exists(resultDirectory);
-    if (directoryExist)
-        std::filesystem::remove_all("src/multibot_server/" + _directory);
+    if (not(robots_.contains(_robotName)))
+        return;
 
-    std::filesystem::create_directories("src/multibot_server/" + _directory);
+    auto &robot = robots_[_robotName];
 
-    YAML::Node node;
-    for (const auto &singleAgent : _paths)
+    while (!robot.modeFromServer_->wait_for_service(1s))
     {
-        YAML::Node agent;
-        agent["name"] = singleAgent.second.agentName_;
-        agent["type"] = agents_.find(singleAgent.second.agentName_)->second.type_;
-        agent["cost"] = singleAgent.second.cost_;
-
-        for (const auto &nodePair : singleAgent.second.nodes_)
+        if (!rclcpp::ok())
         {
-            YAML::Node path;
-            std::vector<double> start = {nodePair.first.pose_.component_.x,
-                                         nodePair.first.pose_.component_.y,
-                                         nodePair.first.pose_.component_.theta};
-            path["Start"] = start;
-            path["Start"].SetStyle(YAML::EmitterStyle::Flow);
-
-            std::vector<double> goal = {nodePair.second.pose_.component_.x,
-                                        nodePair.second.pose_.component_.y,
-                                        nodePair.second.pose_.component_.theta};
-            path["Goal"] = goal;
-            path["Goal"].SetStyle(YAML::EmitterStyle::Flow);
-
-            std::vector<double> time_interval = {nodePair.first.departure_time_.count(),
-                                                 nodePair.second.arrival_time_.count()};
-            path["Time Interval"] = time_interval;
-            path["Time Interval"].SetStyle(YAML::EmitterStyle::Flow);
-
-            agent["path"].push_back(path);
+            RCLCPP_ERROR(nh_->get_logger(), "Interrupted while waiting for the service.");
+            return;
         }
-
-        node["Log"].push_back(agent);
+        RCLCPP_ERROR(nh_->get_logger(), "ModeChange not available, waiting again...");
     }
 
-    std::string fPath = "src/multibot_server/" + _directory + "/" + _output_fName + ".yaml";
-    std::ofstream fOut(fPath);
-    fOut << node;
+    auto request = std::make_shared<PanelUtil::ModeSelection::Request>();
+
+    request->name = _robotName;
+
+    if (_mode == PanelUtil::Mode::REMOTE)
+        request->is_remote = true;
+    else if (_mode == PanelUtil::Mode::MANUAL)
+        request->is_remote = false;
+    else
+    {
+    }
+
+    auto response_received_callback = [this](rclcpp::Client<PanelUtil::ModeSelection>::SharedFuture _future)
+    {
+        auto response = _future.get();
+        return;
+    };
+
+    auto future_result =
+        robot.modeFromServer_->async_send_request(request, response_received_callback);
+
+    if (future_result.get()->is_complete)
+        robot.mode_ = _mode;
+
+    return;
+}
+
+void Instance_Manager::request_kill(const std::string _robotName)
+{
+    if (not(robots_.contains(_robotName)))
+        return;
+
+    std_msgs::msg::Bool killActivated;
+    killActivated.data = true;
+    robots_[_robotName].kill_robot_cmd_->publish(killActivated);
+}
+
+void Instance_Manager::remote_control(
+    const std::string _robotName, const geometry_msgs::msg::Twist &_remote_cmd_vel)
+{
+    if (robots_.contains(_robotName))
+        robots_[_robotName].cmd_vel_pub_->publish(_remote_cmd_vel);
 }
 
 void Instance_Manager::attach(Observer::ObserverInterface<InstanceMsg> &_observer)
@@ -123,10 +295,34 @@ void Instance_Manager::notify()
 {
     std::scoped_lock<std::mutex> lock(mtx_);
 
+    std::unordered_map<std::string, AgentInstance::Agent> agents;
+    {
+        agents.clear();
+
+        for (const auto &robotPair : robots_)
+        {
+            std::string robotName = robotPair.first;
+            AgentInstance::Agent robotInfo = robotPair.second.robotInfo_;
+
+            agents.insert(std::make_pair(robotName, robotInfo));
+        }
+    }
+
     Instance::InstanceMsg msg;
-    msg.first = agents_;
+    msg.first = agents;
     msg.second = map_;
 
     for (auto &observer : list_observer_)
         observer->update(msg);
+}
+
+Instance_Manager::Instance_Manager(std::shared_ptr<rclcpp::Node> _nh)
+    : nh_(_nh)
+{
+    robots_.clear();
+
+    mapLoader_ = nh_->create_client<nav_msgs::srv::GetMap>("/map_server/map");
+    loadMap();
+
+    std::cout << "Instance Manager has been initialzied" << std::endl;
 }

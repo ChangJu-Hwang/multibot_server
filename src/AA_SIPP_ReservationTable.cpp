@@ -48,15 +48,15 @@ void AA_SIPP::ReservationTable::init(double _inflation_radius)
     }
 }
 
-bool AA_SIPP::ReservationTable::applySinglePath(
-    const std::string &_agentName, const Path::SinglePath &_singlePath)
+bool AA_SIPP::ReservationTable::applySingleTraj(
+    const std::string &_agentName, const Traj::SingleTraj &_singleTraj)
 {
-    if (_agentName == _singlePath.agentName_)
+    if (_agentName == _singleTraj.agentName_)
         return false;
 
-    double inflation_radius = agentSizeDB_[_agentName] + agentSizeDB_[_singlePath.agentName_];
+    double inflation_radius = agentSizeDB_[_agentName] + agentSizeDB_[_singleTraj.agentName_];
 
-    for (auto nodePairIter = _singlePath.nodes_.begin(); nodePairIter != _singlePath.nodes_.end(); ++nodePairIter)
+    for (auto nodePairIter = _singleTraj.nodes_.begin(); nodePairIter != _singleTraj.nodes_.end(); ++nodePairIter)
     {
         std::vector<Position::Index> routeArea = map_utility_->getRouteComponents(
             nodePairIter->first.pose_, nodePairIter->second.pose_);
@@ -71,7 +71,7 @@ bool AA_SIPP::ReservationTable::applySinglePath(
                 index, routeArea, inflation_radius);
 
             Time::TimePoint conflict_startTime = nodePairIter->first.departure_time_ + motion_manager_->getPartialMoveTime(
-                                                                                           _singlePath.agentName_, conflict_startIndex,
+                                                                                           _singleTraj.agentName_, conflict_startIndex,
                                                                                            nodePairIter->first.pose_, nodePairIter->second.pose_);
 
             Time::TimePoint conflict_endTime = Time::TimePoint::max();
@@ -94,19 +94,19 @@ bool AA_SIPP::ReservationTable::applySinglePath(
 
                     if (conflict_endIndex != Position::Index())
                         conflict_endTime = conflict_endTime + motion_manager_->getPartialMoveTime(
-                                                                  _singlePath.agentName_, conflict_endIndex,
+                                                                  _singleTraj.agentName_, conflict_endIndex,
                                                                   nextNodePairIter->first.pose_, nextNodePairIter->second.pose_);
 
                     break;
                 }
                 else
                     ++nextNodePairIter;
-            } while (nextNodePairIter != _singlePath.nodes_.end());
+            } while (nextNodePairIter != _singleTraj.nodes_.end());
 
             if (not(addCollisionInterval(index, conflict_startTime, conflict_endTime)))
             {
                 std::cerr << "[Error] "
-                          << "AA_SIPP_ReservationTable::applySinglePath: "
+                          << "AA_SIPP_ReservationTable::applySingleTraj: "
                           << "Invalid Time Interval" << std::endl;
                 std::abort();
             }

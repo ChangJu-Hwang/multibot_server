@@ -35,7 +35,7 @@ namespace High_Level_Engine
         class Solver : public Observer::ObserverInterface<InstanceMsg>
         {
         public:
-            std::pair<Path::PathSet, bool> solve();
+            std::pair<Traj::TrajSet, bool> solve();
 
         private:
             std::pair<Position::Coordinates, Position::Coordinates> restrict_searchSpace();
@@ -70,7 +70,7 @@ namespace High_Level_Engine
             std::stack<Node *> open_;
             std::unordered_set<std::pair<std::string, std::string>, StringPair_HashFunc> priority_graph_;
 
-            Path::PathSet paths_;
+            Traj::TrajSet trajSet_;
 
             std::shared_ptr<AA_SIPP::Planner> planner_;
             std::shared_ptr<AA_SIPP::Map_Utility> map_utility_ = std::make_shared<AA_SIPP::Map_Utility>();

@@ -254,10 +254,6 @@ server: /opt/ros/foxy/lib/libvisualization_msgs__rosidl_typesupport_introspectio
 server: /opt/ros/foxy/lib/libvisualization_msgs__rosidl_typesupport_c.so
 server: /opt/ros/foxy/lib/libvisualization_msgs__rosidl_typesupport_introspection_cpp.so
 server: /opt/ros/foxy/lib/libvisualization_msgs__rosidl_typesupport_cpp.so
-server: /home/changju/multibot_ws/install/multibot_ros2_interface/lib/libmultibot_ros2_interface__rosidl_typesupport_introspection_c.so
-server: /home/changju/multibot_ws/install/multibot_ros2_interface/lib/libmultibot_ros2_interface__rosidl_typesupport_c.so
-server: /home/changju/multibot_ws/install/multibot_ros2_interface/lib/libmultibot_ros2_interface__rosidl_typesupport_introspection_cpp.so
-server: /home/changju/multibot_ws/install/multibot_ros2_interface/lib/libmultibot_ros2_interface__rosidl_typesupport_cpp.so
 server: /home/changju/multibot_ws/install/multibot_util/lib/libmultibot_util.so
 server: /usr/lib/x86_64-linux-gnu/libyaml-cpp.so.0.6.2
 server: /usr/lib/x86_64-linux-gnu/libQt5Gui.so.5.12.8
@@ -293,7 +289,11 @@ server: /opt/ros/foxy/lib/libstatistics_msgs__rosidl_typesupport_cpp.so
 server: /opt/ros/foxy/lib/libtracetools.so
 server: /opt/ros/foxy/lib/libnav_msgs__rosidl_generator_c.so
 server: /opt/ros/foxy/lib/libvisualization_msgs__rosidl_generator_c.so
+server: /home/changju/multibot_ws/install/multibot_ros2_interface/lib/libmultibot_ros2_interface__rosidl_typesupport_introspection_c.so
 server: /home/changju/multibot_ws/install/multibot_ros2_interface/lib/libmultibot_ros2_interface__rosidl_generator_c.so
+server: /home/changju/multibot_ws/install/multibot_ros2_interface/lib/libmultibot_ros2_interface__rosidl_typesupport_c.so
+server: /home/changju/multibot_ws/install/multibot_ros2_interface/lib/libmultibot_ros2_interface__rosidl_typesupport_introspection_cpp.so
+server: /home/changju/multibot_ws/install/multibot_ros2_interface/lib/libmultibot_ros2_interface__rosidl_typesupport_cpp.so
 server: /opt/ros/foxy/lib/libgeometry_msgs__rosidl_typesupport_introspection_c.so
 server: /opt/ros/foxy/lib/libgeometry_msgs__rosidl_generator_c.so
 server: /opt/ros/foxy/lib/libgeometry_msgs__rosidl_typesupport_c.so
