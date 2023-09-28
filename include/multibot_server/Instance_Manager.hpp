@@ -10,8 +10,8 @@
 #include "multibot_util/Interface/Observer_Interface.hpp"
 
 #include "multibot_ros2_interface/msg/robot_state.hpp"
-#include "multibot_ros2_interface/msg/local_path.hpp"
-#include "multibot_ros2_interface/srv/path.hpp"
+#include "multibot_ros2_interface/msg/local_traj.hpp"
+#include "multibot_ros2_interface/srv/traj.hpp"
 
 using namespace MAPF_Util;
 
@@ -26,8 +26,8 @@ namespace Instance
         struct Robot
         {
             using State = multibot_ros2_interface::msg::RobotState;
-            using Path = multibot_ros2_interface::srv::Path;
-            using LocalPath = multibot_ros2_interface::msg::LocalPath;
+            using Traj = multibot_ros2_interface::srv::Traj;
+            using LocalTraj = multibot_ros2_interface::msg::LocalTraj;
 
             AgentInstance::Agent robotInfo_;
             int32_t id_;
@@ -37,7 +37,7 @@ namespace Instance
             rclcpp::Time prior_update_time_;
 
             rclcpp::Subscription<State>::SharedPtr state_sub_;
-            rclcpp::Client<Path>::SharedPtr send_traj_;
+            rclcpp::Client<Traj>::SharedPtr send_traj_;
             rclcpp::Publisher<geometry_msgs::msg::Twist>::SharedPtr cmd_vel_pub_;
             rclcpp::Publisher<std_msgs::msg::Bool>::SharedPtr kill_robot_cmd_;
             rclcpp::Client<PanelUtil::ModeSelection>::SharedPtr modeFromServer_;
@@ -47,10 +47,6 @@ namespace Instance
 
     class Instance_Manager : public Observer::SubjectInterface<InstanceMsg>
     {
-    private:
-        using Path = multibot_ros2_interface::srv::Path;
-        using LocalTraj = multibot_ros2_interface::msg::LocalPath;
-
     private:
         void robotState_callback(const AgentInstance::Robot::State::SharedPtr _state_msg);
         void loadMap();

@@ -90,7 +90,7 @@ void Instance_Manager::insertRobot(const AgentInstance::Robot &_robot)
         robot.state_sub_ = nh_->create_subscription<AgentInstance::Robot::State>(
             "/" + robotName + "/state", qos_,
             std::bind(&Instance_Manager::robotState_callback, this, std::placeholders::_1));
-        robot.send_traj_ = nh_->create_client<AgentInstance::Robot::Path>("/" + robotName + "/path");
+        robot.send_traj_ = nh_->create_client<AgentInstance::Robot::Traj>("/" + robotName + "/path");
         robot.cmd_vel_pub_ = nh_->create_publisher<geometry_msgs::msg::Twist>(
             "/" + robotName + "/cmd_vel", qos_);
         robot.kill_robot_cmd_ = nh_->create_publisher<std_msgs::msg::Bool>(
@@ -147,23 +147,23 @@ void Instance_Manager::sendTrajectories(Traj::TrajSet &_trajSet)
             RCLCPP_ERROR(nh_->get_logger(), "Sending %s trajectory not availiable, waiting again...", robot.robotInfo_.name_);
         }
 
-        auto request = std::make_shared<AgentInstance::Robot::Path::Request>();
+        auto request = std::make_shared<AgentInstance::Robot::Traj::Request>();
 
-        request->path.clear();
+        request->traj.clear();
 
         for (const auto &nodePair : _trajSet[robot.robotInfo_.name_].nodes_)
         {
-            LocalTraj LocalTraj;
+            AgentInstance::Robot::LocalTraj LocalTraj;
             LocalTraj.start = nodePair.first.pose_.component_;
             LocalTraj.goal = nodePair.second.pose_.component_;
             LocalTraj.departure_time = nodePair.first.departure_time_.count();
             LocalTraj.arrival_time = nodePair.second.arrival_time_.count();
 
-            request->path.push_back(LocalTraj);
+            request->traj.push_back(LocalTraj);
         }
         request->start_time = 0.0;
 
-        auto response_received_callback = [this](rclcpp::Client<Path>::SharedFuture _future)
+        auto response_received_callback = [this](rclcpp::Client<AgentInstance::Robot::Traj>::SharedFuture _future)
         {
             auto response = _future.get();
             return;
