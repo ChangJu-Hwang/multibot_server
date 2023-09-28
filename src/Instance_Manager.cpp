@@ -90,7 +90,7 @@ void Instance_Manager::insertRobot(const AgentInstance::Robot &_robot)
         robot.state_sub_ = nh_->create_subscription<AgentInstance::Robot::State>(
             "/" + robotName + "/state", qos_,
             std::bind(&Instance_Manager::robotState_callback, this, std::placeholders::_1));
-        robot.send_traj_ = nh_->create_client<AgentInstance::Robot::Traj>("/" + robotName + "/path");
+        robot.send_traj_ = nh_->create_client<AgentInstance::Robot::Traj>("/" + robotName + "/traj");
         robot.cmd_vel_pub_ = nh_->create_publisher<geometry_msgs::msg::Twist>(
             "/" + robotName + "/cmd_vel", qos_);
         robot.kill_robot_cmd_ = nh_->create_publisher<std_msgs::msg::Bool>(
