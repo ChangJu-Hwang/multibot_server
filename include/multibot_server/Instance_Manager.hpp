@@ -1,7 +1,17 @@
 #pragma once
 
+#include <rclcpp/rclcpp.hpp>
+#include <std_msgs/msg/bool.hpp>
+#include <geometry_msgs/msg/twist.hpp>
+#include <nav_msgs/srv/get_map.hpp>
+
 #include "multibot_util/Instance.hpp"
+#include "multibot_util/Panel_Util.hpp"
 #include "multibot_util/Interface/Observer_Interface.hpp"
+
+#include "multibot_ros2_interface/msg/robot_state.hpp"
+#include "multibot_ros2_interface/msg/local_traj.hpp"
+#include "multibot_ros2_interface/srv/traj.hpp"
 
 using namespace MAPF_Util;
 
@@ -11,18 +21,56 @@ namespace Instance
                       MapInstance::BinaryOccupancyMap>
         InstanceMsg;
 
+    namespace AgentInstance
+    {
+        struct Robot
+        {
+            using State = multibot_ros2_interface::msg::RobotState;
+            using Traj = multibot_ros2_interface::srv::Traj;
+            using LocalTraj = multibot_ros2_interface::msg::LocalTraj;
+
+            AgentInstance::Agent robotInfo_;
+            int32_t id_;
+            PanelUtil::Mode mode_;
+
+            rclcpp::Time last_update_time_;
+            rclcpp::Time prior_update_time_;
+
+            rclcpp::Subscription<State>::SharedPtr state_sub_;
+            rclcpp::Client<Traj>::SharedPtr send_traj_;
+            rclcpp::Publisher<geometry_msgs::msg::Twist>::SharedPtr cmd_vel_pub_;
+            rclcpp::Publisher<std_msgs::msg::Bool>::SharedPtr kill_robot_cmd_;
+            rclcpp::Client<PanelUtil::ModeSelection>::SharedPtr modeFromServer_;
+            rclcpp::Service<PanelUtil::ModeSelection>::SharedPtr modeFromRobot_;
+        }; // struct Robot
+    }      // namespace AgentInstance
+
     class Instance_Manager : public Observer::SubjectInterface<InstanceMsg>
     {
+    private:
+        void robotState_callback(const AgentInstance::Robot::State::SharedPtr _state_msg);
+        void loadMap();
+
+    private:
+        std::shared_ptr<rclcpp::Node> nh_;
+        rclcpp::QoS qos_ = rclcpp::QoS(rclcpp::KeepLast(10));
+
+        rclcpp::Client<nav_msgs::srv::GetMap>::SharedPtr mapLoader_;
+
     public:
-        void insertAgent(const std::pair<std::string, AgentInstance::Agent> &_agent);
-        void deleteAgent(const std::string _agentName);
-        void setStart(const std::string _agentName, const geometry_msgs::msg::Pose2D _start);
-        void setGoal(const std::string _agentName, const geometry_msgs::msg::Pose2D _goal);
-        void saveMap(const MapInstance::BinaryOccupancyMap &_map);
-        void exportResult(
-            const Path::PathSet &_paths,
-            const std::string &_output_fName = "CPBS_Log",
-            const std::string &_directory = "Results") const;
+        void insertRobot(const AgentInstance::Robot &_robot);
+        void deleteRobot(const std::string _robotName);
+
+        const AgentInstance::Robot &getRobot(const std::string _robotName) const;
+
+        void fixStartPoses();
+        void sendTrajectories(MAPF_Util::Traj::TrajSet &_trajSet);
+
+        void setGoal(const std::string _robotName, const geometry_msgs::msg::Pose2D _goal);
+        void setMode(const std::string _robotName, const PanelUtil::Mode _mode);
+        void request_modeChange(const std::string _robotName, const PanelUtil::Mode _mode);
+        void request_kill(const std::string _robotName);
+        void remote_control(const std::string _robotName, const geometry_msgs::msg::Twist &_remote_cmd_vel);
 
     public:
         void attach(Observer::ObserverInterface<InstanceMsg> &_observer) override;
@@ -31,12 +79,13 @@ namespace Instance
 
     private:
         std::unordered_map<std::string, AgentInstance::Agent> agents_;
+        std::unordered_map<std::string, AgentInstance::Robot> robots_;
         MapInstance::BinaryOccupancyMap map_;
 
         std::list<Observer::ObserverInterface<InstanceMsg> *> list_observer_;
 
     public:
-        Instance_Manager() { agents_.clear(); }
+        Instance_Manager(std::shared_ptr<rclcpp::Node> _nh);
         ~Instance_Manager() {}
     }; // class Instance_Manager
 

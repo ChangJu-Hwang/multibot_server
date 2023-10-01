@@ -1,13 +1,6 @@
 map_server:
     ros__parameters:
-        yaml_filename: "/home/changju/multibot_ws/src/multibot_server/Instances/maps/testbed/map.yaml"
+        map: "new_testbed"
+        yaml_filename: ""
         topic_name: "map"
         frame_id: "map"
-
-        # Todo
-        # # Cannot use relative path in Foxy
-        # # Need to use allow_substs=True
-        # # But launch_ros.parameter_descriptions.ParameterFile does not supported in Foxy
-        # # See: https://docs.ros.org/en/dashing/Releases/Release-Galactic-Geochelone.html
-        # # See Also: https://github.com/ros2/launch_ros/blob/foxy/launch_ros/launch_ros/parameter_descriptions.py
-        # yaml_filename: "$(find mapf_ros2)/map/map.yaml"

@@ -4,13 +4,13 @@
 
 using namespace High_Level_Engine;
 
-std::pair<Path::PathSet, bool> CPBS::Solver::solve()
+std::pair<Traj::TrajSet, bool> CPBS::Solver::solve()
 {
     if (not(generateRoot()))
     {
         std::cerr << "[Error] "
                   << "Generate Root Failed" << std::endl;
-        std::abort();
+        return std::make_pair(Traj::TrajSet(), false);
     }
 
     while (not(open_.empty()))
@@ -27,13 +27,13 @@ std::pair<Path::PathSet, bool> CPBS::Solver::solve()
                 std::cerr << "\n"
                           << "[Error] CPBS: Invalid Solution" << std::endl;
 
-                return std::make_pair(Path::PathSet(), false);
+                return std::make_pair(Traj::TrajSet(), false);
             }
 
             std::cout << "\n"
                       << "[CPBS] Solution Found" << std::endl;
 
-            return std::make_pair(paths_, true);
+            return std::make_pair(trajSet_, true);
         }
 
         curNode->conflict_ = curNode->conflicts_.back();
@@ -71,7 +71,7 @@ std::pair<Path::PathSet, bool> CPBS::Solver::solve()
                 std::cout << "\n"
                           << "[CPBS] No Solution" << std::endl;
 
-                return std::make_pair(Path::PathSet(), false);
+                return std::make_pair(Traj::TrajSet(), false);
             }
         }
         else if (firstChildResult.second == false)
@@ -83,7 +83,7 @@ std::pair<Path::PathSet, bool> CPBS::Solver::solve()
     std::cout << "\n"
               << "[CPBS] No Solution" << std::endl;
 
-    return std::make_pair(Path::PathSet(), false);
+    return std::make_pair(Traj::TrajSet(), false);
 }
 
 std::pair<Position::Coordinates, Position::Coordinates> CPBS::Solver::restrict_searchSpace()
@@ -120,7 +120,7 @@ bool CPBS::Solver::generateRoot()
     root->cost_ = 0.0;
     root->makeSpan_ = Time::TimePoint::zero();
 
-    root->pathSet_.clear();
+    root->trajSet_.clear();
 
     std::vector<std::future<std::tuple<std::string, std::string, double>>> delayTimeThreads;
     delayTimeThreads.clear();
@@ -129,25 +129,25 @@ bool CPBS::Solver::generateRoot()
     {
         std::cout << "[" << agent.second.name_ << "] "
                   << agent.second.start_ << " -> " << agent.second.goal_ << std::endl;
-        auto pathResult = planner_->search(
-            agent.second.name_, std::vector<std::string>(), Path::PathSet());
+        auto trajResult = planner_->search(
+            agent.second.name_, std::vector<std::string>(), Traj::TrajSet());
 
-        if (pathResult.second == false)
+        if (trajResult.second == false)
             return false;
 
-        root->cost_ = root->cost_ + pathResult.first.cost_;
+        root->cost_ = root->cost_ + trajResult.first.cost_;
         root->makeSpan_ = std::max(
-            pathResult.first.nodes_.back().second.arrival_time_, root->makeSpan_);
+            trajResult.first.nodes_.back().second.arrival_time_, root->makeSpan_);
 
-        for (const auto &path : root->pathSet_)
+        for (const auto &traj : root->trajSet_)
         {
             delayTimeThreads.push_back(
-                std::async(std::launch::async, [this, path, pathResult]() -> std::tuple<std::string, std::string, double>
-                           { double delayTime = this->conflict_checker_->getDelayTime(path.second, pathResult.first);
-                             return std::make_tuple(path.second.agentName_, pathResult.first.agentName_, delayTime); }));
+                std::async(std::launch::async, [this, traj, trajResult]() -> std::tuple<std::string, std::string, double>
+                           { double delayTime = this->conflict_checker_->getDelayTime(traj.second, trajResult.first);
+                             return std::make_tuple(traj.second.agentName_, trajResult.first.agentName_, delayTime); }));
         }
 
-        root->pathSet_.insert(std::make_pair(agent.second.name_, pathResult.first));
+        root->trajSet_.insert(std::make_pair(agent.second.name_, trajResult.first));
     }
 
     root->conflicts_.clear();
@@ -172,7 +172,7 @@ std::pair<CPBS::Node *, bool> CPBS::Solver::generateChild(
     Node *_parent, const std::string &_low, const std::string &_high)
 {
     auto childNode = initChild(_parent, _low, _high);
-    Path::PathSet paths = paths_;
+    Traj::TrajSet trajSet = trajSet_;
 
     std::vector<std::string> ordered_agents;
     topologicalSort(ordered_agents);
@@ -211,7 +211,7 @@ std::pair<CPBS::Node *, bool> CPBS::Solver::generateChild(
         lookup_table[lower] = true;
     }
 
-    childNode->pathSet_.clear();
+    childNode->trajSet_.clear();
     while (not(to_replan.empty()))
     {
         std::string agentName_to_replan = *to_replan.top();
@@ -222,14 +222,14 @@ std::pair<CPBS::Node *, bool> CPBS::Solver::generateChild(
             agentName_to_replan, ordered_agents);
 
         auto result = planner_->search(
-            agentName_to_replan, highers_than_replan, paths);
+            agentName_to_replan, highers_than_replan, trajSet);
 
         if (result.second == false)
             return std::make_pair(nullptr, false);
 
-        childNode->cost_ = childNode->cost_ - paths[agentName_to_replan].cost_ + result.first.cost_;
-        paths[agentName_to_replan] = result.first;
-        childNode->pathSet_.emplace(std::make_pair(agentName_to_replan, result.first));
+        childNode->cost_ = childNode->cost_ - trajSet[agentName_to_replan].cost_ + result.first.cost_;
+        trajSet[agentName_to_replan] = result.first;
+        childNode->trajSet_.emplace(std::make_pair(agentName_to_replan, result.first));
 
         for (auto conflict = childNode->conflicts_.begin(); conflict != childNode->conflicts_.end();)
         {
@@ -253,12 +253,12 @@ std::pair<CPBS::Node *, bool> CPBS::Solver::generateChild(
             if (iter != lookup_table.end() and iter->second == true)
                 continue;
 
-            auto lower_path = paths[lower_than_replan];
+            auto lower_traj = trajSet[lower_than_replan];
 
             delayTimeThreads.push_back(
-                std::async(std::launch::async, [this, result, lower_path]() -> std::pair<std::string, double>
-                           { double delayTime = this->conflict_checker_->getDelayTime(result.first, lower_path);
-                             return std::make_pair(lower_path.agentName_, delayTime); }));
+                std::async(std::launch::async, [this, result, lower_traj]() -> std::pair<std::string, double>
+                           { double delayTime = this->conflict_checker_->getDelayTime(result.first, lower_traj);
+                             return std::make_pair(lower_traj.agentName_, delayTime); }));
         }
 
         for (auto &delayTimeThread : delayTimeThreads)
@@ -287,16 +287,16 @@ std::pair<CPBS::Node *, bool> CPBS::Solver::generateChild(
 
 void CPBS::Solver::updateNode(Node *_curNode)
 {
-    paths_.clear();
+    trajSet_.clear();
     priority_graph_.clear();
 
     for (auto node = _curNode; node != nullptr; node = node->parent_)
     {
-        for (const auto &singlePath : node->pathSet_)
+        for (const auto &singleTraj : node->trajSet_)
         {
-            if (paths_.find(singlePath.second.agentName_) == paths_.end())
-                paths_.insert(std::make_pair(
-                    singlePath.second.agentName_, singlePath.second));
+            if (trajSet_.find(singleTraj.second.agentName_) == trajSet_.end())
+                trajSet_.insert(std::make_pair(
+                    singleTraj.second.agentName_, singleTraj.second));
         }
 
         if (node->parent_ != nullptr)
@@ -318,15 +318,15 @@ bool CPBS::Solver::validateResult()
     std::vector<std::future<std::tuple<std::string, std::string, double>>> delayTimeThreads;
     delayTimeThreads.clear();
 
-    for (auto firstIter = paths_.begin(); firstIter != paths_.end(); ++firstIter)
+    for (auto firstIter = trajSet_.begin(); firstIter != trajSet_.end(); ++firstIter)
     {
-        for (auto secondIter = std::next(firstIter, 1); secondIter != paths_.end(); ++secondIter)
+        for (auto secondIter = std::next(firstIter, 1); secondIter != trajSet_.end(); ++secondIter)
         {
-            const Path::SinglePath firstPath = firstIter->second, secondPath = secondIter->second;
+            const Traj::SingleTraj firstTraj = firstIter->second, secondTraj = secondIter->second;
             delayTimeThreads.push_back(
-                std::async(std::launch::async, [this, firstPath, secondPath]() -> std::tuple<std::string, std::string, double>
-                           { double delayTime = this->conflict_checker_->getDelayTime(firstPath, secondPath);
-                             return std::make_tuple(firstPath.agentName_, secondPath.agentName_, delayTime); }));
+                std::async(std::launch::async, [this, firstTraj, secondTraj]() -> std::tuple<std::string, std::string, double>
+                           { double delayTime = this->conflict_checker_->getDelayTime(firstTraj, secondTraj);
+                             return std::make_tuple(firstTraj.agentName_, secondTraj.agentName_, delayTime); }));
         }
     }
 

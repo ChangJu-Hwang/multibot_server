@@ -48,7 +48,7 @@ border:none;</string>
     <enum>QTabWidget::Rounded</enum>
    </property>
    <property name="currentIndex">
-    <number>0</number>
+    <number>1</number>
    </property>
    <property name="elideMode">
     <enum>Qt::ElideLeft</enum>
@@ -571,9 +571,9 @@ border: none;</string>
       <widget class="QLabel" name="label_Angular_Velocity_Unit">
        <property name="geometry">
         <rect>
-         <x>140</x>
+         <x>135</x>
          <y>70</y>
-         <width>41</width>
+         <width>51</width>
          <height>21</height>
         </rect>
        </property>
@@ -589,7 +589,7 @@ border: none;</string>
 border: none;</string>
        </property>
        <property name="text">
-        <string>m/s</string>
+        <string>rad/s</string>
        </property>
       </widget>
      </widget>

@@ -18,8 +18,8 @@ namespace Low_Level_Engine
         {
         public:
             void init(double _inflation_radius);
-            bool applySinglePath(
-                const std::string &_agentName, const Path::SinglePath &_singlePath);
+            bool applySingleTraj(
+                const std::string &_agentName, const Traj::SingleTraj &_singleTraj);
             bool isValidMove(
                 const std::string &_agentName, const Time::TimePoint &_departure_time,
                 const Position::Pose &_from, const Position::Pose &_to);

@@ -22,10 +22,10 @@ namespace Low_Level_Engine
         class Planner : public Observer::ObserverInterface<InstanceMsg>
         {
         public:
-            std::pair<Path::SinglePath, bool> search(
+            std::pair<Traj::SingleTraj, bool> search(
                 const std::string &_agentName,
                 const std::vector<std::string> &_higher_agents = std::vector<std::string>(),
-                const Path::PathSet &_pathSet = Path::PathSet(),
+                const Traj::TrajSet &_trajSet = Traj::TrajSet(),
                 const std::pair<Position::Coordinates, Position::Coordinates> &_searchSpace
                  = std::make_pair(
                     Position::Coordinates(-1 * std::numeric_limits<double>::infinity(), -1 * std::numeric_limits<double>::infinity()),
@@ -33,7 +33,7 @@ namespace Low_Level_Engine
                 const double _timeLimit = 10);
 
         private:
-            std::pair<Path::SinglePath, bool> find_partial_path(
+            std::pair<Traj::SingleTraj, bool> find_partial_traj(
                 const std::string &_agentName,
                 const std::list<Time::TimeInterval> &_starts,
                 const std::list<Time::TimeInterval> &_goals,
@@ -44,7 +44,7 @@ namespace Low_Level_Engine
             std::vector<AA_SIPP::Node> getSuccessors(
                 const std::string &_agentName,
                 const Position::Index &_index, const AA_SIPP::Node &_parentNode);
-            Path::SinglePath constructSinglePath(
+            Traj::SingleTraj constructSingleTraj(
                 const std::string &_agentName, const AA_SIPP::Node &_goalNode);
 
             double computeTotalDelays(
@@ -61,7 +61,7 @@ namespace Low_Level_Engine
         private:
             std::unordered_map<std::string, AgentInstance::Agent> agents_;
 
-            std::vector<Path::SinglePath> higher_paths_;
+            std::vector<Traj::SingleTraj> higher_trajs_;
 
             std::set<AA_SIPP::Node, AA_SIPP::Compare> open_;
             std::unordered_map<AA_SIPP::Node, AA_SIPP::Node, AA_SIPP::Node_HashFunc> close_;

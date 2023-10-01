@@ -11,11 +11,11 @@ namespace Low_Level_Engine
         class ConflictChecker : public Observer::ObserverInterface<InstanceMsg>
         {
         private:
-            using PartialPath = std::pair<Path::SinglePath::Node, Path::SinglePath::Node>;
+            using PartialTraj = std::pair<Traj::SingleTraj::Node, Traj::SingleTraj::Node>;
 
         public:
             double getDelayTime(
-                const Path::SinglePath &_higherPath, const Path::SinglePath &_lowerPath);
+                const Traj::SingleTraj &_higherTraj, const Traj::SingleTraj &_lowerTraj);
             std::pair<Position::Index, Position::Index> getConflictScope(
                 const Position::Index &_target,
                 const std::vector<Position::Index> &_indexGroup,
@@ -23,16 +23,16 @@ namespace Low_Level_Engine
 
         private:
             bool checkPartialConflict(
-                const std::string &_higherName,  std::vector<PartialPath>::const_iterator _higher_PartialPath,
-                const std::string &_lowerName, std::vector<PartialPath>::const_iterator _lower_PartialPath,
+                const std::string &_higherName,  std::vector<PartialTraj>::const_iterator _higher_PartialTraj,
+                const std::string &_lowerName, std::vector<PartialTraj>::const_iterator _lower_PartialTraj,
                 double _delay);
             double getDelayScope(
-                const std::string &_higherName, std::vector<PartialPath>::const_iterator _higher_PartialPath,
-                const std::string &_lowerName, std::vector<PartialPath>::const_iterator _lower_PartialPath,
+                const std::string &_higherName, std::vector<PartialTraj>::const_iterator _higher_PartialTraj,
+                const std::string &_lowerName, std::vector<PartialTraj>::const_iterator _lower_PartialTraj,
                 double _safe_distance);
             bool conflictSearch(
-                const std::string &_higherName,  const PartialPath &_higher_PartialPath,
-                const std::string &_lowerName, const PartialPath &_lower_PartialPath,
+                const std::string &_higherName,  const PartialTraj &_higher_PartialTraj,
+                const std::string &_lowerName, const PartialTraj &_lower_PartialTraj,
                 const Time::TimePoint &_lower_bound, const Time::TimePoint &_upper_bound,
                 double _delay);
 

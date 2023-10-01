@@ -11,7 +11,7 @@ namespace High_Level_Engine
         struct Node
         {
         public:
-            Path::PathSet pathSet_;
+            Traj::TrajSet trajSet_;
 
             double cost_;
             Time::TimePoint makeSpan_;
@@ -27,7 +27,7 @@ namespace High_Level_Engine
         public:
             Node &operator=(const Node &_other)
             {
-                this->pathSet_ = _other.pathSet_;
+                this->trajSet_ = _other.trajSet_;
 
                 this->cost_ = _other.cost_;
                 this->makeSpan_ = _other.makeSpan_;
@@ -44,9 +44,9 @@ namespace High_Level_Engine
                 _os << "Cost:     " << _node.cost_ << " / "
                     << "Makespan: " << _node.makeSpan_.count() << "s" << std::endl;
 
-                for (const auto &singlePath : _node.pathSet_)
+                for (const auto &singleTraj : _node.trajSet_)
                 {
-                    std::cout << singlePath.second << std::endl;
+                    std::cout << singleTraj.second << std::endl;
                     std::cout << std::endl;
                 }
 
@@ -56,7 +56,7 @@ namespace High_Level_Engine
         public:
             Node()
             {
-                pathSet_.clear();
+                trajSet_.clear();
                 conflicts_.clear();
 
                 parent_ = nullptr;

@@ -17,7 +17,6 @@ import yaml
 def generate_launch_description():
     # Get the launch directory
     multibot_server_dir = get_package_share_directory('multibot_server')
-    multibot_robot_dir  = get_package_share_directory('multibot_robot')
 
     # Launch argument setting
     lifecycle_nodes = ['map_server']
@@ -67,10 +66,22 @@ def generate_launch_description():
         'map_server_params.yaml'
     )
 
+    with open(os.path.join(multibot_server_dir, 'maps', 'map_server_params.yaml')) as map_server_params:
+        map_server_params = yaml.load(map_server_params, Loader=yaml.Loader)
+        map = map_server_params['map_server']['ros__parameters']['map']
+        yaml_filename = os.path.join(
+            multibot_server_dir, 'maps', map, 'map.yaml')
+
+        with open(yaml_filename) as map_params:
+            map_params = yaml.load(map_params, Loader=yaml.Loader)
+            map_origin = map_params['origin']
+
     configured_params = RewrittenYaml(
         source_file=map_server_param_path,
         root_key='',
-        param_rewrites={},
+        param_rewrites={
+            'yaml_filename': yaml_filename
+        },
         convert_types=True
     )
 
@@ -80,17 +91,10 @@ def generate_launch_description():
         output='screen',
         # parameters=[{'yaml_filename': map_server_config_path}])
         parameters=[configured_params,
-                    {'autostart': autostart},
-                    ]
+                    {'autostart': autostart}],
+        remappings=[('/tf', 'tf'),
+                    ('/tf_static', 'tf_static')]
     )
-
-    with open(os.path.join(multibot_server_dir, 'maps', 'map_server_params.yaml')) as map_server_params:
-        map_server_params = yaml.load(map_server_params, Loader=yaml.Loader)
-        map_param_dir = map_server_params['map_server']['ros__parameters']['yaml_filename']
-
-        with open(os.path.join(map_param_dir)) as map_params:
-            map_params = yaml.load(map_params, Loader=yaml.Loader)
-            map_origin = map_params['origin']
 
     world_map_cmd = Node(
         package='tf2_ros',
