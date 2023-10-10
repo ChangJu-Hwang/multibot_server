@@ -6,7 +6,7 @@
                 "/opt/ros/foxy/include/**",
                 "/usr/include/**",
                 "${workspaceFolder}/**",
-                "${workspaceFolder}/../../**"
+                "${workspaceFolder}/../../../**"
             ],
             "defines": [],
             "compilerPath": "/usr/bin/gcc",

@@ -20,8 +20,28 @@ def generate_launch_description():
 
     # Launch argument setting
     lifecycle_nodes = ['map_server']
-    use_sim_time = False
+    use_sim_time = LaunchConfiguration('use_sim_time')
     autostart = True
+    headless = LaunchConfiguration('headless')
+    world = LaunchConfiguration('world')
+
+    delcare_use_sim_time_cmd = DeclareLaunchArgument(
+        'use_sim_time',
+        default_value='True',
+        description='Use simulation (Rviz, Gazebo) clock if true'
+    )
+
+    declare_simulator_cmd = DeclareLaunchArgument(
+        'headless',
+        default_value='False',
+        description='Whether to execute gzclient'
+    )
+
+    declare_world_cmd = DeclareLaunchArgument(
+        'world',
+        default_value=os.path.join(multibot_server_dir, 'worlds', 'modified_testbed.world'),
+        description='Full path to world model file to load'
+    )
 
     # rviz
     rviz_config_dir = os.path.join(
@@ -95,6 +115,18 @@ def generate_launch_description():
                         {'node_names': lifecycle_nodes}]
     )
 
+    # Gazebo
+    start_gazebo_server_cmd = ExecuteProcess(
+        cmd=['gzserver', '--verbose', '-s', 'libgazebo_ros_init.so', '-s', 'libgazebo_ros_factory.so', world],
+		cwd=[multibot_server_dir], output='screen'
+    )
+
+    start_gazebo_client_cmd = ExecuteProcess(
+		condition=IfCondition(PythonExpression(['not ', headless])),
+		cmd=['gzclient'],
+		cwd=[multibot_server_dir], output='screen'
+    )
+
     # Server Node
     multibot_server_cmd = Node(
         package='multibot_server',
@@ -106,11 +138,19 @@ def generate_launch_description():
     # Create the launch description and populate
     ld = LaunchDescription()
 
+    # Declare the launch options
+    ld.add_action(delcare_use_sim_time_cmd)
+    ld.add_action(declare_simulator_cmd)
+    ld.add_action(declare_world_cmd)
+
     # Add any conditioned actions
     ld.add_action(start_rviz_cmd)
     ld.add_action(map_server_cmd)
     ld.add_action(world_map_cmd)
     ld.add_action(start_lifecycle_manager_cmd)
+
+    ld.add_action(start_gazebo_server_cmd)
+    ld.add_action(start_gazebo_client_cmd)
 
     ld.add_action(multibot_server_cmd)
 
